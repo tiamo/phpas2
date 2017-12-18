@@ -1,0 +1,66 @@
+Date: Fri, 14 Sep 2012 16:25:21 GMT
+From: <mailto:apple@apple.com> apple@apple.com
+Message-Id: <20120914-162521-69029@10.10.3.34>
+Subject: This is AS2 MDN Message(20120914-162517-13013@169.254.184.230) from SVC_COWELL to SVC_APPLE
+MIME-Version: 1.0
+Content-Type: multipart/report; report-type=disposition-notification;boundary="----=_Part_19_16467978.1347607521690"
+AS2-From: SVC_APPLE
+AS2-To: SVC_COWELL
+AS2-Version: 1.1
+Server: eSum Technologies. AS2 Connector v2.0
+Content-Length: 3503
+
+------=_Part_21_15293539.1347607521690
+Content-Type: multipart/report; report-type=disposition-notification;
+	boundary="----=_Part_19_16467978.1347607521690"
+
+------=_Part_19_16467978.1347607521690
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+The message sent to Recipient SVC_APPLE on Fri, 14 Sep 2012 16:25:17 GMT with Subject AS2 Message from SVC_COWELL to SVC_APPLE has been received, the EDI Interchange was successfully decrypted and it's integrity was verified. In addition, the sender of the message, Sender SVC_COWELL at Location null was authenticated as the originator of the message. There is no guarantee however that the EDI Interchange was syntactically correct, or was received by the EDI application/translator.
+------=_Part_19_16467978.1347607521690
+Content-Type: message/disposition-notification
+Content-Transfer-Encoding: 7bit
+
+Reporting-UA: eSum Technologies. AS2 Connector v2.0
+Original-Recipient: rfc822; SVC_APPLE
+Final-Recipient: rfc822; SVC_APPLE
+Original-Message-ID: <20120914-162517-13013@169.254.184.230>
+Disposition: automatic-action/MDN-sent-automatically; processed
+Received-Content-MIC: qm+A7YPUC7y22RXvo54BW0rpx7Q6dpEfiiceV+5NqvE=, sha256
+
+------=_Part_19_16467978.1347607521690--
+
+------=_Part_21_15293539.1347607521690
+Content-Type: application/pkcs7-signature; name=smime.p7s; smime-type=signed-data
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0BBwEAAKCAMIID
+OjCCAiKgAwIBAgIEUFJ+WDANBgkqhkiG9w0BAQUFADBfMQswCQYDVQQGEwJLUjEOMAwGA1UECBMF
+U2VvdWwxDTALBgNVBAcTBGVzdW0xDTALBgNVBAoTBGVzdW0xDTALBgNVBAsTBGVzdW0xEzARBgNV
+BAMTCjEwLjEwLjMuMzQwHhcNMTIwOTE0MDA0NjE2WhcNMTIxMjEzMDA0NjE2WjBfMQswCQYDVQQG
+EwJLUjEOMAwGA1UECBMFU2VvdWwxDTALBgNVBAcTBGVzdW0xDTALBgNVBAoTBGVzdW0xDTALBgNV
+BAsTBGVzdW0xEzARBgNVBAMTCjEwLjEwLjMuMzQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+AoIBAQCSy40sv3fsvHDWDU7HXBRSvSi7qe2mP5tkpz97nsIHI9/QGhuRHloV2NDEzj88mJ4Gy/xa
+YKwRyXJkc8oWNCrKrpMD2gFB5vIkkg0+3Xc3Yd/jYuZE3qFcvp6O/0sar+bjr3qBnslon00+x3u8
+xZIjPK3Slw5g0DfaHHJuo46qYA5FdFbx2lqcl1Bz2BAyeyXr48zEKEHtOox9SYgcJ8kcGNmzTW7l
+FMeHUuOWeOrLvwwVaMA1PyrkWOOhZVzyDyj3B6jQ/5f2SiA0sY23PQVS/sdGcu3w81rme1D2QO45
+9iN+hgmlOtdqGjd7oNGsBDepYmehquscLmYpV8OvTTXHAgMBAAEwDQYJKoZIhvcNAQEFBQADggEB
+ACRDJPF42N/6isEFzNNCgi27m/wZuQxuQreTUir7C8AOmRISkmv4pipSMru3gvaadiKqZUuLirXF
+OcsGsIu5LdoxFFtrrk74OEOOWlBSToKHKGward9g06DLjdbfWCtgeARryPn9sDyI2JWVmu+ac5L/
+5zLzahPzJBEE9UKzD7mqtxy2ihjSFLFhhUTP0jALZKuwJhNvr2M/TX7HseBl1h0T/dtebPoe7sXI
+ecNWiRL9axlfeXZP/e62hwObtLhlYJGO5OCxGB64xL67RB9LT4Bj7/1upU7DxqeOKf7mInMuVVkR
+CRO3HCFeoQoeUygcn9eU/7ylafxdkT9qF2zDxs8AADGCAf0wggH5AgEBMGcwXzELMAkGA1UEBhMC
+S1IxDjAMBgNVBAgTBVNlb3VsMQ0wCwYDVQQHEwRlc3VtMQ0wCwYDVQQKEwRlc3VtMQ0wCwYDVQQL
+EwRlc3VtMRMwEQYDVQQDEwoxMC4xMC4zLjM0AgRQUn5YMA0GCWCGSAFlAwQCAQUAoGkwGAYJKoZI
+hvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTIwOTE0MDcyNTIxWjAvBgkqhkiG
+9w0BCQQxIgQgdc/UI12TZ6wlkTo9WmllrWbgptRU3YI3AszbYwu8W5MwDQYJKoZIhvcNAQEBBQAE
+ggEAHp4eoSEDXsuuyEnecqjFeKHT0YwRNY0+uKzqA5pAqNk9hMkAn+OHJ7AW0O0YgdRcyKahvaox
+y9ZCiyLI0h4zvRfUNlMzt5u5MPZm9eMtdb63lKkKMZkJzT0MR6kWHPZlekIaViq0v3sUTsf+1Gym
+bW3yipqErgHElWQCgi3c4voRn0+CfADrLCKfe/EDf0eH6+Tg3ZcCNPDWWFis1xNGVt1I32Z1BsK1
+O8FvT224u8lsnc/Aaxr6iFWnXLgTjSMcI7cGnKULtk7p+RSvOI8Lfgrh3aSXEs0AUQ03vBaumxwT
+qggZOzkWIqdWhyhr22tmlCwPbLGCqpDhGZynkVYX0wAAAAAAAA==
+------=_Part_21_15293539.1347607521690--
