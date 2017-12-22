@@ -2,10 +2,6 @@
 
 namespace AS2;
 
-/**
- * Class for building and parsing AS2 Inbound and Outbound Messages
- * @package AS2
- */
 interface MessageInterface
 {
     const STATUS_PENDING = 'pending';
@@ -15,28 +11,22 @@ interface MessageInterface
     const STATUS_RETRY = 'retry';
     const STATUS_IN_PROCESS = 'in_process';
 
+    const MDN_STATUS_PENDING = 'pending';
+    const MDN_STATUS_RECEIVED = 'received';
+    const MDN_STATUS_SENT = 'sent';
+    const MDN_STATUS_ERROR = 'error';
+
     /**
      * Unique Message Id
      * @return string
      */
-    public function getUid();
+    public function getMessageId();
 
     /**
      * @param string $id
      * @return $this
      */
-    public function setUid($id);
-
-    /**
-     * @return PartnerInterface
-     */
-    public function getReceiver();
-
-    /**
-     * @param PartnerInterface $partner
-     * @return $this
-     */
-    public function setReceiver(PartnerInterface $partner);
+    public function setMessageId($id);
 
     /**
      * @return PartnerInterface
@@ -44,10 +34,9 @@ interface MessageInterface
     public function getSender();
 
     /**
-     * @param PartnerInterface $partner
-     * @return $this
+     * @return PartnerInterface
      */
-    public function setSender(PartnerInterface $partner);
+    public function getReceiver();
 
     /**
      * @return string
@@ -63,13 +52,13 @@ interface MessageInterface
     /**
      * @return string
      */
-    public function getBody();
+    public function getPayload();
 
     /**
-     * @param string $body
+     * @param string $payload
      * @return $this
      */
-    public function setBody($body);
+    public function setPayload($payload);
 
     /**
      * @return string
@@ -85,19 +74,35 @@ interface MessageInterface
     /**
      * @return string
      */
-    public function getMdn();
+    public function getMdnStatus();
 
     /**
-     * @param string $mdn
+     * @param string $status
      * @return $this
      */
-    public function setMdn($mdn);
+    public function setMdnStatus($status);
+
+    /**
+     * @return string
+     */
+    public function getMdnPayload();
+
+    /**
+     * @param mixed $mdn
+     * @return $this
+     */
+    public function setMdnPayload($mdn);
+
+    /**
+     * @return string
+     */
+    public function getCalculatedMic();
 
     /**
      * @param string $mic
      * @return $this
      */
-    public function setMic($mic);
+    public function setCalculatedMic($mic);
 
     /**
      * @param string $val

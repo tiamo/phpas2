@@ -11,12 +11,26 @@ interface PartnerInterface
      * Partner Unique Identifier
      * @return string
      */
-    public function getUid();
+    public function getAs2Id();
 
+    /**
+     * @return string
+     */
+    public function getEmail();
+
+    /**
+     * @return string
+     */
     public function getTargetUrl();
 
+    /**
+     * @return string
+     */
     public function getContentType();
 
+    /**
+     * @return string
+     */
     public function getSubject();
 
     /**
@@ -24,8 +38,14 @@ interface PartnerInterface
      */
     public function getAuthMethod();
 
+    /**
+     * @return string
+     */
     public function getAuthUser();
 
+    /**
+     * @return string
+     */
     public function getAuthPassword();
 
     /**
@@ -33,14 +53,10 @@ interface PartnerInterface
      */
     public function getSignatureAlgorithm();
 
-    public function getSignatureKey();
-
     /**
      * @return string|null
      */
     public function getEncryptionAlgorithm();
-
-    public function getEncryptionKey();
 
     /**
      * @return string

@@ -14,7 +14,7 @@ interface StorageInterface
      * @param string $id
      * @return MessageInterface
      */
-    public function getMessageById($id);
+    public function getMessage($id);
 
     /**
      * @param MessageInterface $message
@@ -32,7 +32,7 @@ interface StorageInterface
      * @param string $id
      * @return PartnerInterface
      */
-    public function getPartnerById($id);
+    public function getPartner($id);
 
     /**
      * @param PartnerInterface $partner

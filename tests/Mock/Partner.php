@@ -7,24 +7,41 @@ use AS2\PartnerInterface;
 class Partner extends DataObject implements PartnerInterface
 {
     /**
-     * Unique Message Id
+     * AS2 Partner ID
      * @return string
      */
-    public function getUid()
+    public function getAs2Id()
     {
         return $this->getData('id');
     }
 
+    /**
+     * @return string
+     */
+    public function getEmail()
+    {
+        return $this->getData('email');
+    }
+
+    /**
+     * @return string
+     */
     public function getTargetUrl()
     {
         return $this->getData('target_url');
     }
 
+    /**
+     * @return string
+     */
     public function getContentType()
     {
         return $this->getData('content_type');
     }
 
+    /**
+     * @return string
+     */
     public function getSubject()
     {
         return $this->getData('subject');
@@ -35,14 +52,20 @@ class Partner extends DataObject implements PartnerInterface
      */
     public function getAuthMethod()
     {
-        return $this->getData('auth_method');
+        return $this->getData('auth');
     }
 
+    /**
+     * @return string
+     */
     public function getAuthUser()
     {
         return $this->getData('auth_user');
     }
 
+    /**
+     * @return string
+     */
     public function getAuthPassword()
     {
         return $this->getData('auth_password');
@@ -53,12 +76,7 @@ class Partner extends DataObject implements PartnerInterface
      */
     public function getSignatureAlgorithm()
     {
-        return $this->getData('sign_algo');
-    }
-
-    public function getSignatureKey()
-    {
-        return $this->getData('sign_key');
+        return $this->getData('sign');
     }
 
     /**
@@ -66,12 +84,7 @@ class Partner extends DataObject implements PartnerInterface
      */
     public function getEncryptionAlgorithm()
     {
-        return $this->getData('enc_algo');
-    }
-
-    public function getEncryptionKey()
-    {
-        return $this->getData('enc_key');
+        return $this->getData('encrypt');
     }
 
     /**

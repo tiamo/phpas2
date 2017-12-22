@@ -119,7 +119,7 @@ class Decode
         }
 
         // @todo splitMime removes "\r" sequences, which breaks valid mime
-        // messages as returned by many mail servers
+        // message as returned by many mail servers
         $headersEOL = $EOL;
 
         // find an empty line between headers and body

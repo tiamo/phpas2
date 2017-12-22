@@ -11,7 +11,7 @@ class Message extends DataObject implements MessageInterface
      * Unique Message Id
      * @return string
      */
-    public function getUid()
+    public function getMessageId()
     {
         return $this->getData('id');
     }
@@ -20,9 +20,26 @@ class Message extends DataObject implements MessageInterface
      * @param string $id
      * @return $this
      */
-    public function setUid($id)
+    public function setMessageId($id)
     {
         return $this->setData('id', $id);
+    }
+
+    /**
+     * @param string $id
+     * @return $this
+     */
+    public function setSenderId($id)
+    {
+        return $this->setData('sender_id', $id);
+    }
+
+    /**
+     * @return string
+     */
+    public function getSenderId()
+    {
+        return $this->getData('sender_id');
     }
 
     /**
@@ -39,7 +56,25 @@ class Message extends DataObject implements MessageInterface
      */
     public function setSender(PartnerInterface $partner)
     {
+        $this->setSenderId($partner->getAs2Id());
         return $this->setData('sender', $partner);
+    }
+
+    /**
+     * @param string $id
+     * @return $this
+     */
+    public function setReceiverId($id)
+    {
+        return $this->setData('receiver_id', $id);
+    }
+
+    /**
+     * @return string
+     */
+    public function getReceiverId()
+    {
+        return $this->getData('receiver_id');
     }
 
     /**
@@ -56,6 +91,7 @@ class Message extends DataObject implements MessageInterface
      */
     public function setReceiver(PartnerInterface $partner)
     {
+        $this->setReceiverId($partner->getAs2Id());
         return $this->setData('receiver', $partner);
     }
 
@@ -79,18 +115,18 @@ class Message extends DataObject implements MessageInterface
     /**
      * @return string
      */
-    public function getBody()
+    public function getPayload()
     {
-        return $this->getData('body');
+        return $this->getData('payload');
     }
 
     /**
-     * @param string $body
+     * @param string $payload
      * @return $this
      */
-    public function setBody($body)
+    public function setPayload($payload)
     {
-        return $this->setData('body', $body);
+        return $this->setData('payload', $payload);
     }
 
     /**
@@ -113,25 +149,50 @@ class Message extends DataObject implements MessageInterface
     /**
      * @return string
      */
-    public function getMdn()
+    public function getMdnStatus()
+    {
+        return $this->getData('mdn_status');
+    }
+
+    /**
+     * @param string $status
+     * @return $this
+     */
+    public function setMdnStatus($status)
+    {
+        return $this->setData('mdn_status', $status);
+    }
+
+    /**
+     * @return string
+     */
+    public function getMdnPayload()
     {
         return $this->getData('mdn');
     }
 
     /**
-     * @param string $mdn
+     * @param mixed $mdn
      * @return $this
      */
-    public function setMdn($mdn)
+    public function setMdnPayload($mdn)
     {
         return $this->setData('mdn', $mdn);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCalculatedMic()
+    {
+        return $this->getData('mic');
     }
 
     /**
      * @param string $mic
      * @return $this
      */
-    public function setMic($mic)
+    public function setCalculatedMic($mic)
     {
         return $this->setData('mic', $mic);
     }
@@ -142,7 +203,7 @@ class Message extends DataObject implements MessageInterface
      */
     public function isSigned($val = null)
     {
-        return $val ? $this->setData('signed', $val) : $this->getData('signed');
+        return $val ? $this->setData('signed', $val) : (bool)$this->getData('signed');
     }
 
     /**
@@ -151,7 +212,7 @@ class Message extends DataObject implements MessageInterface
      */
     public function isEncrypted($val = null)
     {
-        return $val ? $this->setData('encrypted', $val) : $this->getData('encrypted');
+        return $val ? $this->setData('encrypted', $val) : (bool)$this->getData('encrypted');
     }
 
     /**
@@ -160,6 +221,6 @@ class Message extends DataObject implements MessageInterface
      */
     public function isCompressed($val = null)
     {
-        return $val ? $this->setData('compressed', $val) : $this->getData('compressed');
+        return $val ? $this->setData('compressed', $val) : (bool)$this->getData('compressed');
     }
 }

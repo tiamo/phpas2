@@ -1,16 +1,16 @@
 date: 29 Aug 2011 18:31:11 GMT
 from: <mailto:aaa@esumtech.com> aaa@esumtech.com
 message-id: <20110829-183111-29648@10.10.3.31>
-subject: AS2 Message from SECLOGIST to KTNET
+subject: AS2 Message from CLIENT to SERVER
 Content-Type: application/pkcs7-mime; name="smime.p7m"; smime-type=enveloped-data
 content-transfer-encoding: base64
 content-description: S/MIME Encrypted Message
-as2-to: ME
 disposition-notification-to: <mailto:aaa@esumtech.com> aaa@esumtech.com
 authorization: RSM
 receipt-delivery-option: http://192.168.0.182:9080/as2/msh
-as2-from: AMAZON
 as2-version: 1.1
+as2-from: CLIENT
+as2-to: SERVER
 content-disposition: attachment; filename="smime.p7m"
 recipient-address: http://192.168.0.182:9080/as2/msh
 user-agent: Jakarta Commons-HttpClient/3.1

@@ -8,6 +8,17 @@ class Headers extends \Zend\Mail\Headers
     const FOLDING = " ";
 
     /**
+     * Headers constructor.
+     * @param array $headers
+     */
+    public function __construct($headers = null)
+    {
+        if ($headers) {
+            $this->addHeaders($headers);
+        }
+    }
+
+    /**
      * @param string $string
      * @param string $EOL
      * @return Headers

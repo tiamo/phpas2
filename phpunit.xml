@@ -7,6 +7,8 @@
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
+         forceCoversAnnotation="false"
+         mapTestClassNameToCoveredClassName="false"
          processIsolation="false"
          stopOnFailure="false">
     <testsuites>

@@ -5,20 +5,12 @@ namespace AS2;
 class Utils
 {
     /**
-     * Generate random uuid string
-     */
-    public static function uuid1()
-    {
-        return '...';
-    }
-
-    /**
      * @param string $partner
      * @return string
      */
     public static function generateMessageID($partner)
     {
-        $id = $partner instanceof PartnerInterface ? $partner->getUid() : 'unknown';
+        $id = $partner instanceof PartnerInterface ? $partner->getAs2Id() : 'unknown';
         return '<' . uniqid('', true) . '@' .
             round(microtime(true)) . '_' .
             str_replace(' ', '', strtolower($id) . '_' .

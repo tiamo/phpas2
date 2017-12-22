@@ -1,11 +1,11 @@
 Date: Fri, 14 Sep 2012 16:25:21 GMT
 From: <mailto:apple@apple.com> apple@apple.com
-Message-Id: <20120914-162521-69029@10.10.3.34>
+Message-Id: <test>
 Subject: This is AS2 MDN Message(20120914-162517-13013@169.254.184.230) from SVC_COWELL to SVC_APPLE
 MIME-Version: 1.0
-Content-Type: multipart/report; report-type=disposition-notification;boundary="----=_Part_19_16467978.1347607521690"
-AS2-From: SVC_APPLE
-AS2-To: SVC_COWELL
+Content-Type: multipart/signed;  boundary="----=_Part_21_15293539.1347607521690";  protocol="application/pkcs7-signature"; micalg=sha-256
+AS2-From: client
+AS2-To: server
 AS2-Version: 1.1
 Server: eSum Technologies. AS2 Connector v2.0
 Content-Length: 3503
@@ -26,7 +26,7 @@ Content-Transfer-Encoding: 7bit
 Reporting-UA: eSum Technologies. AS2 Connector v2.0
 Original-Recipient: rfc822; SVC_APPLE
 Final-Recipient: rfc822; SVC_APPLE
-Original-Message-ID: <20120914-162517-13013@169.254.184.230>
+Original-Message-ID: <test>
 Disposition: automatic-action/MDN-sent-automatically; processed
 Received-Content-MIC: qm+A7YPUC7y22RXvo54BW0rpx7Q6dpEfiiceV+5NqvE=, sha256
 

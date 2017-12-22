@@ -2,16 +2,19 @@
 
 namespace AS2\Tests;
 
-use AS2\CryptoHelper;
 use AS2\Management;
 use AS2\MimePart;
+use AS2\PartnerInterface;
 use AS2\Server;
-use AS2\StorageInterface;
-use AS2\Tests\Mock\Logger;
-use AS2\Tests\Mock\Storage;
+use AS2\Tests\Mock\ConsoleLogger;
+use AS2\Tests\Mock\FileStorage;
+use AS2\Tests\Mock\Message;
 use GuzzleHttp\Psr7\ServerRequest;
 use Psr\Log\LoggerInterface;
 
+/**
+ * TODO: data providers
+ */
 class ServerTest extends \PHPUnit_Framework_TestCase
 {
     /**
@@ -25,7 +28,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     protected $management;
 
     /**
-     * @var StorageInterface
+     * @var FileStorage
      */
     protected $storage;
 
@@ -34,57 +37,116 @@ class ServerTest extends \PHPUnit_Framework_TestCase
      */
     protected $logger;
 
-    public function testPartner()
+    /**
+     * @return array
+     */
+    public function testInitPartners()
     {
-        $partner = $this->storage->initPartner([
-            'id' => 'amazon',
+        $result = [];
+        $result['from'] = $this->storage->initPartner([
+            'id' => 'client',
             'target_url' => 'http://127.0.0.1/as2/receive',
-            'public_key' => file_get_contents( __DIR__ . '/resources/as2client.crt'),
-            'private_key' => file_get_contents( __DIR__ . '/resources/as2client.key'),
+            'public_key' => file_get_contents($this->getResource('as2client.crt')),
+            'private_key' => file_get_contents($this->getResource('as2client.key')),
             'private_key_pass_phrase' => 'password',
+            'content_type' => 'application/edi-x12',
+            'compression' => true,
+            'sign' => true,
+            'encrypt' => true,
+            'mdn_mode' => PartnerInterface::MDN_MODE_SYNC,
+            'mdn_options' => 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA256'
         ]);
-
-        $this->assertTrue($this->storage->savePartner($partner));
+        $this->assertTrue($this->storage->savePartner($result['from']));
+        $result['to'] = $this->storage->initPartner([
+            'id' => 'server',
+            'target_url' => 'http://127.0.0.1/as2/receive',
+            'public_key' => file_get_contents($this->getResource('as2server.crt')),
+            'private_key' => file_get_contents($this->getResource('as2server.key')),
+            'private_key_pass_phrase' => 'password',
+            'content_type' => 'application/edi-x12',
+            'compression' => true,
+            'sign' => true,
+            'encrypt' => true,
+            'mdn_mode' => PartnerInterface::MDN_MODE_SYNC,
+            'mdn_options' => 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA256'
+        ]);
+        $this->assertTrue($this->storage->savePartner($result['to']));
+        return $result;
     }
 
-    public function testConstructor()
+    /**
+     * @depends testInitPartners
+     * @param array $partners
+     * @return \AS2\MessageInterface
+     */
+    public function testInitMessage(array $partners)
     {
-//        $baseDir = __DIR__ . '/resources';
-//        $filename = $baseDir . '/testmessage.edi';
-//        $publicKey = $baseDir . '/as2client.crt';
-//        $privateKey = $baseDir . '/as2client.key';
-//
-//        $public = file_get_contents($publicKey);
-//        $private = file_get_contents($privateKey);
-////
-//        $message = new MimePart();
-//        $message->setBody(file_get_contents($filename));
-//        $message = CryptoHelper::compress($message);
-//        $signedFile = CryptoHelper::sign($message, $public, [$private, 'password']);
-//        $encryptedFile = CryptoHelper::encrypt($signedFile, $public);
-//        $decryptedFile = CryptoHelper::decrypt($encryptedFile, $public, [$private, 'password']);
-//
-//        print_r($decryptedFile);
-//        exit;
+        $message = $this->storage->initMessage([
+            'id' => 'test', // date('Ymd-His') . '-' . uniqid() . '@127.0.0.1',
+        ]);
+        $message->setSender($partners['from']);
+        $message->setReceiver($partners['to']);
 
-//
-//        if ($decryptedFile->isSigned()) {
-//            foreach ($decryptedFile->getParts() as $part) {
-//                echo CryptoHelper::decompress($part);
-//            }
-//        }
-//        exit;
+        return $message;
+    }
 
-//        $payload = MimePart::fromString();
-//        $payload->setHeaders([
-//        ]);
-//        $message = $this->storage->newMessage();
-//        $message = $this->management->buildMessage($message, $payload);
+    /**
+     * @depends testInitMessage
+     * @param Message $message
+     * @return \AS2\MessageInterface
+     */
+    public function testBuildMessage(Message $message)
+    {
+        $file = $this->getResource('850_Sample.X12');
+        $contentType = $message->getReceiver()->getContentType();
+        $payload = new MimePart(file_get_contents($file), [
+            'content-type' => $contentType ? $contentType : 'text/plain',
+            'content-disposition' => 'attachment; filename="' . basename($file) . '"',
+        ]);
+        return $this->management->buildMessage($message, $payload);
+    }
 
+    /**
+     * @depends testBuildMessage
+     * @param Message $message
+     * @return \AS2\MessageInterface
+     */
+    public function testSaveMessage(Message $message)
+    {
+        $this->assertNotEmpty($message->getMessageId());
+        $this->assertNotEmpty($message->getSender());
+        $this->assertNotEmpty($message->getReceiver());
+        $this->assertNotEmpty($message->getHeaders());
+        $this->assertNotEmpty($message->getPayload());
 
-        $body = file_get_contents(__DIR__ . '/resources/message.txt');
-        $payload = MimePart::fromString($body);
+        $this->assertTrue($this->storage->saveMessage($message));
 
+        return $message;
+    }
+
+    /**
+     * @depends testSaveMessage
+     * @param Message $message
+     * @return \AS2\MessageInterface
+     */
+    public function testSendMessage(Message $message)
+    {
+        $this->assertNotEmpty($message->getSender());
+        $this->assertNotEmpty($message->getReceiver());
+
+        $this->management->sendMessage($message);
+        $this->storage->saveMessage($message);
+
+        return $message;
+    }
+
+    /**
+     * @depends testSendMessage
+     * @param Message $message
+     */
+    public function testReceiveMessage(Message $message)
+    {
+        $payload = MimePart::fromString($message->getHeaders() . MimePart::EOL . $message->getPayload());
         $serverRequest = new ServerRequest(
             'POST',
             'http:://localhost',
@@ -95,16 +157,63 @@ class ServerTest extends \PHPUnit_Framework_TestCase
                 'REMOTE_ADDR' => '127.0.0.1'
             ]
         );
-
         $response = $this->server->execute($serverRequest);
+        $this->assertEquals(200, $response->getStatusCode());
+    }
 
-        var_dump($response->getStatusCode());
+//    /**
+//     * @depends testBuildMessage
+//     * @param Message $message
+//     * @return Message
+//     */
+//    public function testSendMdn(Message $message)
+//    {
+//        $this->assertNotEmpty($message->getSender());
+//        $this->assertNotEmpty($message->getReceiver());
+//        $this->assertNotEmpty($message->getHeaders());
+//        $this->assertNotEmpty($message->getPayload());
+//
+//        $this->management->buildMdn($message, "The message sent to Recipient has been received");
+//        $this->management->sendMdn($message);
+//        $this->storage->saveMessage($message);
+//
+//        return $message;
+//    }
+//
+//    /**
+//     * @depends testSendMdn
+//     * @param Message $message
+//     */
+//    public function testReceiveMdn(Message $message)
+//    {
+//        $payload = MimePart::fromString($message->getMdnPayload());
+//        $serverRequest = new ServerRequest(
+//            'POST',
+//            'http:://localhost',
+//            $payload->getHeaders()->toArray(),
+//            $payload->getBody(),
+//            '1.1',
+//            [
+//                'REMOTE_ADDR' => '127.0.0.1'
+//            ]
+//        );
+//        $response = $this->server->execute($serverRequest);
+//        $this->assertEquals(200, $response->getStatusCode());
+//    }
+
+    /**
+     * @param string $name
+     * @return string
+     */
+    protected function getResource($name)
+    {
+        return __DIR__ . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . $name;
     }
 
     protected function setUp()
     {
-        $this->logger = new Logger();
-        $this->storage = new Storage();
+        $this->logger = new ConsoleLogger();
+        $this->storage = new FileStorage();
 
         $this->management = new Management([]);
         $this->management->setLogger($this->logger);

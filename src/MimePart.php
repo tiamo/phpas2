@@ -43,8 +43,10 @@ class MimePart
      */
     public function __construct($body = null, $headers = null)
     {
+        if ($headers) {
+            $this->setHeaders($headers);
+        }
         $this->setBody($body);
-        $this->setHeaders($headers);
     }
 
     /**
@@ -62,19 +64,7 @@ class MimePart
         Mime\Decode::splitMessage($rawMessage, $headers, $body);
 
         $message->setHeaders($headers);
-
-        $contentType = $message->getContentType();
-        if (strpos($contentType->getType(), 'multipart') === 0) {
-            $boundary = $contentType->getParameter('boundary');
-            $parts = Mime\Decode::splitMessageStruct($body, $boundary);
-            if ($parts) {
-                foreach ($parts as $part) {
-                    $message->addPart($part);
-                }
-            }
-        } else {
-            $message->setBody($body);
-        }
+        $message->setBody($body);
 
         return $message;
     }
@@ -183,12 +173,23 @@ class MimePart
 
     /**
      * @param int $num
+     * @return bool
      */
     public function removePart($num)
     {
         if (isset($this->parts[$num])) {
             unset($this->parts[$num]);
+            return true;
         }
+        return false;
+    }
+
+    /**
+     * @return Header\HeaderInterface|Header\ContentType
+     */
+    public function getContentType()
+    {
+        return $this->getHeaderByName('content-type', Header\ContentType::class);
     }
 
     /**
@@ -278,7 +279,20 @@ class MimePart
      */
     public function getBody()
     {
-        return $this->body;
+        $body = $this->body;
+        if (count($this->parts) > 0) {
+            $contentType = $this->getContentType();
+            if ($boundary = $contentType->getParameter('boundary')) {
+                $body .= self::EOL;
+                foreach ($this->getParts() as $part) {
+                    $body .= self::EOL;
+                    $body .= '--' . $boundary . self::EOL;
+                    $body .= $part->toString() . self::EOL;
+                }
+                $body .= '--' . $boundary . '--';
+            }
+        }
+        return trim($body);
     }
 
     /**
@@ -289,19 +303,32 @@ class MimePart
     {
         if ($body instanceof static) {
             $this->addPart($body);
+        } elseif (is_array($body)) {
+            foreach ($body as $part) {
+                $this->addPart($part);
+            }
         } else {
-            $this->body = $body;
+            $contentType = $this->getContentType();
+            if (strpos($contentType->getType(), 'multipart') === 0) {
+                $boundary = $contentType->getParameter('boundary');
+
+                // TODO: remove ?
+                $p = strpos($body, '--' . $boundary . "\n", 0);
+                $this->body = trim(substr($body, 0, $p));
+
+                $parts = Mime\Decode::splitMessageStruct($body, $boundary ,self::EOL);
+                if ($parts) {
+                    foreach ($parts as $part) {
+                        $this->addPart($part);
+                    }
+                } else {
+                    $this->body = $body;
+                }
+            } else {
+                $this->body = $body;
+            }
         }
         return $this;
-    }
-
-    /**
-     * @return Header\HeaderInterface|Header\ContentType
-     */
-    public function getContentType()
-    {
-        /** @var Header\ContentType $contentType */
-        return $this->getHeaderByName('content-type', Header\ContentType::class);
     }
 
     /**
@@ -311,22 +338,7 @@ class MimePart
      */
     public function toString()
     {
-        $headers = $this->getHeaders();
-        $message = $headers->toString() . self::EOL . $this->getBody();
-        if (count($this->parts) > 0) {
-            $contentType = $this->getContentType();
-            $boundary = $contentType->getParameter('boundary');
-            if ($boundary) {
-                $message .= self::EOL;
-                foreach ($this->getParts() as $part) {
-                    $message .= self::EOL;
-                    $message .= '--' . $boundary . self::EOL;
-                    $message .= $part->toString() . self::EOL;
-                }
-                $message .= '--' . $boundary . '--' . self::EOL;
-            }
-        }
-        return $message;
+        return $this->getHeaders()->toString() . self::EOL . $this->getBody();
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace AS2;
 
+use AS2\Tests\Mock\FileStorage;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
 use Psr\Http\Message\ServerRequestInterface;
@@ -16,7 +17,7 @@ class Server
     protected $manager;
 
     /**
-     * @var StorageInterface
+     * @var FileStorage
      */
     protected $storage;
 
@@ -39,6 +40,9 @@ class Server
     }
 
     /**
+     * Function receives AS2 requests from partner.
+     * Checks whether it's an AS2 message or an MDN and acts accordingly.
+     *
      * @param ServerRequestInterface|null $request
      * @return Response
      * @throws \Exception
@@ -60,19 +64,53 @@ class Server
 
         $this->getLogger()->debug('Incoming AS2 message transmission.', [
             'ip' => isset($serverParams['REMOTE_ADDR']) ? $serverParams['REMOTE_ADDR'] : null,
-            'id' => $messageId,
-            'from' => $as2from,
-            'to' => $as2to,
+            'message_id' => $messageId,
+            'as2from' => $as2from,
+            'as2to' => $as2to,
         ]);
 
         try {
 
-            $payload = new MimePart($request->getBody()->getContents(), $request->getHeaders());
+            $this->getLogger()->debug('Check payload to see if it\'s a AS2 Message or ASYNC MDN.');
 
-            // Check if this is MDN message
+            // Extract all the relevant headers from the http request
+            $headers = '';
+            foreach ($request->getHeaders() as $key => $header) {
+                $headers .= $key . ': ' . $request->getHeaderLine($key) . Headers::EOL;
+            }
+
+            $payload = new MimePart($request->getBody()->getContents(), $headers);
+
+            // Get the message sender and receiver AS2 IDs
+            $sender = $this->storage->getPartner($as2from);
+            if (!$sender) {
+                throw new \InvalidArgumentException(sprintf('Unknown AS2 Sender "%s"', $as2from));
+            }
+            $receiver = $this->storage->getPartner($as2to);
+            if (!$receiver) {
+                throw new \InvalidArgumentException(sprintf('Unknown AS2 Receiver "%s"', $as2to));
+            }
+
+            // Check if this is an MDN message
+            $mdn = null;
             if ($payload->isReport()) {
-                $messageId = null;
+                $mdn = $payload;
+            } elseif ($payload->isSigned()) {
                 foreach ($payload->getParts() as $part) {
+                    if ($part->isReport()) {
+                        $mdn = $part;
+                    }
+                }
+            }
+
+            $responseStatus = 200;
+            $responseHeaders = [];
+            $responseBody = null;
+
+            //  If this is an MDN, get the message ID and check if it exists
+            if ($mdn) {
+                $messageId = null;
+                foreach ($mdn->getParts() as $part) {
                     if ($part->getContentType()->getType() == 'message/disposition-notification') {
                         $headers = Headers::fromString($part->getBody());
                         $messageId = trim($headers->get('original-message-id')->getFieldValue(), '<>');
@@ -80,51 +118,52 @@ class Server
                 }
                 if (!empty($messageId)) {
                     $this->getLogger()->debug('Asynchronous MDN received for AS2 message', [$messageId]);
-                    try {
-                        $message = $this->storage->getMessageById($messageId);
-                        if (!$message) {
-                            throw new \InvalidArgumentException('Unknown AS2 MDN received. Will not be processed');
-                        }
-                        $this->manager->saveMdn($message, $payload);
-                    } catch (\Exception $e) {
-                        $this->getLogger()->error($e->getMessage(), [$messageId]);
+                    $message = $this->storage->getMessage($messageId);
+                    if (!$message) {
+                        throw new \InvalidArgumentException('Unknown AS2 MDN received. Will not be processed');
                     }
+                    $this->manager->processMdn($message, $payload);
+                    $this->storage->saveMessage($message);
+                    $responseBody = 'AS2 ASYNC MDN has been received';
                 }
             } else {
-
                 $this->getLogger()->debug('Received an AS2 message', [$messageId]);
 
-                $sender = $this->storage->getPartnerById($as2from);
-                if (!$sender) {
-                    throw new \InvalidArgumentException('Unknown AS2 Sender');
+                // Initialize Message
+                $message = $this->storage->initMessage(['id' => $messageId]);
+                $message->setSender($sender);
+                $message->setReceiver($receiver);
+
+                $this->manager->processMessage($message, $payload);
+                $this->storage->saveMessage($message);
+
+                // Send MDN
+                if ($receiver->getMdnMode()) {
+                    $this->getLogger()->debug('Send MDN', [$messageId]);
+                    $mdn = $this->manager->buildMdn($message);
+                    if ($receiver->getMdnMode() == PartnerInterface::MDN_MODE_SYNC) {
+                        $responseHeaders = $mdn->getHeaders()->toArray();
+                        $responseBody = $mdn->getBody();
+                    } else {
+                        // ASYNC send MDN
+                        $this->manager->sendMdn($message);
+                        $responseBody = 'AS2 ASYNC MDN has been sent';
+                    }
                 }
-                $receiver = $this->storage->getPartnerById($as2to);
-                if (!$receiver) {
-                    throw new \InvalidArgumentException('Unknown AS2 Receiver');
-                }
-
-                $message = $this->storage->initMessage([
-                    'id' => $messageId,
-                    'sender' => $sender,
-                    'receiver' => $receiver,
-                ]);
-
-                $this->storage->saveMessage($this->manager->prepareMessage($message, $payload));
-
-                // TODO: MDN response if mode is sync
-                return new Response(200, [], 'ok');
             }
 
         } catch (\InvalidArgumentException $e) {
             $this->getLogger()->error($e->getMessage());
-            return new Response(400, [], $e->getMessage());
+            $responseStatus = 400;
+            $responseBody = $e->getMessage();
         } catch (\Exception $e) {
             $this->getLogger()->critical($e->getMessage());
-            return new Response(500, [], $e->getMessage());
+            $responseStatus = 500;
+            $responseBody = $e->getMessage();
         }
 
         // TODO: MDN response if mode is sync
-        return new Response(200);
+        return new Response($responseStatus, $responseHeaders, $responseBody);
     }
 
     /**

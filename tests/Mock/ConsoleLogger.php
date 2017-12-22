@@ -4,7 +4,7 @@ namespace AS2\Tests\Mock;
 
 use Psr\Log\AbstractLogger;
 
-class Logger extends AbstractLogger
+class ConsoleLogger extends AbstractLogger
 {
     /**
      * Logs with an arbitrary level.

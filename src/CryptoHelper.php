@@ -26,7 +26,11 @@ class CryptoHelper
         if ($payload instanceof MimePart) {
             $payload = $includeHeaders ? $payload->toString() : $payload->getBody();
         }
-        return base64_encode(hash($algo, $payload, true)) . ', ' . strtoupper($algo);
+
+        $digest = base64_encode(openssl_digest($payload, $algo, true));
+//        $digest = base64_encode(hash($algo, $payload, true));
+
+        return $digest . ', ' . strtoupper($algo);
     }
 
     /**
@@ -79,26 +83,27 @@ class CryptoHelper
 //        return $message;
 
         if ($data instanceof MimePart) {
-            $temp = self::getTempFilename();
-            file_put_contents($temp, $data->toString());
-            $data = $temp;
+            $data = self::getTempFilename($data->toString());
         }
-
         $temp = self::getTempFilename();
-        if (!openssl_pkcs7_sign($data, $temp, $cert, $key, $headers)) {
-            throw new \Exception(openssl_error_string());
+        if (!openssl_pkcs7_sign($data, $temp, $cert, $key, $headers, PKCS7_BINARY | PKCS7_DETACHED)) {
+            throw new \Exception(sprintf('Failed to sign S/Mime message. Error: "%s".', openssl_error_string()));
         }
-
         return MimePart::fromString(file_get_contents($temp));
     }
 
     /**
-     * @param string $file
+     * @param string|MimePart $data
+     * @param array $caInfo
      * @return bool
      */
-    public static function verify($file)
+    public static function verify($data, $caInfo = [])
     {
-        return openssl_pkcs7_verify($file, PKCS7_NOVERIFY);
+        if ($data instanceof MimePart) {
+            $data = self::getTempFilename($data->toString());
+        }
+//        return openssl_pkcs7_verify($data, PKCS7_NOVERIFY, null, $caInfo);
+        return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY);
     }
 
     /**
@@ -129,20 +134,14 @@ class CryptoHelper
 //
 //        print_r((string)$rsa->decrypt($rsa->encrypt($data)));
 //        exit;
-//
 //        return $part;
-
         if ($data instanceof MimePart) {
-            $file = self::getTempFilename();
-            file_put_contents($file, $data);
-            $data = $file;
+            $data = self::getTempFilename($data->toString());
         }
-
         $temp = self::getTempFilename();
         if (openssl_pkcs7_encrypt($data, $temp, (array)$cert, [], PKCS7_BINARY, $cipher)) {
             return MimePart::fromString(file_get_contents($temp));
         }
-
         return false;
     }
 
@@ -156,9 +155,7 @@ class CryptoHelper
     public static function decrypt($data, $cert, $key = null)
     {
         if ($data instanceof MimePart) {
-            $temp = self::getTempFilename();
-            file_put_contents($temp, $data->toString());
-            $data = $temp;
+            $data = self::getTempFilename($data->toString());
         }
         $temp = self::getTempFilename();
         if (openssl_pkcs7_decrypt($data, $temp, $cert, $key)) {
@@ -202,6 +199,7 @@ class CryptoHelper
         if (!($data instanceof MimePart)) {
             $data = MimePart::fromString(is_file($data) ? file_get_contents($data) : $data);
         }
+
         if ($data->isCompressed()) {
             return gzdecode(base64_decode($data->getBody()));
         }
@@ -222,12 +220,16 @@ class CryptoHelper
     /**
      * Create a temporary file into temporary directory
      *
+     * @param string $content
      * @return string The temporary file generated
      */
-    public static function getTempFilename()
+    public static function getTempFilename($content = null)
     {
         $dir = sys_get_temp_dir();
-        $filename = tempnam($dir, 'as2file_');
+        $filename = tempnam($dir, 'phpas2_');
+        if ($content) {
+            file_put_contents($filename, $content);
+        }
         return $filename;
     }
 
