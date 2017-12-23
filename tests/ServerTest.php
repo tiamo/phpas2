@@ -82,11 +82,14 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     public function testInitMessage(array $partners)
     {
         $message = $this->storage->initMessage([
-            'id' => 'test', // date('Ymd-His') . '-' . uniqid() . '@127.0.0.1',
+            'id' => 'test',
         ]);
         $message->setSender($partners['from']);
         $message->setReceiver($partners['to']);
 
+        $this->assertEquals($message->getMessageId(), 'test');
+        $this->assertEquals($message->getSender()->getAs2Id(), 'client');
+        $this->assertEquals($message->getReceiver()->getAs2Id(), 'server');
         return $message;
     }
 
@@ -97,13 +100,10 @@ class ServerTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildMessage(Message $message)
     {
-        $file = $this->getResource('850_Sample.X12');
-        $contentType = $message->getReceiver()->getContentType();
-        $payload = new MimePart(file_get_contents($file), [
-            'content-type' => $contentType ? $contentType : 'text/plain',
-            'content-disposition' => 'attachment; filename="' . basename($file) . '"',
-        ]);
-        return $this->management->buildMessage($message, $payload);
+        return $this->management->buildMessageFromFile(
+            $message,
+            $this->getResource('850_Sample.X12')
+        );
     }
 
     /**

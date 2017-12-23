@@ -68,6 +68,24 @@ class Management
     }
 
     /**
+     * @param MessageInterface $message
+     * @param string $filePath
+     * @param string $contentType
+     * @return MessageInterface
+     */
+    public function buildMessageFromFile(MessageInterface $message, $filePath, $contentType = null)
+    {
+        if (!$contentType) {
+            $contentType = $message->getReceiver()->getContentType();
+        }
+        $payload = new MimePart(file_get_contents($filePath), [
+            'content-type' => $contentType ? $contentType : 'text/plain',
+            'content-disposition' => 'attachment; filename="' . basename($filePath) . '"',
+        ]);
+        return $this->buildMessage($message, $payload);
+    }
+
+    /**
      * Build the AS2 mime message to be sent to the partner.
      * Encrypts, signs and compresses the message based on the partner profile.
      * Returns the message final message content.

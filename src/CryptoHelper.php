@@ -5,7 +5,7 @@ namespace AS2;
 use Zend\Mime\Mime;
 
 /**
- * TODO: implement pkcs7
+ * TODO: Implement pure methods without "openssl_pkcs7_*"
  */
 class CryptoHelper
 {
@@ -102,7 +102,6 @@ class CryptoHelper
         if ($data instanceof MimePart) {
             $data = self::getTempFilename($data->toString());
         }
-//        return openssl_pkcs7_verify($data, PKCS7_NOVERIFY, null, $caInfo);
         return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY);
     }
 
