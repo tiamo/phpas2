@@ -68,7 +68,10 @@ class CryptoHelper
         if ($data instanceof MimePart) {
             $data = self::getTempFilename((string)$data);
         }
-        return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY, null, $caInfo);
+//        if (is_string($caInfo)) {
+//            $caInfo = [self::getTempFilename($caInfo)];
+//        }
+        return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY);
     }
 
     /**

@@ -2,7 +2,6 @@
 
 namespace AS2;
 
-use AS2\Tests\Mock\FileStorage;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
 use Psr\Http\Message\ServerRequestInterface;
@@ -17,7 +16,7 @@ class Server
     protected $manager;
 
     /**
-     * @var FileStorage
+     * @var StorageInterface
      */
     protected $storage;
 
@@ -30,13 +29,11 @@ class Server
      * Server constructor.
      * @param Management $management
      * @param StorageInterface $storage
-     * @param LoggerInterface|null $logger
      */
-    public function __construct(Management $management, StorageInterface $storage, LoggerInterface $logger = null)
+    public function __construct(Management $management, StorageInterface $storage)
     {
         $this->manager = $management;
         $this->storage = $storage;
-        $this->logger = $logger;
     }
 
     /**
@@ -45,7 +42,7 @@ class Server
      *
      * @param ServerRequestInterface|null $request
      * @return Response
-     * @throws \Exception
+     * @throws \RuntimeException|\InvalidArgumentException
      */
     public function execute(ServerRequestInterface $request = null)
     {
@@ -53,27 +50,35 @@ class Server
             $request = ServerRequest::fromGlobals();
         }
 
-        $this->validate($request, ['message-id', 'as2-from', 'as2-to']);
-
-        // Process the posted AS2 message
-
-        $serverParams = $request->getServerParams();
-        $messageId = trim($request->getHeaderLine('message-id'), '<>');
-        $as2from = $request->getHeaderLine('as2-from');
-        $as2to = $request->getHeaderLine('as2-to');
-
-        $this->getLogger()->debug('Incoming AS2 message transmission.', [
-            'ip' => isset($serverParams['REMOTE_ADDR']) ? $serverParams['REMOTE_ADDR'] : null,
-            'message_id' => $messageId,
-            'as2from' => $as2from,
-            'as2to' => $as2to,
-        ]);
-
         $responseStatus = 200;
         $responseHeaders = [];
         $responseBody = null;
 
         try {
+
+            if ($request->getMethod() !== 'POST') {
+                throw new \RuntimeException('To submit an AS2 message, you must POST the message to this URL.');
+            }
+
+            foreach (['message-id', 'as2-from', 'as2-to'] as $header) {
+                if (!$request->hasHeader($header)) {
+                    throw new \InvalidArgumentException(sprintf('Missing "%s" header', $header));
+                }
+            }
+
+            // Process the posted AS2 message
+
+            $serverParams = $request->getServerParams();
+            $messageId = trim($request->getHeaderLine('message-id'), '<>');
+            $as2from = $request->getHeaderLine('as2-from');
+            $as2to = $request->getHeaderLine('as2-to');
+
+            $this->getLogger()->debug('Incoming AS2 message transmission.', [
+                'ip' => isset($serverParams['REMOTE_ADDR']) ? $serverParams['REMOTE_ADDR'] : null,
+                'message_id' => $messageId,
+                'as2from' => $as2from,
+                'as2to' => $as2to,
+            ]);
 
             $this->getLogger()->debug('Check payload to see if it\'s a AS2 Message or ASYNC MDN.');
 
@@ -166,28 +171,6 @@ class Server
     }
 
     /**
-     * @param ServerRequestInterface $request
-     * @param array $requiredHeaders
-     * @throws \Exception
-     */
-    public function validate(ServerRequestInterface $request, $requiredHeaders = [])
-    {
-        if ($request->getMethod() !== 'POST') {
-            throw new \Exception('To submit an AS2 message, you must POST the message to this URL.');
-        }
-
-        if (!$request->getBody()->getSize()) {
-            throw new \Exception('An empty AS2 message was received');
-        }
-
-        foreach ($requiredHeaders as $header) {
-            if (!$request->hasHeader($header)) {
-                throw new \Exception(sprintf('Missing "%s" header', $header));
-            }
-        }
-    }
-
-    /**
      * @param LoggerInterface $logger
      * @return $this
      */
@@ -203,9 +186,11 @@ class Server
     public function getLogger()
     {
         if (!$this->logger) {
+            $this->logger = $this->manager->getLogger();
+        }
+        if (!$this->logger) {
             $this->logger = new NullLogger();
         }
         return $this->logger;
     }
-
 }

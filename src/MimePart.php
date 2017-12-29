@@ -275,7 +275,7 @@ class MimePart implements MessageInterface
      */
     public function toString()
     {
-        return rtrim($this->getHeaderLines(), self::EOL) . self::EOL . $this->getBody();
+        return rtrim($this->getHeaderLines(), self::EOL) . self::EOL . self::EOL . $this->getBody();
     }
 
     /**
