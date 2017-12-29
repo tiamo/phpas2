@@ -266,15 +266,12 @@ class Management
 
             // Check if payload is encrypted and if so decrypt it
             if ($payload->isEncrypted()) {
-
                 $this->getLogger()->debug('Decrypting the payload using private key');
-                $message->setEncrypted();
-
                 $payload = CryptoHelper::decrypt($payload, $partner->getPublicKey(), $partner->getPrivateKey());
-
                 if ($payload === false) {
                     throw new \Exception('Failed to decrypt message');
                 }
+                $message->setEncrypted();
             }
 
             // Check if message from this partner are expected to be signed
@@ -302,8 +299,8 @@ class Management
             // Check if the message has been compressed and if so decompress it
             if ($payload->isCompressed()) {
                 $this->getLogger()->debug('Decompressing the payload');
-                $message->setCompressed();
                 $payload = CryptoHelper::decompress($payload);
+                $message->setCompressed();
             }
 
             $message->setPayload((string)$payload);

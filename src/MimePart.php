@@ -249,18 +249,16 @@ class MimePart implements MessageInterface
         } else {
             $boundary = $this->getParsedHeader('content-type', 0, 'boundary');
             if ($boundary) {
-
-//                // TODO: remove ?
-//                $p = strpos($body, '--' . $boundary . "\n", 0);
-//                $this->body = trim(substr($body, 0, $p));
-//                $parts = Mime\Decode::splitMessageStruct($body, $boundary, self::EOL);
-//                if ($parts) {
-//                    foreach ($parts as $part) {
-//                        $this->addPart($part);
-//                    }
-//                } else {
-                $this->body = $body;
-//                }
+                $separator = '--' . preg_quote($boundary, '/');
+                // Get multi-part content
+                if (0 === preg_match('/' . $separator . '\r?\n(.+?)\r?\n' . $separator . '--/s', $body, $matches)) {
+                    throw new \InvalidArgumentException("Can't find multi-part content");
+                }
+                // Get parts
+                $parts = preg_split('/\r?\n' . $separator . '\r?\n/', $matches[1]);
+                foreach ($parts as $part) {
+                    $this->addPart($part);
+                }
             } else {
                 $this->body = $body;
             }

@@ -71,6 +71,7 @@ class CryptoHelper
 //        if (is_string($caInfo)) {
 //            $caInfo = [self::getTempFilename($caInfo)];
 //        }
+        // TODO: implement
         return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY);
     }
 
