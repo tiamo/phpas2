@@ -6,7 +6,7 @@ EDI-X12, EDIFACT, XML, or binary payloads between trading partners.
 
 ## Requirements
 
-* PHP 5.4.0 and up.
+* php >= 5.5
 * ext-openssl
 
 ## Installation

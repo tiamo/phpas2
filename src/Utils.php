@@ -5,6 +5,134 @@ namespace AS2;
 class Utils
 {
     /**
+     * Parses an HTTP message into an associative array.
+     *
+     * The array contains the "headers" key containing an associative array of header
+     * array values, and a "body" key containing the body of the message.
+     *
+     * @param string $message HTTP request or response to parse.
+     *
+     * @return array
+     */
+    public static function parseMessage($message)
+    {
+        if (!$message) {
+            throw new \InvalidArgumentException('Invalid message');
+        }
+        // Iterate over each line in the message, accounting for line endings
+        $lines = preg_split('/(\\r?\\n)/', $message, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $result = ['headers' => [], 'body' => ''];
+        for ($i = 0, $totalLines = count($lines); $i < $totalLines; $i += 2) {
+            $line = $lines[$i];
+            // If two line breaks were encountered, then this is the end of body
+            if (empty($line)) {
+                if ($i < $totalLines - 1) {
+                    $result['body'] = implode('', array_slice($lines, $i + 2));
+                }
+                break;
+            }
+            if (strpos($line, ':')) {
+                $parts = explode(':', $line, 2);
+                $key = trim($parts[0]);
+                $value = isset($parts[1]) ? trim($parts[1]) : '';
+                $result['headers'][$key][] = $value;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Parse an array of header values containing ";" separated data into an
+     * array of associative arrays representing the header key value pair
+     * data of the header. When a parameter does not contain a value, but just
+     * contains a key, this function will inject a key with a '' string value.
+     *
+     * @param string|array $header Header to parse into components.
+     *
+     * @return array Returns the parsed header values.
+     */
+    public static function parseHeader($header)
+    {
+        static $trimmed ="'\" \t\n\r\0\x0B";
+        $params = $matches = [];
+        foreach (self::normalizeHeader($header) as $val) {
+            $part = [];
+            foreach (preg_split('/;(?=([^"]*"[^"]*")*[^"]*$)/', $val) as $kvp) {
+                $m = explode('=', $kvp, 2);
+                if (isset($m[1])) {
+                    $part[trim($m[0], $trimmed)] = trim($m[1], $trimmed);
+                } else {
+                    $part[] = trim($m[0], $trimmed);
+                }
+            }
+            if ($part) {
+                $params[] = $part;
+            }
+        }
+        return $params;
+    }
+
+    /**
+     * Converts an array of header values that may contain comma separated
+     * headers into an array of headers with no comma separated values.
+     *
+     * @param string|array $header Header to normalize.
+     *
+     * @return array Returns the normalized header field values.
+     */
+    public static function normalizeHeader($header)
+    {
+        if (!is_array($header)) {
+            return array_map('trim', explode(',', $header));
+        }
+        $result = [];
+        foreach ($header as $value) {
+            foreach ((array)$value as $v) {
+                if (strpos($v, ',') === false) {
+                    $result[] = $v;
+                    continue;
+                }
+                foreach (preg_split('/,(?=([^"]*"[^"]*")*[^"]*$)/', $v) as $vv) {
+                    $result[] = trim($vv);
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Converts an array of header values that may contain comma separated
+     * headers into a string representation.
+     *
+     * @param string[] $headers
+     * @param string $eol
+     * @return string
+     */
+    public static function normalizeHeaders($headers, $eol = "\r\n")
+    {
+        $result = '';
+        foreach ($headers as $name => $values) {
+            $result .= $name . ': ' . implode(', ', (array)$values) . $eol;
+        }
+        return $result;
+    }
+
+    /**
+     * Encode a given string in base64 encoding and break lines
+     * according to the maximum linelength.
+     *
+     * @param string $str
+     * @param int $lineLength
+     * @param string $lineEnd
+     * @return string
+     */
+    public static function encodeBase64($str, $lineLength = 64, $lineEnd = "\r\n")
+    {
+        $lineLength = $lineLength - ($lineLength % 4);
+        return rtrim(chunk_split(base64_encode($str), $lineLength, $lineEnd));
+    }
+
+    /**
      * @param string $partner
      * @return string
      */

@@ -149,6 +149,23 @@ class Message extends DataObject implements MessageInterface
     /**
      * @return string
      */
+    public function getStatusMsg()
+    {
+        return $this->getData('status_msg');
+    }
+
+    /**
+     * @param string $msg
+     * @return $this
+     */
+    public function setStatusMsg($msg)
+    {
+        return $this->setData('status_msg', $msg);
+    }
+
+    /**
+     * @return string
+     */
     public function getMdnStatus()
     {
         return $this->getData('mdn_status');
@@ -198,29 +215,53 @@ class Message extends DataObject implements MessageInterface
     }
 
     /**
-     * @param string $val
-     * @return bool|$this
+     * @return bool
      */
-    public function isSigned($val = null)
+    public function getSigned()
     {
-        return $val ? $this->setData('signed', $val) : (bool)$this->getData('signed');
+        return $this->getData('signed');
     }
 
     /**
-     * @param string $val
-     * @return bool|$this
+     * @param bool $val
+     * @return $this
      */
-    public function isEncrypted($val = null)
+    public function setSigned($val = true)
     {
-        return $val ? $this->setData('encrypted', $val) : (bool)$this->getData('encrypted');
+        return $this->setData('signed', $val);
     }
 
     /**
-     * @param string $val
-     * @return bool|$this
+     * @return bool
      */
-    public function isCompressed($val = null)
+    public function getEncrypted()
     {
-        return $val ? $this->setData('compressed', $val) : (bool)$this->getData('compressed');
+        return $this->getData('encrypted');
+    }
+
+    /**
+     * @param bool $val
+     * @return $this
+     */
+    public function setEncrypted($val = true)
+    {
+        return $this->setData('encrypted', $val);
+    }
+
+    /**
+     * @return bool
+     */
+    public function getCompressed()
+    {
+        return $this->getData('compressed');
+    }
+
+    /**
+     * @param bool $val
+     * @return $this
+     */
+    public function setCompressed($val = true)
+    {
+        return $this->setData('compressed', $val);
     }
 }

@@ -2,12 +2,15 @@
 
 namespace AS2;
 
-use AS2\Mime;
-use Zend\Mail\Header;
+use GuzzleHttp\Psr7\MessageTrait;
+use Psr\Http\Message\MessageInterface;
+use Psr\Http\Message\RequestInterface;
 
-class MimePart
+class MimePart implements MessageInterface
 {
-    const EOL = "\n";
+    use MessageTrait;
+
+    const EOL = "\r\n";
 
     const TYPE_PKCS7_MIME = 'application/pkcs7-mime';
     const TYPE_X_PKCS7_MIME = 'application/x-pkcs7-mime';
@@ -22,11 +25,6 @@ class MimePart
     const SMIME_TYPE_SIGNED = 'signed-data';
 
     /**
-     * @var Headers
-     */
-    protected $headers;
-
-    /**
      * @var string
      */
     protected $body;
@@ -38,15 +36,31 @@ class MimePart
 
     /**
      * MimePart constructor.
-     * @param string $body
-     * @param mixed $headers
+     * @param array $headers
+     * @param null $body
      */
-    public function __construct($body = null, $headers = null)
+    public function __construct($headers = [], $body = null)
     {
-        if ($headers) {
-            $this->setHeaders($headers);
-        }
+        $this->setHeaders((array)$headers);
         $this->setBody($body);
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @param bool $forceBase64
+     * @return static
+     */
+    public static function fromRequest(RequestInterface $request, $forceBase64 = true)
+    {
+        $body = $request->getBody()->getContents();
+        if ($forceBase64) {
+            $encoding = $request->getHeaderLine('content-transfer-encoding');
+            if ($encoding == 'binary') {
+                $request = $request->withHeader('Content-Transfer-Encoding', 'base64');
+                $body = Utils::encodeBase64($body);
+            }
+        }
+        return new static($request->getHeaders(), $body);
     }
 
     /**
@@ -57,16 +71,8 @@ class MimePart
      */
     public static function fromString($rawMessage)
     {
-        $message = new static();
-        $headers = null;
-        $body = null;
-
-        Mime\Decode::splitMessage($rawMessage, $headers, $body);
-
-        $message->setHeaders($headers);
-        $message->setBody($body);
-
-        return $message;
+        $payload = Utils::parseMessage($rawMessage);
+        return new static($payload['headers'], $payload['body']);
     }
 
     /**
@@ -74,7 +80,7 @@ class MimePart
      */
     public function isPkc7Mime()
     {
-        $type = $this->getContentType()->getType();
+        $type = $this->getParsedHeader('content-type', 0, 0);
         return $type == self::TYPE_PKCS7_MIME || $type == self::TYPE_X_PKCS7_MIME;
     }
 
@@ -83,7 +89,7 @@ class MimePart
      */
     public function isPkc7Signature()
     {
-        $type = $this->getContentType()->getType();
+        $type = $this->getParsedHeader('content-type', 0, 0);
         return $type == self::TYPE_PKCS7_SIGNATURE || $type == self::TYPE_X_PKCS7_SIGNATURE;
     }
 
@@ -92,11 +98,7 @@ class MimePart
      */
     public function isEncrypted()
     {
-        if ($this->isPkc7Mime()) {
-            $smimeType = strtolower($this->getContentType()->getParameter('smime-type'));
-            return $smimeType == self::SMIME_TYPE_ENCRYPTED;
-        }
-        return false;
+        return $this->getParsedHeader('content-type', 0, 'smime-type') == self::SMIME_TYPE_ENCRYPTED;
     }
 
     /**
@@ -104,11 +106,7 @@ class MimePart
      */
     public function isCompressed()
     {
-        if ($this->isPkc7Mime()) {
-            $smimeType = strtolower($this->getContentType()->getParameter('smime-type'));
-            return $smimeType == self::SMIME_TYPE_COMPRESSED;
-        }
-        return false;
+        return $this->getParsedHeader('content-type', 0, 'smime-type') == self::SMIME_TYPE_COMPRESSED;
     }
 
     /**
@@ -116,7 +114,7 @@ class MimePart
      */
     public function isSigned()
     {
-        return strtolower($this->getContentType()->getType()) === self::MULTIPART_SIGNED;
+        return $this->getParsedHeader('content-type', 0, 0) == self::MULTIPART_SIGNED;
     }
 
     /**
@@ -124,7 +122,15 @@ class MimePart
      */
     public function isReport()
     {
-        return strtolower($this->getContentType()->getType()) === self::MULTIPART_REPORT;
+        return $this->getParsedHeader('content-type', 0, 0) == self::MULTIPART_REPORT;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBinary()
+    {
+        return $this->getParsedHeader('content-transfer-encoding', 0, 0) == 'binary';
     }
 
     /**
@@ -160,11 +166,6 @@ class MimePart
     {
         if ($part instanceof static) {
             $this->parts[] = $part;
-        } elseif (is_array($part) && isset($part['header']) && isset($part['body'])) {
-            $message = new static();
-            $message->setHeaders($part['header']);
-            $message->setBody($part['body']);
-            $this->parts[] = $message;
         } else {
             $this->parts[] = self::fromString((string)$part);
         }
@@ -185,91 +186,29 @@ class MimePart
     }
 
     /**
-     * @return Header\HeaderInterface|Header\ContentType
+     * @return string
      */
-    public function getContentType()
+    public function getHeaderLines()
     {
-        return $this->getHeaderByName('content-type', Header\ContentType::class);
+        return Utils::normalizeHeaders($this->headers, self::EOL);
     }
 
     /**
-     * Compose headers
-     *
-     * @param array|string|Headers $headers
-     * @return $this
+     * @param string $header
+     * @param int $index
+     * @param string|int $param
+     * @return array|string|null
      */
-    public function setHeaders($headers)
+    public function getParsedHeader($header, $index = null, $param = null)
     {
-        if ($headers instanceof Headers) {
-            $this->headers = $headers;
-        } elseif (is_array($headers)) {
-            $this->headers = new Headers();
-            foreach ($headers as $name => $value) {
-                $this->headers->addHeaderLine($name, $value);
-            }
-        } else {
-            $this->headers = Headers::fromString($headers);
+        $header = Utils::parseHeader($this->getHeader($header));
+        if ($index === null) {
+            return $header;
         }
-        return $this;
-    }
-
-    /**
-     * Access headers collection
-     *
-     * Lazy-loads if not already attached.
-     *
-     * @return Headers
-     */
-    public function getHeaders()
-    {
-        if (null === $this->headers) {
-            $this->setHeaders(new Headers());
+        if ($param !== null && isset($header[$index])) {
+            return isset($header[$index][$param]) ? $header[$index][$param] : null;
         }
-        return $this->headers;
-    }
-
-    /**
-     * @param string $name
-     * @return bool
-     */
-    public function hasHeader($name)
-    {
-        return $this->getHeaders()->has($name);
-    }
-
-    /**
-     * @param string $name
-     * @return \ArrayIterator|bool|Header\HeaderInterface
-     */
-    public function getHeader($name)
-    {
-        return $this->getHeaders()->get($name);
-    }
-
-    /**
-     * @param $name
-     * @param null $value
-     * @return $this
-     */
-    public function setHeader($name, $value = null)
-    {
-        $this->getHeaders()->removeHeader($name);
-        return $this->addHeader($name, $value);
-    }
-
-    /**
-     * @param string $name
-     * @param string $value
-     * @return $this
-     */
-    public function addHeader($name, $value = null)
-    {
-        if ($name instanceof Header\HeaderInterface) {
-            $this->getHeaders()->addHeader($name);
-        } else {
-            $this->getHeaders()->addHeaderLine($name, $value);
-        }
-        return $this;
+        return $header[$index];
     }
 
     /**
@@ -281,18 +220,18 @@ class MimePart
     {
         $body = $this->body;
         if (count($this->parts) > 0) {
-            $contentType = $this->getContentType();
-            if ($boundary = $contentType->getParameter('boundary')) {
+            $boundary = $this->getParsedHeader('content-type', 0, 'boundary');
+            if ($boundary) {
                 $body .= self::EOL;
                 foreach ($this->getParts() as $part) {
-                    $body .= self::EOL;
+//                    $body .= self::EOL;
                     $body .= '--' . $boundary . self::EOL;
                     $body .= $part->toString() . self::EOL;
                 }
                 $body .= '--' . $boundary . '--';
             }
         }
-        return trim($body);
+        return $body;
     }
 
     /**
@@ -308,22 +247,20 @@ class MimePart
                 $this->addPart($part);
             }
         } else {
-            $contentType = $this->getContentType();
-            if (strpos($contentType->getType(), 'multipart') === 0) {
-                $boundary = $contentType->getParameter('boundary');
+            $boundary = $this->getParsedHeader('content-type', 0, 'boundary');
+            if ($boundary) {
 
-                // TODO: remove ?
-                $p = strpos($body, '--' . $boundary . "\n", 0);
-                $this->body = trim(substr($body, 0, $p));
-
-                $parts = Mime\Decode::splitMessageStruct($body, $boundary ,self::EOL);
-                if ($parts) {
-                    foreach ($parts as $part) {
-                        $this->addPart($part);
-                    }
-                } else {
-                    $this->body = $body;
-                }
+//                // TODO: remove ?
+//                $p = strpos($body, '--' . $boundary . "\n", 0);
+//                $this->body = trim(substr($body, 0, $p));
+//                $parts = Mime\Decode::splitMessageStruct($body, $boundary, self::EOL);
+//                if ($parts) {
+//                    foreach ($parts as $part) {
+//                        $this->addPart($part);
+//                    }
+//                } else {
+                $this->body = $body;
+//                }
             } else {
                 $this->body = $body;
             }
@@ -338,7 +275,7 @@ class MimePart
      */
     public function toString()
     {
-        return $this->getHeaders()->toString() . self::EOL . $this->getBody();
+        return rtrim($this->getHeaderLines(), self::EOL) . self::EOL . $this->getBody();
     }
 
     /**
@@ -347,26 +284,5 @@ class MimePart
     public function __toString()
     {
         return $this->toString();
-    }
-
-    /**
-     * Retrieve a header by name
-     *
-     * If not found, instantiates one based on $headerClass.
-     *
-     * @param  string $headerName
-     * @param  string $headerClass
-     * @return Header\HeaderInterface|\ArrayIterator header instance or collection of headers
-     */
-    protected function getHeaderByName($headerName, $headerClass)
-    {
-        $headers = $this->getHeaders();
-        if ($headers->has($headerName)) {
-            $header = $headers->get($headerName);
-        } else {
-            $header = new $headerClass();
-            $headers->addHeader($header);
-        }
-        return $header;
     }
 }

@@ -16,6 +16,9 @@ interface MessageInterface
     const MDN_STATUS_SENT = 'sent';
     const MDN_STATUS_ERROR = 'error';
 
+    const DIR_INBOUND = 1;
+    const DIR_OUTBOUND = 0;
+
     /**
      * Unique Message Id
      * @return string
@@ -34,9 +37,21 @@ interface MessageInterface
     public function getSender();
 
     /**
+     * @param PartnerInterface $partner
+     * @return $this
+     */
+    public function setSender(PartnerInterface $partner);
+
+    /**
      * @return PartnerInterface
      */
     public function getReceiver();
+
+    /**
+     * @param PartnerInterface $partner
+     * @return $this
+     */
+    public function setReceiver(PartnerInterface $partner);
 
     /**
      * @return string
@@ -74,6 +89,17 @@ interface MessageInterface
     /**
      * @return string
      */
+    public function getStatusMsg();
+
+    /**
+     * @param string $msg
+     * @return $this
+     */
+    public function setStatusMsg($msg);
+
+    /**
+     * @return string
+     */
     public function getMdnStatus();
 
     /**
@@ -105,21 +131,35 @@ interface MessageInterface
     public function setCalculatedMic($mic);
 
     /**
-     * @param string $val
-     * @return bool|$this
+     * @return bool
      */
-    public function isSigned($val = null);
+    public function getSigned();
 
     /**
-     * @param string $val
-     * @return bool|$this
+     * @param bool $val
+     * @return $this
      */
-    public function isEncrypted($val = null);
+    public function setSigned($val = true);
 
     /**
-     * @param string $val
-     * @return bool|$this
+     * @return bool
      */
-    public function isCompressed($val = null);
+    public function getEncrypted();
 
+    /**
+     * @param bool $val
+     * @return $this
+     */
+    public function setEncrypted($val = true);
+
+    /**
+     * @return bool
+     */
+    public function getCompressed();
+
+    /**
+     * @param bool $val
+     * @return $this
+     */
+    public function setCompressed($val = true);
 }

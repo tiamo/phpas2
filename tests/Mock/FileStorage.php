@@ -59,6 +59,10 @@ class FileStorage implements StorageInterface
             file_put_contents(str_replace('.json', '.mdn', $path), $mdn);
         }
 
+        if ($headers = $message->getHeaders()) {
+            file_put_contents(str_replace('.json', '.txt', $path), $headers . PHP_EOL . $payload);
+        }
+
         return (bool)file_put_contents($path, json_encode($message->getData()));
     }
 

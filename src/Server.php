@@ -69,17 +69,13 @@ class Server
             'as2to' => $as2to,
         ]);
 
+        $responseStatus = 200;
+        $responseHeaders = [];
+        $responseBody = null;
+
         try {
 
             $this->getLogger()->debug('Check payload to see if it\'s a AS2 Message or ASYNC MDN.');
-
-            // Extract all the relevant headers from the http request
-            $headers = '';
-            foreach ($request->getHeaders() as $key => $header) {
-                $headers .= $key . ': ' . $request->getHeaderLine($key) . Headers::EOL;
-            }
-
-            $payload = new MimePart($request->getBody()->getContents(), $headers);
 
             // Get the message sender and receiver AS2 IDs
             $sender = $this->storage->getPartner($as2from);
@@ -90,6 +86,8 @@ class Server
             if (!$receiver) {
                 throw new \InvalidArgumentException(sprintf('Unknown AS2 Receiver "%s"', $as2to));
             }
+
+            $payload = MimePart::fromRequest($request, true);
 
             // Check if this is an MDN message
             $mdn = null;
@@ -103,17 +101,15 @@ class Server
                 }
             }
 
-            $responseStatus = 200;
-            $responseHeaders = [];
-            $responseBody = null;
+            // TODO: check signature
 
-            //  If this is an MDN, get the message ID and check if it exists
+            //  If this is a MDN, get the message ID and check if it exists
             if ($mdn) {
                 $messageId = null;
                 foreach ($mdn->getParts() as $part) {
-                    if ($part->getContentType()->getType() == 'message/disposition-notification') {
-                        $headers = Headers::fromString($part->getBody());
-                        $messageId = trim($headers->get('original-message-id')->getFieldValue(), '<>');
+                    if ($part->getParsedHeader('content-type', 0, 0) == 'message/disposition-notification') {
+                        $bodyPayload = MimePart::fromString($part->getBody());
+                        $messageId = trim($bodyPayload->getParsedHeader('original-message-id', 0, 0), '<>');
                     }
                 }
                 if (!empty($messageId)) {
@@ -130,7 +126,10 @@ class Server
                 $this->getLogger()->debug('Received an AS2 message', [$messageId]);
 
                 // Initialize Message
-                $message = $this->storage->initMessage(['id' => $messageId]);
+                $message = $this->storage->initMessage([
+                    'direction' => MessageInterface::DIR_INBOUND
+                ]);
+                $message->setMessageId($messageId);
                 $message->setSender($sender);
                 $message->setReceiver($receiver);
 
@@ -138,14 +137,15 @@ class Server
                 $this->storage->saveMessage($message);
 
                 // Send MDN
-                if ($receiver->getMdnMode()) {
-                    $this->getLogger()->debug('Send MDN', [$messageId]);
+                if ($mdnMode = $receiver->getMdnMode()) {
+                    $this->getLogger()->debug('Send MDN', [$messageId, $mdnMode]);
                     $mdn = $this->manager->buildMdn($message);
-                    if ($receiver->getMdnMode() == PartnerInterface::MDN_MODE_SYNC) {
-                        $responseHeaders = $mdn->getHeaders()->toArray();
+                    if ($mdnMode == PartnerInterface::MDN_MODE_SYNC) {
+                        $responseHeaders = $mdn->getHeaders();
                         $responseBody = $mdn->getBody();
                     } else {
                         // ASYNC send MDN
+                        // TODO: parallel
                         $this->manager->sendMdn($message);
                         $responseBody = 'AS2 ASYNC MDN has been sent';
                     }
@@ -162,7 +162,6 @@ class Server
             $responseBody = $e->getMessage();
         }
 
-        // TODO: MDN response if mode is sync
         return new Response($responseStatus, $responseHeaders, $responseBody);
     }
 
@@ -207,30 +206,6 @@ class Server
             $this->logger = new NullLogger();
         }
         return $this->logger;
-    }
-
-    /**
-     * Close current HTTP connection and wait some secons
-     *
-     * @param int $sleep The number of seconds to wait for
-     */
-    protected function closeConnectionAndWait($sleep)
-    {
-        // cut connexion and wait a few seconds
-        ob_end_clean();
-        header("Connection: close\r\n");
-        header("Content-Encoding: none\r\n");
-        ignore_user_abort(true); // optional
-        ob_start();
-        $size = ob_get_length();
-        header("Content-Length: $size");
-        ob_end_flush(); // Strange behaviour, will not work
-        flush(); // Unless both are called !
-        ob_end_clean();
-        session_write_close();
-
-        // wait some seconds before sending MDN notification
-        sleep($sleep);
     }
 
 }

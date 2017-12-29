@@ -5,7 +5,8 @@ namespace AS2;
 use Zend\Mime\Mime;
 
 /**
- * TODO: Implement pure methods without "openssl_pkcs7_*"
+ * TODO: Implement pure methods without "openssl_pkcs7"
+ * openssl_pkcs7 doesn't work with binary data
  */
 class CryptoHelper
 {
@@ -13,23 +14,23 @@ class CryptoHelper
      * Extract the message integrity check (MIC) from the digital signature
      *
      * @param MimePart|string $payload
-     * @param string $algo
+     * @param string $algo Default is SHA256
      * @param bool $includeHeaders
      * @return string
+     * @throws \Exception
      */
     public static function calculateMIC($payload, $algo = null, $includeHeaders = false)
     {
-        if (empty($algo) || !in_array($algo, hash_algos())) {
-            // TODO: exception ?
+        if (empty($algo)) {
             $algo = 'sha256';
+        } elseif (!in_array($algo, hash_algos())) {
+            throw new \Exception('Unknown hash algorithm');
         }
         if ($payload instanceof MimePart) {
             $payload = $includeHeaders ? $payload->toString() : $payload->getBody();
         }
-
         $digest = base64_encode(openssl_digest($payload, $algo, true));
 //        $digest = base64_encode(hash($algo, $payload, true));
-
         return $digest . ', ' . strtoupper($algo);
     }
 
@@ -45,122 +46,77 @@ class CryptoHelper
      */
     public static function sign($data, $cert, $key = null, $headers = [])
     {
-//        $mime = new Mime();
-//
-//        $message = new MimePart();
-//        $message->addHeader('MIME-Version', '1.0');
-//
-//        $contentType = new ContentType();
-//        $contentType->setType('multipart/signed');
-//        $contentType->addParameter('protocol', 'application/x-pkcs7-signature');
-//        $contentType->addParameter('micalg', 'sha-256');
-//        $contentType->addParameter('boundary', '--' . $mime->boundary());
-//        $message->addHeader($contentType);
-//        $message->setBody('This is an S/MIME signed message');
-//
-//        if ($payload instanceof MimePart) {
-//            $message->addPart($data);
-//        } else {
-//            $message->addPart(file_get_contents($data));
-//        }
-//
-//        $rsa = Rsa::factory([
-//            'public_key' => $cert,
-//            'private_key' => $key,
-//            'binary_output' => false
-//        ]);
-//
-//        $signature = new MimePart();
-//        $signature->setHeaders([
-//            'content-type' => 'application/x-pkcs7-signature; name="smime.p7s"',
-//            'content-disposition' => 'attachment; filename="smime.p7s"',
-//            'content-encoding' => Mime::ENCODING_BASE64,
-//        ]);
-//        $signature->setBody($rsa->sign($message->toString()));
-//
-//        $message->addPart($signature);
-//
-//        return $message;
-
         if ($data instanceof MimePart) {
             $data = self::getTempFilename($data->toString());
         }
         $temp = self::getTempFilename();
         if (!openssl_pkcs7_sign($data, $temp, $cert, $key, $headers, PKCS7_BINARY | PKCS7_DETACHED)) {
-            throw new \Exception(sprintf('Failed to sign S/Mime message. Error: "%s".', openssl_error_string()));
+            throw new \Exception(
+                sprintf('Failed to sign S/Mime message. Error: "%s".', openssl_error_string())
+            );
         }
         return MimePart::fromString(file_get_contents($temp));
     }
 
     /**
      * @param string|MimePart $data
-     * @param array $caInfo
+     * @param array $caInfo Information about the trusted CA certificates to use in the verification process
      * @return bool
      */
     public static function verify($data, $caInfo = [])
     {
         if ($data instanceof MimePart) {
-            $data = self::getTempFilename($data->toString());
+            $data = self::getTempFilename((string)$data);
         }
-        return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY);
+        return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY, null, $caInfo);
     }
 
     /**
      * @param string|MimePart $data
      * @param string|array $cert
      * @param int $cipher
-     * @return mixed
+     * @return MimePart
      * @throws \Exception
      */
-    public static function encrypt($data, $cert, $cipher = OPENSSL_CIPHER_RC2_40)
+    public static function encrypt($data, $cert, $cipher = OPENSSL_CIPHER_3DES)
     {
-//        $content = file_get_contents($data);
-//        $rsa = Rsa::factory([
-//            'public_key' => $cert[0],
-//            'private_key' => $cert[1],
-//            'binary_output' => false,
-//            'pass_phrase' => 'password',
-////            'openssl_padding' => OPENSSL_NO_PADDING,
-////            'hash_algorithm' => '',
-//        ]);
-//
-//        $part = new MimePart();
-//        $part->addHeader('content-type', MimePart::TYPE_X_PKCS7_MIME . '; name="smime.p7m"; smime-type=' . MimePart::SMIME_TYPE_ENCRYPTED);
-//        $part->addHeader('content-disposition', 'attachment; filename="smime.p7m"');
-//        $part->addHeader('content-description', 'S/MIME Encrypted Message');
-//        $part->addHeader('content-transfer-encoding', Mime::ENCODING_BASE64);
-//        $part->setBody(Mime::encode($rsa->encrypt($data), Mime::ENCODING_BASE64));
-//
-//        print_r((string)$rsa->decrypt($rsa->encrypt($data)));
-//        exit;
-//        return $part;
         if ($data instanceof MimePart) {
-            $data = self::getTempFilename($data->toString());
+            $data = self::getTempFilename((string)$data);
+        }
+        // Get cipher by name
+        if (is_string($cipher) && defined('OPENSSL_CIPHER_' . strtoupper($cipher))) {
+            $cipher = constant('OPENSSL_CIPHER_' . strtoupper($cipher));
         }
         $temp = self::getTempFilename();
-        if (openssl_pkcs7_encrypt($data, $temp, (array)$cert, [], PKCS7_BINARY, $cipher)) {
-            return MimePart::fromString(file_get_contents($temp));
+        if (!openssl_pkcs7_encrypt($data, $temp, (array)$cert, [], PKCS7_BINARY, $cipher)) {
+            throw new \Exception(
+                sprintf('Failed to encrypt S/Mime message. Error: "%s".', openssl_error_string())
+            );
         }
-        return false;
+        return MimePart::fromString(file_get_contents($temp));
     }
 
     /**
      * @param string|MimePart $data
      * @param mixed $cert
      * @param mixed $key
-     * @return MimePart|false
+     * @return MimePart
      * @throws \Exception
      */
     public static function decrypt($data, $cert, $key = null)
     {
         if ($data instanceof MimePart) {
-            $data = self::getTempFilename($data->toString());
+            $data = self::getTempFilename((string)$data);
         }
         $temp = self::getTempFilename();
-        if (openssl_pkcs7_decrypt($data, $temp, $cert, $key)) {
-            return MimePart::fromString(file_get_contents($temp));
+
+        if (!openssl_pkcs7_decrypt($data, $temp, $cert, $key)) {
+            throw new \Exception(
+                sprintf('Failed to decrypt S/Mime message. Error: "%s".', openssl_error_string())
+            );
         }
-        return false;
+
+        return MimePart::fromString(file_get_contents($temp));
     }
 
     /**
@@ -177,15 +133,12 @@ class CryptoHelper
         } else {
             $content = is_file($data) ? file_get_contents($data) : $data;
         }
-        $payload = new MimePart();
-        $payload->setHeaders([
-            'content-type' => MimePart::TYPE_X_PKCS7_MIME . '; name="smime.p7z"; smime-type=' . MimePart::SMIME_TYPE_COMPRESSED,
-            'content-description' => 'S/MIME Compressed Message',
-            'content-disposition' => 'attachment; filename="smime.p7z"',
-            'content-encoding' => $encoding,
-        ]);
-        $payload->setBody(Mime::encode(gzencode($content), $encoding));
-        return $payload;
+        return new MimePart([
+            'Content-Type' => MimePart::TYPE_X_PKCS7_MIME . '; name="smime.p7z"; smime-type=' . MimePart::SMIME_TYPE_COMPRESSED,
+            'Content-Description' => 'S/MIME Compressed Message',
+            'Content-Disposition' => 'attachment; filename="smime.p7z"',
+            'Content-Encoding' => $encoding,
+        ], Mime::encode(gzencode($content), $encoding));
     }
 
     /**
@@ -198,7 +151,6 @@ class CryptoHelper
         if (!($data instanceof MimePart)) {
             $data = MimePart::fromString(is_file($data) ? file_get_contents($data) : $data);
         }
-
         if ($data->isCompressed()) {
             return gzdecode(base64_decode($data->getBody()));
         }
