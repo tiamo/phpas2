@@ -24,9 +24,9 @@ to the require section of your `composer.json` file.
 
 ## Example Usage
 
-- Create a new Storage class based on StorageInterface
-- Implement Message class based on MessageInterface
-- Implement Partner class based on MessageInterface
+- Implement Storage class based on \AS2\StorageInterface
+- Implement Message class based on \AS2\MessageInterface
+- Implement Partner class based on \AS2\PartnerInterface
 
 ### Example Receive AS2 Message
 ```php
