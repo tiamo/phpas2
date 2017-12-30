@@ -42,7 +42,9 @@ class MimePart implements MessageInterface
     public function __construct($headers = [], $body = null)
     {
         $this->setHeaders((array)$headers);
-        $this->setBody($body);
+        if (!is_null($body)) {
+            $this->setBody($body);
+        }
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace AS2;
 
 use GuzzleHttp\Client;
+use Psr\Http\Message\RequestInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -82,11 +83,11 @@ class Management
     {
         $sender = $message->getSender();
         if (!$sender) {
-            throw new \Exception('Unknown Sender');
+            throw new \InvalidArgumentException('Unknown Sender');
         }
         $receiver = $message->getReceiver();
         if (!$receiver) {
-            throw new \Exception('Unknown Receiver');
+            throw new \InvalidArgumentException('Unknown Receiver');
         }
 
         $this->getLogger()->debug('Build the AS2 message to send to the partner');
@@ -198,7 +199,7 @@ class Management
             }
             $response = $this->getHttpClient()->request('POST', $partner->getTargetUrl(), $options);
             if ($response->getStatusCode() != 200) {
-                throw new \Exception('Message send failed with error');
+                throw new \RuntimeException('Message send failed with error');
             }
 
             $this->getLogger()->debug('AS2 message successfully sent to partner');
@@ -233,12 +234,11 @@ class Management
 
     /**
      * Function decompresses, decrypts and verifies the received AS2 message
-     * Takes an AS2 message as input and returns the actual payload ex. X12 message
      *
      * @param MessageInterface $message
      * @param MimePart|string $payload
      * @return MessageInterface
-     * @throws \Exception
+     * @throws \RuntimeException|\InvalidArgumentException
      */
     public function processMessage(MessageInterface $message, $payload)
     {
@@ -252,58 +252,8 @@ class Management
                 $payload = MimePart::fromString($payload);
             }
 
-            $message->setStatus(MessageInterface::STATUS_IN_PROCESS);
-
-            $partner = $message->getReceiver();
-
-            // Check if message from this partner are expected to be encrypted
-            if ($partner->getEncryptionAlgorithm() && !$payload->isEncrypted()) {
-                throw new \Exception('Incoming message from AS2 partner are defined to be encrypted');
-            }
-
-            // Save initial headers
             $message->setHeaders($payload->getHeaderLines());
-
-            // Check if payload is encrypted and if so decrypt it
-            if ($payload->isEncrypted()) {
-                $this->getLogger()->debug('Decrypting the payload using private key');
-                $payload = CryptoHelper::decrypt($payload, $partner->getPublicKey(), $partner->getPrivateKey());
-                if ($payload === false) {
-                    throw new \Exception('Failed to decrypt message');
-                }
-                $message->setEncrypted();
-            }
-
-            // Check if message from this partner are expected to be signed
-            if ($partner->getSignatureAlgorithm() && !$payload->isSigned()) {
-                throw new \Exception('Incoming message from AS2 partner are defined to be signed');
-            }
-
-            // Check if message is signed and if so verify it
-            if ($payload->isSigned()) {
-                $this->getLogger()->debug('Verifying the signed payload');
-                // Verify message using raw payload received from partner
-                if (!CryptoHelper::verify($payload, $partner->getPublicKey())) {
-                    throw new \Exception('Signature Verification Failed');
-                }
-                $micAlg = $payload->getParsedHeader('content-type', 0, 'micalg');
-                foreach ($payload->getParts() as $part) {
-                    if (!$part->isPkc7Signature()) {
-                        $payload = $part;
-                    }
-                }
-                $message->setSigned();
-                $message->setCalculatedMic(CryptoHelper::calculateMIC($payload, $micAlg, true));
-            }
-
-            // Check if the message has been compressed and if so decompress it
-            if ($payload->isCompressed()) {
-                $this->getLogger()->debug('Decompressing the payload');
-                $payload = CryptoHelper::decompress($payload);
-                $message->setCompressed();
-            }
-
-            $message->setPayload((string)$payload);
+            $message->setPayload($payload->getBody());
             $message->setStatus(MessageInterface::STATUS_SUCCESS);
 
         } catch (\Exception $e) {
@@ -322,21 +272,21 @@ class Management
      * @param string $text
      * @param array $headers
      * @return MimePart
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
     public function buildMdn(MessageInterface $message, $text = null, $headers = [])
     {
         $sender = $message->getSender();
         if (!$sender) {
-            throw new \Exception('Unknown Sender');
+            throw new \InvalidArgumentException('Unknown Sender');
         }
         $receiver = $message->getReceiver();
         if (!$receiver) {
-            throw new \Exception('Unknown Receiver');
+            throw new \InvalidArgumentException('Unknown Receiver');
         }
 
         if (empty($text)) {
-            $text = sprintf('This MDN was automatically built on %s in response to a message with id %s received from %s. Unless stated otherwise, the message to which this MDN applies was successfully processed.',
+            $text = sprintf('This MDN was automatically built on "%s" in response to a message with id "%s" received from "%s". Unless stated otherwise, the message to which this MDN applies was successfully processed.',
                 date('r'),
                 $message->getMessageId(),
                 $sender->getAs2Id()
@@ -422,7 +372,7 @@ class Management
             }
             $response = $this->getHttpClient()->request('POST', $partner->getTargetUrl(), $options);
             if ($response->getStatusCode() != 200) {
-                throw new \Exception('Message send failed with error');
+                throw new \RuntimeException('Message send failed with error');
             }
             $this->getLogger()->debug('AS2 MDN has been sent.');
             $message->setMdnStatus(MessageInterface::MDN_STATUS_SENT);
@@ -450,30 +400,11 @@ class Management
         }
 
         // Raise error if message is not an MDN
-        if (!$payload->isSigned() && !$payload->isReport()) {
+        if (!$payload->isReport()) {
             throw new \RuntimeException('MDN report not found in the response');
         }
 
         $messageId = $message->getMessageId();
-        $partner = $message->getReceiver();
-
-        if ($payload->isSigned()) {
-            // Verify the signature using raw MDN content
-            if (!CryptoHelper::verify($payload, $partner->getPublicKey())) {
-                throw new \RuntimeException('MDN Signature Verification Error');
-            }
-            foreach ($payload->getParts() as $part) {
-                if ($part->isReport()) {
-                    $payload = $part;
-                    break;
-                }
-            }
-        }
-
-        // Process the MDN report to extract the AS2 message status
-        if (!$payload->isReport()) {
-            throw new \RuntimeException('MDN report not found in the response');
-        }
 
         // Save the MDN to the store
         $message->setMdnStatus(MessageInterface::MDN_STATUS_PENDING);
