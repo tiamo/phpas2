@@ -2,8 +2,6 @@
 
 namespace AS2;
 
-use Zend\Mime\Mime;
-
 /**
  * TODO: Implement pure methods without "openssl_pkcs7"
  * openssl_pkcs7 doesn't work with binary data
@@ -67,8 +65,9 @@ class CryptoHelper
         $contentType = $payload->getHeaderLine('content-type');
         $contentType = str_replace('x-pkcs7', 'pkcs7', $contentType);
         if ($micAlgo) {
-            $contentType = preg_replace('/micalg=(.+);/i', 'micalg="'. $micAlgo .'";', $contentType);
+            $contentType = preg_replace('/micalg=(.+);/i', 'micalg="' . $micAlgo . '";', $contentType);
         }
+        /** @var MimePart $payload */
         $payload = $payload->withHeader('Content-Type', $contentType);
         foreach ($payload->getParts() as $key => $part) {
             if ($part->isPkc7Signature()) {
@@ -148,35 +147,50 @@ class CryptoHelper
      * @param string $encoding
      * @return MimePart
      */
-    public static function compress($data, $encoding = Mime::ENCODING_BASE64)
+    public static function compress($data, $encoding = 'base64')
     {
         if ($data instanceof MimePart) {
             $content = $data->toString();
         } else {
             $content = is_file($data) ? file_get_contents($data) : $data;
         }
-        return new MimePart([
-            'Content-Type' => MimePart::TYPE_X_PKCS7_MIME . '; name="smime.p7z"; smime-type=' . MimePart::SMIME_TYPE_COMPRESSED,
+        $headers = [
+            'Content-Type' => MimePart::TYPE_PKCS7_MIME . '; name="smime.p7z"; smime-type=' . MimePart::SMIME_TYPE_COMPRESSED,
             'Content-Description' => 'S/MIME Compressed Message',
             'Content-Disposition' => 'attachment; filename="smime.p7z"',
             'Content-Encoding' => $encoding,
-        ], Mime::encode(gzencode($content), $encoding));
+        ];
+        // TODO: ASN1::encodeDER();
+        $content = gzcompress($content);
+        if ($encoding == 'base64') {
+            $content = Utils::encodeBase64($content);
+        }
+        return new MimePart($headers, $content);
     }
 
     /**
+     * Decompress data
+     *
      * @param string|MimePart $data
      * @return string
      * @throws \Exception
      */
     public static function decompress($data)
     {
+        $encoding = 'binary';
         if ($data instanceof MimePart) {
+            $encoding = $data->getHeaderLine('Content-Transfer-Encoding');
             $data = $data->getBody();
         }
-//        if ($data->isCompressed()) {
-        return gzdecode(base64_decode($data));
-//        }
-//        return false;
+        if ($encoding == 'base64') {
+            $data = base64_decode($data);
+        }
+        $payload = ASN1Helper::parse($data, ASN1Helper::CONTENT_INFO_MAP);
+        if ($payload['contentType'] == ASN1Helper::COMPRESSED_DATA_OID) {
+            $payload = ASN1Helper::parse($payload['content']->element, ASN1Helper::COMPRESSED_DATA_MAP);
+            $data = gzuncompress($payload['payload']['content']);
+        }
+        return MimePart::fromString($data);
     }
 
     /**

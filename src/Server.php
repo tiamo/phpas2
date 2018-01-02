@@ -155,13 +155,12 @@ class Server
                 $message->setSigned();
             }
 
-            // TODO: implement
-//            // Check if the message has been compressed and if so decompress it
-//            if ($payload->isCompressed()) {
-//                $this->getLogger()->debug('Decompressing the payload');
-//                $payload = CryptoHelper::decompress($payload);
-//                $message->setCompressed();
-//            }
+            // Check if the message has been compressed and if so decompress it
+            if ($payload->isCompressed()) {
+                $this->getLogger()->debug('Decompressing the payload');
+                $payload = CryptoHelper::decompress($payload);
+                $message->setCompressed();
+            }
 
             //  If this is a MDN, get the Message-Id and check if it exists
             if ($payload->isReport()) {
