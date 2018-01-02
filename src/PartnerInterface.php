@@ -31,6 +31,11 @@ interface PartnerInterface
     /**
      * @return string
      */
+    public function getContentTransferEncoding();
+
+    /**
+     * @return string
+     */
     public function getSubject();
 
     /**
@@ -61,7 +66,7 @@ interface PartnerInterface
     /**
      * @return string
      */
-    public function getPublicKey();
+    public function getCertificate();
 
     /**
      * @return string

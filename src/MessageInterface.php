@@ -32,6 +32,17 @@ interface MessageInterface
     public function setMessageId($id);
 
     /**
+     * @return int
+     */
+    public function getDirection();
+
+    /**
+     * @param int $dir
+     * @return $this
+     */
+    public function setDirection($dir);
+
+    /**
      * @return PartnerInterface
      */
     public function getSender();
@@ -122,13 +133,28 @@ interface MessageInterface
     /**
      * @return string
      */
-    public function getCalculatedMic();
+    public function getMdnMode();
 
     /**
+     * @param string $mode
+     * @return $this
+     */
+    public function setMdnMode($mode);
+
+    /**
+     * Get Message Integrity Check value
+     *
+     * @return string
+     */
+    public function getMic();
+
+    /**
+     * Set Message Integrity Check value
+     *
      * @param string $mic
      * @return $this
      */
-    public function setCalculatedMic($mic);
+    public function setMic($mic);
 
     /**
      * @return bool

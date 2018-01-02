@@ -48,21 +48,14 @@ class MimePart implements MessageInterface
     }
 
     /**
+     * Instantiate from Request Object
+     *
      * @param RequestInterface $request
-     * @param bool $forceBase64
      * @return static
      */
-    public static function fromRequest(RequestInterface $request, $forceBase64 = true)
+    public static function fromRequest(RequestInterface $request)
     {
-        $body = $request->getBody()->getContents();
-        if ($forceBase64) {
-            $encoding = $request->getHeaderLine('content-transfer-encoding');
-            if ($encoding == 'binary') {
-                $request = $request->withHeader('Content-Transfer-Encoding', 'base64');
-                $body = Utils::encodeBase64($body);
-            }
-        }
-        return new static($request->getHeaders(), $body);
+        return new static($request->getHeaders(), $request->getBody()->getContents());
     }
 
     /**
@@ -138,6 +131,14 @@ class MimePart implements MessageInterface
     /**
      * @return bool
      */
+    public function getCountParts()
+    {
+        return count($this->parts);
+    }
+
+    /**
+     * @return bool
+     */
     public function isMultiPart()
     {
         return (count($this->parts) > 1);
@@ -207,7 +208,10 @@ class MimePart implements MessageInterface
         if ($index === null) {
             return $header;
         }
-        if ($param !== null && isset($header[$index])) {
+        if (!isset($header[$index])) {
+            return [];
+        }
+        if ($param !== null) {
             return isset($header[$index][$param]) ? $header[$index][$param] : null;
         }
         return $header[$index];
@@ -224,13 +228,13 @@ class MimePart implements MessageInterface
         if (count($this->parts) > 0) {
             $boundary = $this->getParsedHeader('content-type', 0, 'boundary');
             if ($boundary) {
-                $body .= self::EOL;
+//                $body .= self::EOL;
                 foreach ($this->getParts() as $part) {
 //                    $body .= self::EOL;
                     $body .= '--' . $boundary . self::EOL;
                     $body .= $part->toString() . self::EOL;
                 }
-                $body .= '--' . $boundary . '--';
+                $body .= '--' . $boundary . '--' . self::EOL;
             }
         }
         return $body;
@@ -253,13 +257,11 @@ class MimePart implements MessageInterface
             if ($boundary) {
                 $separator = '--' . preg_quote($boundary, '/');
                 // Get multi-part content
-                if (0 === preg_match('/' . $separator . '\r?\n(.+?)\r?\n' . $separator . '--/s', $body, $matches)) {
-                    throw new \InvalidArgumentException("Can't find multi-part content");
-                }
-                // Get parts
-                $parts = preg_split('/\r?\n' . $separator . '\r?\n/', $matches[1]);
-                foreach ($parts as $part) {
-                    $this->addPart($part);
+                if (preg_match('/' . $separator . '\r?\n(.+?)\r?\n' . $separator . '--/s', $body, $matches)) {
+                    $parts = preg_split('/\r?\n' . $separator . '\r?\n/', $matches[1]);
+                    foreach ($parts as $part) {
+                        $this->addPart($part);
+                    }
                 }
             } else {
                 $this->body = $body;
@@ -275,7 +277,7 @@ class MimePart implements MessageInterface
      */
     public function toString()
     {
-        return rtrim($this->getHeaderLines(), self::EOL) . self::EOL . self::EOL . $this->getBody();
+        return $this->getHeaderLines() . self::EOL . $this->getBody();
     }
 
     /**

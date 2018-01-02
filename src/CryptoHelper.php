@@ -17,21 +17,25 @@ class CryptoHelper
      * @param string $algo Default is SHA256
      * @param bool $includeHeaders
      * @return string
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
-    public static function calculateMIC($payload, $algo = null, $includeHeaders = false)
+    public static function calculateMIC($payload, $algo = 'sha256', $includeHeaders = true)
     {
-        if (empty($algo)) {
-            $algo = 'sha256';
-        } elseif (!in_array($algo, hash_algos())) {
-            throw new \Exception('Unknown hash algorithm');
+        $digestAlgorithm = str_replace('-', '', strtolower($algo));
+        if (!in_array($digestAlgorithm, hash_algos())) {
+            throw new \InvalidArgumentException('Unknown hash algorithm');
         }
-        if ($payload instanceof MimePart) {
-            $payload = $includeHeaders ? $payload->toString() : $payload->getBody();
+        if (!($payload instanceof MimePart)) {
+            $payload = MimePart::fromString($payload);
         }
-        $digest = base64_encode(openssl_digest($payload, $algo, true));
-//        $digest = base64_encode(hash($algo, $payload, true));
-        return $digest . ', ' . strtoupper($algo);
+//        $digest = base64_encode(openssl_digest($payload, $digestAlgorithm, true));
+        $digest = base64_encode(hash(
+            $digestAlgorithm,
+            $includeHeaders ? $payload : $payload->getBody(),
+            true
+        ));
+
+        return $digest . ', ' . $algo;
     }
 
     /**
@@ -41,21 +45,41 @@ class CryptoHelper
      * @param string $cert
      * @param string $key
      * @param array $headers
+     * @param array $micAlgo
      * @return MimePart
-     * @throws \Exception
+     * @throws \RuntimeException
      */
-    public static function sign($data, $cert, $key = null, $headers = [])
+    public static function sign($data, $cert, $key = null, $headers = [], $micAlgo = null)
     {
         if ($data instanceof MimePart) {
             $data = self::getTempFilename($data->toString());
         }
         $temp = self::getTempFilename();
-        if (!openssl_pkcs7_sign($data, $temp, $cert, $key, $headers, PKCS7_BINARY | PKCS7_DETACHED)) {
-            throw new \Exception(
+        if (!openssl_pkcs7_sign($data, $temp, $cert, $key, $headers, PKCS7_DETACHED)) {
+            throw new \RuntimeException(
                 sprintf('Failed to sign S/Mime message. Error: "%s".', openssl_error_string())
             );
         }
-        return MimePart::fromString(file_get_contents($temp));
+        $payload = MimePart::fromString(file_get_contents($temp));
+
+        // TODO: refactory
+        // Some servers doesn't support "x-pkcs7"
+        $contentType = $payload->getHeaderLine('content-type');
+        $contentType = str_replace('x-pkcs7', 'pkcs7', $contentType);
+        if ($micAlgo) {
+            $contentType = preg_replace('/micalg=(.+);/i', 'micalg="'. $micAlgo .'";', $contentType);
+        }
+        $payload = $payload->withHeader('Content-Type', $contentType);
+        foreach ($payload->getParts() as $key => $part) {
+            if ($part->isPkc7Signature()) {
+                $payload->removePart($key);
+                $payload->addPart(
+                    $part->withHeader('Content-Type', 'application/pkcs7-signature; name=smime.p7s; smime-type=signed-data')
+                );
+            }
+        }
+
+        return $payload;
     }
 
     /**
@@ -68,10 +92,6 @@ class CryptoHelper
         if ($data instanceof MimePart) {
             $data = self::getTempFilename((string)$data);
         }
-//        if (is_string($caInfo)) {
-//            $caInfo = [self::getTempFilename($caInfo)];
-//        }
-        // TODO: implement
         return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY);
     }
 
@@ -80,7 +100,7 @@ class CryptoHelper
      * @param string|array $cert
      * @param int $cipher
      * @return MimePart
-     * @throws \Exception
+     * @throws \RuntimeException
      */
     public static function encrypt($data, $cert, $cipher = OPENSSL_CIPHER_3DES)
     {
@@ -93,7 +113,7 @@ class CryptoHelper
         }
         $temp = self::getTempFilename();
         if (!openssl_pkcs7_encrypt($data, $temp, (array)$cert, [], PKCS7_BINARY, $cipher)) {
-            throw new \Exception(
+            throw new \RuntimeException(
                 sprintf('Failed to encrypt S/Mime message. Error: "%s".', openssl_error_string())
             );
         }
@@ -105,7 +125,7 @@ class CryptoHelper
      * @param mixed $cert
      * @param mixed $key
      * @return MimePart
-     * @throws \Exception
+     * @throws \RuntimeException
      */
     public static function decrypt($data, $cert, $key = null)
     {
@@ -113,13 +133,11 @@ class CryptoHelper
             $data = self::getTempFilename((string)$data);
         }
         $temp = self::getTempFilename();
-
         if (!openssl_pkcs7_decrypt($data, $temp, $cert, $key)) {
-            throw new \Exception(
+            throw new \RuntimeException(
                 sprintf('Failed to decrypt S/Mime message. Error: "%s".', openssl_error_string())
             );
         }
-
         return MimePart::fromString(file_get_contents($temp));
     }
 
@@ -152,24 +170,13 @@ class CryptoHelper
      */
     public static function decompress($data)
     {
-        if (!($data instanceof MimePart)) {
-            $data = MimePart::fromString(is_file($data) ? file_get_contents($data) : $data);
+        if ($data instanceof MimePart) {
+            $data = $data->getBody();
         }
-        if ($data->isCompressed()) {
-            return gzdecode(base64_decode($data->getBody()));
-        }
-        return false;
-    }
-
-    /**
-     * @param string $file
-     * @throws \Exception
-     */
-    public static function checkFileReadable($file)
-    {
-        if (!is_readable($file)) {
-            throw new \Exception('File does not exist or is not readable.');
-        }
+//        if ($data->isCompressed()) {
+        return gzdecode(base64_decode($data));
+//        }
+//        return false;
     }
 
     /**

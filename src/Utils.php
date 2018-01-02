@@ -19,8 +19,14 @@ class Utils
         if (!$message) {
             throw new \InvalidArgumentException('Invalid message');
         }
+
+        // RFC2231
+        // TODO: refactory
+        $message = preg_replace("/; \r?\n\s/i", '; ', $message);
+
         // Iterate over each line in the message, accounting for line endings
         $lines = preg_split('/(\\r?\\n)/', $message, -1, PREG_SPLIT_DELIM_CAPTURE);
+
         $result = ['headers' => [], 'body' => ''];
         for ($i = 0, $totalLines = count($lines); $i < $totalLines; $i += 2) {
             $line = $lines[$i];
@@ -112,7 +118,11 @@ class Utils
     {
         $result = '';
         foreach ($headers as $name => $values) {
-            $result .= $name . ': ' . implode(', ', (array)$values) . $eol;
+            $values = implode(', ', (array)$values);
+            if ($name == 'Content-Type') {
+                $values = str_replace('x-pkcs7', 'pkcs7', $values);
+            }
+            $result .= $name . ': ' . $values . $eol;
         }
         return $result;
     }
@@ -139,10 +149,10 @@ class Utils
     public static function generateMessageID($partner)
     {
         $id = $partner instanceof PartnerInterface ? $partner->getAs2Id() : 'unknown';
-        return '<' . uniqid('', true) . '@' .
+        return uniqid('', true) . '@' .
             round(microtime(true)) . '_' .
             str_replace(' ', '', strtolower($id) . '_' .
-                php_uname('n')) . '>';
+                php_uname('n'));
     }
 
     /**
