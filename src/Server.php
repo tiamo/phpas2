@@ -85,13 +85,13 @@ class Server
             }
 
             $body = $request->getBody()->getContents();
+
             $encoding = $request->getHeaderLine('content-transfer-encoding');
             if (!$encoding) {
                 $encoding = $sender->getContentTransferEncoding();
             }
-
             // Force encode binary data to base64, because openssl_pkcs7 doesn't work with binary data
-            if ($encoding == 'binary') {
+            if ($encoding != 'base64') {
                 $request = $request->withHeader('Content-Transfer-Encoding', 'base64');
                 $body = Utils::encodeBase64($body);
             }
@@ -143,13 +143,12 @@ class Server
                 if (!$micalg) {
                     $micalg = $payload->getParsedHeader('content-type', 0, 'micalg');
                 }
-
                 foreach ($payload->getParts() as $part) {
                     if (!$part->isPkc7Signature()) {
                         $payload = $part;
                     }
                 }
-
+                // TODO: multiple attachments
                 // Saving the message mic for sending it in the MDN
                 $message->setMic(CryptoHelper::calculateMIC($payload, $micalg));
                 $message->setSigned();

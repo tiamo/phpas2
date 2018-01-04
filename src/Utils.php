@@ -5,6 +5,29 @@ namespace AS2;
 class Utils
 {
     /**
+     * @param string $content
+     * @return mixed
+     */
+    public static function canonicalize($content)
+    {
+        $content = str_replace("\r\n", "\n", $content);
+        $content = str_replace("\r", "\n", $content);
+        $content = str_replace("\n", "\r\n", $content);
+        return $content;
+    }
+
+    /**
+     * @param $mic
+     * @return string
+     */
+    public static function normalizeMic($mic)
+    {
+        $mic = explode(',', $mic, 2);
+        $mic[1] = strtolower(str_replace('-', '', $mic[1]));
+        return implode(',', $mic);
+    }
+
+    /**
      * Parses an HTTP message into an associative array.
      *
      * The array contains the "headers" key containing an associative array of header

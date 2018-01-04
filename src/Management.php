@@ -52,7 +52,7 @@ class Management
      * @param MessageInterface $message
      * @param string $filePath
      * @param string $contentType
-     * @return MessageInterface
+     * @return MimePart
      */
     public function buildMessageFromFile(MessageInterface $message, $filePath, $contentType = null)
     {
@@ -73,7 +73,7 @@ class Management
      *
      * @param MessageInterface $message
      * @param MimePart|string $payload
-     * @return MessageInterface
+     * @return MimePart
      * @throws \Exception
      */
     public function buildMessage(MessageInterface $message, $payload)
@@ -86,6 +86,9 @@ class Management
         if (!$receiver) {
             throw new \InvalidArgumentException('Unknown Receiver');
         }
+
+        $message->setStatus(MessageInterface::STATUS_PENDING);
+        $message->setPayload($payload);
 
         $this->getLogger()->debug('Build the AS2 message to send to the partner');
 
@@ -107,6 +110,8 @@ class Management
             $payload = MimePart::fromString($payload);
         }
 
+        $micContent = Utils::canonicalize($payload);
+
         // Compress the message if requested in the profile
         if ($receiver->getCompressionType()) {
             $this->getLogger()->debug('Compress the message');
@@ -115,7 +120,7 @@ class Management
         }
 
         // Sign the message if requested in the profile
-        if ($signAlgo = $sender->getSignatureAlgorithm()) {
+        if ($signAlgo = $receiver->getSignatureAlgorithm()) {
             $this->getLogger()->debug('Signing the message using partner key');
 
 //            // If MIC content is set, i.e. message has been signed then calculate the MIC
@@ -127,7 +132,7 @@ class Management
 //            }
 
             $this->getLogger()->debug('Calculate MIC', ['algo' => $signAlgo]);
-            $message->setMic(CryptoHelper::calculateMIC($payload, $signAlgo));
+            $message->setMic(CryptoHelper::calculateMIC($micContent, $signAlgo));
 
             $payload = CryptoHelper::sign($payload,
                 $sender->getCertificate(),
@@ -171,11 +176,10 @@ class Management
         $as2Message = new MimePart($as2headers, $payload->getBody());
 
         $message->setHeaders($as2Message->getHeaderLines());
-        $message->setPayload($as2Message->getBody());
 
         $this->getLogger()->debug('AS2 message has been built successfully, sending it to the partner');
 
-        return $message;
+        return $as2Message;
     }
 
     /**
@@ -183,16 +187,21 @@ class Management
      * Takes the message as argument and posts the as2 message to the partner.
      *
      * @param MessageInterface $message
+     * @param MimePart $payload
      * @return \Psr\Http\Message\ResponseInterface|false
      */
-    public function sendMessage(MessageInterface $message)
+    public function sendMessage(MessageInterface $message, $payload)
     {
         $partner = $message->getReceiver();
 
+        if (!($payload instanceof MimePart)) {
+            $payload = MimePart::fromString($payload);
+        }
+
         try {
             $options = [
-                'headers' => MimePart::fromString($message->getHeaders())->getHeaders(),
-                'body' => $message->getPayload(),
+                'headers' => $payload->getHeaders(),
+                'body' => $payload->getBody(),
 //                'cert' => '' // TODO: partner https cert ?
             ];
 
@@ -223,8 +232,9 @@ class Management
                 }
             } else {
                 $this->getLogger()->debug('No MDN needed, File Transferred successfully to the partner');
-                $message->setStatus(MessageInterface::STATUS_SUCCESS);
             }
+
+            $message->setStatus(MessageInterface::STATUS_SUCCESS);
 
             return $response;
 
@@ -415,12 +425,7 @@ class Management
                             $receivedMic = $bodyPayload->getHeaderLine('Received-Content-MIC');
                             if ($receivedMic && $message->getMic()) {
 
-                                // TODO: refactory
-                                $receivedMic = explode(',', $receivedMic);
-                                $receivedMic[1] = strtolower(str_replace('-', '', $receivedMic[1]));
-                                $receivedMic = implode(',', $receivedMic);
-
-                                if ($message->getMic() != $receivedMic) {
+                                if (Utils::normalizeMic($message->getMic()) != Utils::normalizeMic($receivedMic)) {
                                     throw new \Exception(
                                         sprintf('The Message Integrity Code (MIC) does not match the sent AS2 message (required: %s, returned: %s)',
                                             $message->getMic(),
@@ -437,6 +442,7 @@ class Management
                     }
                 } catch (\Exception $e) {
                     $message->setMdnStatus(MessageInterface::MDN_STATUS_ERROR);
+                    $message->setStatusMsg($e->getMessage());
                     $this->getLogger()->error($e->getMessage(), [$messageId]);
                 }
                 return true;

@@ -30,7 +30,16 @@ class ASN1Helper
                 'type' => ASN1::TYPE_INTEGER,
                 'mapping' => ['0', '1', '2', '4', '5']
             ],
-            'compression' => ASN1\Maps\AlgorithmIdentifier::MAP,
+            'compression' => [
+                'type' => ASN1::TYPE_SEQUENCE,
+                'children' => [
+                    'algorithm'  => ['type' => ASN1::TYPE_OBJECT_IDENTIFIER],
+                    'parameters' => [
+                        'type'     => ASN1::TYPE_ANY,
+                        'optional' => true
+                    ]
+                ]
+            ],
             'payload' => [
                 'type' => ASN1::TYPE_SEQUENCE,
                 'children' => [
@@ -53,10 +62,11 @@ class ASN1Helper
      */
     public static function parse($data, $map)
     {
-        $decoded = ASN1::decodeBER($data);
+        $asn1 = new ASN1();
+        $decoded = $asn1->decodeBER($data);
         if (empty($decoded)) {
             throw new \RuntimeException('Invalid ASN1 Data.');
         }
-        return ASN1::asn1map($decoded[0], $map);
+        return $asn1->asn1map($decoded[0], $map);
     }
 }
