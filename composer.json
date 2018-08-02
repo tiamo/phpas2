@@ -21,7 +21,7 @@
     "ext-openssl": "*",
     "psr/log": "^1.0",
     "guzzlehttp/guzzle": "^6.3",
-    "phpseclib/phpseclib": "^2.0"
+    "phpseclib/phpseclib": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": "~5.0"

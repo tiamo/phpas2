@@ -6,24 +6,26 @@ class Utils
 {
     /**
      * @param string $content
-     * @return mixed
+     * @return string
      */
     public static function canonicalize($content)
     {
         $content = str_replace("\r\n", "\n", $content);
         $content = str_replace("\r", "\n", $content);
         $content = str_replace("\n", "\r\n", $content);
+
         return $content;
     }
 
     /**
-     * @param $mic
+     * @param string $mic
      * @return string
      */
     public static function normalizeMic($mic)
     {
         $mic = explode(',', $mic, 2);
         $mic[1] = strtolower(str_replace('-', '', $mic[1]));
+
         return implode(',', $mic);
     }
 
@@ -39,17 +41,13 @@ class Utils
      */
     public static function parseMessage($message)
     {
-        if (!$message) {
+        if (! $message) {
             throw new \InvalidArgumentException('Invalid message');
         }
-
-        // RFC2231
-        // TODO: refactory
+        // TODO: refactory (RFC2231)
         $message = preg_replace("/; \r?\n\s/i", '; ', $message);
-
         // Iterate over each line in the message, accounting for line endings
         $lines = preg_split('/(\\r?\\n)/', $message, -1, PREG_SPLIT_DELIM_CAPTURE);
-
         $result = ['headers' => [], 'body' => ''];
         for ($i = 0, $totalLines = count($lines); $i < $totalLines; $i += 2) {
             $line = $lines[$i];
@@ -67,6 +65,7 @@ class Utils
                 $result['headers'][$key][] = $value;
             }
         }
+
         return $result;
     }
 
@@ -82,7 +81,7 @@ class Utils
      */
     public static function parseHeader($header)
     {
-        static $trimmed ="'\" \t\n\r\0\x0B";
+        static $trimmed = "'\" \t\n\r\0\x0B";
         $params = $matches = [];
         foreach (self::normalizeHeader($header) as $val) {
             $part = [];
@@ -98,6 +97,7 @@ class Utils
                 $params[] = $part;
             }
         }
+
         return $params;
     }
 
@@ -111,12 +111,12 @@ class Utils
      */
     public static function normalizeHeader($header)
     {
-        if (!is_array($header)) {
+        if (! is_array($header)) {
             return array_map('trim', explode(',', $header));
         }
         $result = [];
         foreach ($header as $value) {
-            foreach ((array)$value as $v) {
+            foreach ((array) $value as $v) {
                 if (strpos($v, ',') === false) {
                     $result[] = $v;
                     continue;
@@ -126,6 +126,7 @@ class Utils
                 }
             }
         }
+
         return $result;
     }
 
@@ -141,12 +142,14 @@ class Utils
     {
         $result = '';
         foreach ($headers as $name => $values) {
-            $values = implode(', ', (array)$values);
+            $values = implode(', ', (array) $values);
             if ($name == 'Content-Type') {
+                // some servers don't support "x-"
                 $values = str_replace('x-pkcs7', 'pkcs7', $values);
             }
             $result .= $name . ': ' . $values . $eol;
         }
+
         return $result;
     }
 
@@ -162,20 +165,29 @@ class Utils
     public static function encodeBase64($str, $lineLength = 64, $lineEnd = "\r\n")
     {
         $lineLength = $lineLength - ($lineLength % 4);
+
         return rtrim(chunk_split(base64_encode($str), $lineLength, $lineEnd));
     }
 
     /**
-     * @param string $partner
+     * Generate Unique Message Id
+     *
+     * @param mixed $partner
      * @return string
      */
-    public static function generateMessageID($partner)
+    public static function generateMessageID($partner = null)
     {
-        $id = $partner instanceof PartnerInterface ? $partner->getAs2Id() : 'unknown';
-        return uniqid('', true) . '@' .
-            round(microtime(true)) . '_' .
-            str_replace(' ', '', strtolower($id) . '_' .
-                php_uname('n'));
+        if ($partner instanceof PartnerInterface) {
+            $partner = $partner->getAs2Id();
+        }
+
+        return date('Y-m-d')
+            . '-' .
+            uniqid('', true)
+            . '@' .
+            ($partner ? strtolower($partner) . '.' : '')
+            .
+            str_replace(' ', '', php_uname('n'));
     }
 
     /**
@@ -185,7 +197,7 @@ class Utils
      * @param string $charList
      * @return string
      */
-    public static function random(int $length = 10, string $charList = '0-9a-z'): string
+    public static function random(int $length = 10, $charList = '0-9a-z')
     {
         $charList = count_chars(preg_replace_callback('#.-.#', function (array $m) {
             return implode('', range($m[0][0], $m[0][2]));
@@ -200,6 +212,7 @@ class Utils
         for ($i = 0; $i < $length; $i++) {
             $res .= $charList[mt_rand(0, $chLen - 1)];
         }
+
         return $res;
     }
 

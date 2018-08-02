@@ -20,13 +20,13 @@ class CryptoHelper
     public static function calculateMIC($payload, $algo = 'sha256', $includeHeaders = true)
     {
         $digestAlgorithm = str_replace('-', '', strtolower($algo));
-        if (!in_array($digestAlgorithm, hash_algos())) {
+        if (! in_array($digestAlgorithm, hash_algos())) {
             throw new \InvalidArgumentException('Unknown hash algorithm');
         }
-        if (!($payload instanceof MimePart)) {
+        if (! ($payload instanceof MimePart)) {
             $payload = MimePart::fromString($payload);
         }
-//        $digest = base64_encode(openssl_digest($payload, $digestAlgorithm, true));
+        //        $digest = base64_encode(openssl_digest($payload, $digestAlgorithm, true));
         $digest = base64_encode(hash(
             $digestAlgorithm,
             $includeHeaders ? $payload : $payload->getBody(),
@@ -53,7 +53,7 @@ class CryptoHelper
             $data = self::getTempFilename($data->toString());
         }
         $temp = self::getTempFilename();
-        if (!openssl_pkcs7_sign($data, $temp, $cert, $key, $headers, PKCS7_DETACHED)) {
+        if (! openssl_pkcs7_sign($data, $temp, $cert, $key, $headers, PKCS7_DETACHED)) {
             throw new \RuntimeException(
                 sprintf('Failed to sign S/Mime message. Error: "%s".', openssl_error_string())
             );
@@ -61,7 +61,7 @@ class CryptoHelper
         $payload = MimePart::fromString(file_get_contents($temp));
 
         // TODO: refactory
-        // Some servers doesn't support "x-pkcs7"
+        // Some servers don't support "x-pkcs7"
         $contentType = $payload->getHeaderLine('content-type');
         $contentType = str_replace('x-pkcs7', 'pkcs7', $contentType);
         if ($micAlgo) {
@@ -73,124 +73,13 @@ class CryptoHelper
             if ($part->isPkc7Signature()) {
                 $payload->removePart($key);
                 $payload->addPart(
-                    $part->withHeader('Content-Type', 'application/pkcs7-signature; name=smime.p7s; smime-type=signed-data')
+                    $part->withHeader('Content-Type',
+                        'application/pkcs7-signature; name=smime.p7s; smime-type=signed-data')
                 );
             }
         }
 
         return $payload;
-    }
-
-    /**
-     * @param string|MimePart $data
-     * @param array $caInfo Information about the trusted CA certificates to use in the verification process
-     * @return bool
-     */
-    public static function verify($data, $caInfo = [])
-    {
-        if ($data instanceof MimePart) {
-            $data = self::getTempFilename((string)$data);
-        }
-        return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY);
-    }
-
-    /**
-     * @param string|MimePart $data
-     * @param string|array $cert
-     * @param int $cipher
-     * @return MimePart
-     * @throws \RuntimeException
-     */
-    public static function encrypt($data, $cert, $cipher = OPENSSL_CIPHER_3DES)
-    {
-        if ($data instanceof MimePart) {
-            $data = self::getTempFilename((string)$data);
-        }
-        // Get cipher by name
-        if (is_string($cipher) && defined('OPENSSL_CIPHER_' . strtoupper($cipher))) {
-            $cipher = constant('OPENSSL_CIPHER_' . strtoupper($cipher));
-        }
-        $temp = self::getTempFilename();
-        if (!openssl_pkcs7_encrypt($data, $temp, (array)$cert, [], PKCS7_BINARY, $cipher)) {
-            throw new \RuntimeException(
-                sprintf('Failed to encrypt S/Mime message. Error: "%s".', openssl_error_string())
-            );
-        }
-        return MimePart::fromString(file_get_contents($temp));
-    }
-
-    /**
-     * @param string|MimePart $data
-     * @param mixed $cert
-     * @param mixed $key
-     * @return MimePart
-     * @throws \RuntimeException
-     */
-    public static function decrypt($data, $cert, $key = null)
-    {
-        if ($data instanceof MimePart) {
-            $data = self::getTempFilename((string)$data);
-        }
-        $temp = self::getTempFilename();
-        if (!openssl_pkcs7_decrypt($data, $temp, $cert, $key)) {
-            throw new \RuntimeException(
-                sprintf('Failed to decrypt S/Mime message. Error: "%s".', openssl_error_string())
-            );
-        }
-        return MimePart::fromString(file_get_contents($temp));
-    }
-
-    /**
-     * Compress data
-     *
-     * @param string|MimePart $data
-     * @param string $encoding
-     * @return MimePart
-     */
-    public static function compress($data, $encoding = 'base64')
-    {
-        if ($data instanceof MimePart) {
-            $content = $data->toString();
-        } else {
-            $content = is_file($data) ? file_get_contents($data) : $data;
-        }
-        $headers = [
-            'Content-Type' => MimePart::TYPE_PKCS7_MIME . '; name="smime.p7z"; smime-type=' . MimePart::SMIME_TYPE_COMPRESSED,
-            'Content-Description' => 'S/MIME Compressed Message',
-            'Content-Disposition' => 'attachment; filename="smime.p7z"',
-            'Content-Encoding' => $encoding,
-        ];
-        // TODO: ASN1::encodeDER();
-        $content = gzcompress($content);
-        if ($encoding == 'base64') {
-            $content = Utils::encodeBase64($content);
-        }
-        return new MimePart($headers, $content);
-    }
-
-    /**
-     * Decompress data
-     *
-     * @param string|MimePart $data
-     * @return string
-     * @throws \Exception
-     */
-    public static function decompress($data)
-    {
-        $encoding = 'binary';
-        if ($data instanceof MimePart) {
-            $encoding = $data->getHeaderLine('Content-Transfer-Encoding');
-            $data = $data->getBody();
-        }
-        if ($encoding == 'base64') {
-            $data = base64_decode($data);
-        }
-        $payload = ASN1Helper::parse($data, ASN1Helper::CONTENT_INFO_MAP);
-        if ($payload['contentType'] == ASN1Helper::COMPRESSED_DATA_OID) {
-            $payload = ASN1Helper::parse($payload['content']->element, ASN1Helper::COMPRESSED_DATA_MAP);
-            $data = gzuncompress($payload['payload']['content']);
-        }
-        return MimePart::fromString($data);
     }
 
     /**
@@ -206,7 +95,143 @@ class CryptoHelper
         if ($content) {
             file_put_contents($filename, $content);
         }
+
         return $filename;
+    }
+
+    /**
+     * @param string|MimePart $data
+     * @param array $caInfo Information about the trusted CA certificates to use in the verification process
+     * @return bool
+     */
+    public static function verify($data, $caInfo = [])
+    {
+        if ($data instanceof MimePart) {
+            $data = self::getTempFilename((string) $data);
+        }
+
+        return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY, null, $caInfo);
+    }
+
+    /**
+     * @param string|MimePart $data
+     * @param string|array $cert
+     * @param int $cipher
+     * @return MimePart
+     * @throws \RuntimeException
+     */
+    public static function encrypt($data, $cert, $cipher = OPENSSL_CIPHER_3DES)
+    {
+        if ($data instanceof MimePart) {
+            $data = self::getTempFilename((string) $data);
+        }
+        if (is_string($cipher) && defined('OPENSSL_CIPHER_' . strtoupper($cipher))) {
+            $cipher = constant('OPENSSL_CIPHER_' . strtoupper($cipher));
+        }
+        $temp = self::getTempFilename();
+        if (! openssl_pkcs7_encrypt($data, $temp, (array) $cert, [], PKCS7_BINARY, $cipher)) {
+            throw new \RuntimeException(
+                sprintf('Failed to encrypt S/Mime message. Error: "%s".', openssl_error_string())
+            );
+        }
+
+        return MimePart::fromString(file_get_contents($temp));
+    }
+
+    /**
+     * @param string|MimePart $data
+     * @param mixed $cert
+     * @param mixed $key
+     * @return MimePart
+     * @throws \RuntimeException
+     */
+    public static function decrypt($data, $cert, $key = null)
+    {
+        if ($data instanceof MimePart) {
+            $data = self::getTempFilename((string) $data);
+        }
+        $temp = self::getTempFilename();
+        if (! openssl_pkcs7_decrypt($data, $temp, $cert, $key)) {
+            throw new \RuntimeException(
+                sprintf('Failed to decrypt S/Mime message. Error: "%s".', openssl_error_string())
+            );
+        }
+
+        return MimePart::fromString(file_get_contents($temp));
+    }
+
+    /**
+     * Compress data
+     *
+     * @param string|MimePart $data
+     * @param string $encoding
+     * @return MimePart
+     */
+    public static function compress($data, $encoding = MimePart::ENCODING_BASE64)
+    {
+        if ($data instanceof MimePart) {
+            $content = $data->toString();
+        } else {
+            $content = is_file($data) ? file_get_contents($data) : $data;
+        }
+        $headers = [
+            'Content-Type' => MimePart::TYPE_PKCS7_MIME . '; name="smime.p7z"; smime-type=' . MimePart::SMIME_TYPE_COMPRESSED,
+            'Content-Description' => 'S/MIME Compressed Message',
+            'Content-Disposition' => 'attachment; filename="smime.p7z"',
+            'Content-Encoding' => $encoding,
+        ];
+
+        $content = ASN1::encodeDER([
+            'contentType' => ASN1::COMPRESSED_DATA_OID,
+            'content' => ASN1::encodeDER([
+                'version' => 0,
+                'compression' => [
+                    'algorithm' => ASN1::ALG_ZLIB_OID,
+                ],
+                'payload' => [
+                    'contentType' => ASN1::ENVELOPED_DATA_OID,
+                    'content' => gzcompress($content),
+                ],
+            ], ASN1::COMPRESSED_DATA_MAP),
+        ], ASN1::CONTENT_INFO_MAP);
+
+        if ($encoding == MimePart::ENCODING_BASE64) {
+            $content = Utils::encodeBase64($content);
+        }
+
+        return new MimePart($headers, $content);
+    }
+
+    /**
+     * Decompress data
+     *
+     * @param string|MimePart $data
+     * @param string $encoding
+     * @return string
+     */
+    public static function decompress($data, $encoding = MimePart::ENCODING_BASE64)
+    {
+        if ($data instanceof MimePart) {
+            // $encoding = $data->getHeaderLine('Content-Transfer-Encoding');
+            $encoding = $data->getHeaderLine('Content-Encoding');
+            $data = $data->getBody();
+        }
+
+        if ($encoding == MimePart::ENCODING_BASE64) {
+            $data = base64_decode($data);
+        }
+
+        $payload = ASN1::decodeDER($data, ASN1::CONTENT_INFO_MAP);
+
+        if ($payload['contentType'] == ASN1::COMPRESSED_DATA_OID) {
+            $compressed = ASN1::decodeDER($payload['content'], ASN1::COMPRESSED_DATA_MAP);
+            if (empty($compressed['payload'])) {
+                throw new \RuntimeException('Invalid compressed data.');
+            }
+            $data = gzuncompress($compressed['payload']['content']);
+        }
+
+        return MimePart::fromString($data);
     }
 
 }

@@ -24,6 +24,11 @@ class MimePart implements MessageInterface
     const SMIME_TYPE_ENCRYPTED = 'enveloped-data';
     const SMIME_TYPE_SIGNED = 'signed-data';
 
+    const ENCODING_7BIT = '7bit';
+    const ENCODING_8BIT = '8bit';
+    const ENCODING_QUOTEDPRINTABLE = 'quoted-printable';
+    const ENCODING_BASE64 = 'base64';
+
     /**
      * @var string
      */
