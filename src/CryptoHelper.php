@@ -181,19 +181,19 @@ class CryptoHelper
             'Content-Encoding' => $encoding,
         ];
 
-        $content = ASN1::encodeDER([
-            'contentType' => ASN1::COMPRESSED_DATA_OID,
-            'content' => ASN1::encodeDER([
+        $content = ASN1Helper::encodeDER([
+            'contentType' => ASN1Helper::COMPRESSED_DATA_OID,
+            'content' => ASN1Helper::encodeDER([
                 'version' => 0,
                 'compression' => [
-                    'algorithm' => ASN1::ALG_ZLIB_OID,
+                    'algorithm' => ASN1Helper::ALG_ZLIB_OID,
                 ],
                 'payload' => [
-                    'contentType' => ASN1::ENVELOPED_DATA_OID,
+                    'contentType' => ASN1Helper::ENVELOPED_DATA_OID,
                     'content' => gzcompress($content),
                 ],
-            ], ASN1::COMPRESSED_DATA_MAP),
-        ], ASN1::CONTENT_INFO_MAP);
+            ], ASN1Helper::COMPRESSED_DATA_MAP),
+        ], ASN1Helper::CONTENT_INFO_MAP);
 
         if ($encoding == MimePart::ENCODING_BASE64) {
             $content = Utils::encodeBase64($content);
@@ -221,10 +221,10 @@ class CryptoHelper
             $data = base64_decode($data);
         }
 
-        $payload = ASN1::decodeDER($data, ASN1::CONTENT_INFO_MAP);
+        $payload = ASN1Helper::decodeDER($data, ASN1Helper::CONTENT_INFO_MAP);
 
-        if ($payload['contentType'] == ASN1::COMPRESSED_DATA_OID) {
-            $compressed = ASN1::decodeDER($payload['content'], ASN1::COMPRESSED_DATA_MAP);
+        if ($payload['contentType'] == ASN1Helper::COMPRESSED_DATA_OID) {
+            $compressed = ASN1Helper::decodeDER($payload['content'], ASN1Helper::COMPRESSED_DATA_MAP);
             if (empty($compressed['payload'])) {
                 throw new \RuntimeException('Invalid compressed data.');
             }
