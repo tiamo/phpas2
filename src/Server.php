@@ -114,101 +114,96 @@ class Server
 
             $micalg = $payload->getParsedHeader('Disposition-Notification-Options', 2, 0);
 
-            try {
 
-                // Check if payload is encrypted and if so decrypt it
-                if ($payload->isEncrypted()) {
-                    $this->getLogger()->debug('Inbound AS2 message is encrypted.');
-                    $payload = CryptoHelper::decrypt($payload, $receiver->getCertificate(), $receiver->getPrivateKey());
-                    $this->getLogger()->debug('The inbound AS2 message data has been decrypted.');
-                    $message->setEncrypted();
+            // Check if payload is encrypted and if so decrypt it
+            if ($payload->isEncrypted()) {
+                $this->getLogger()->debug('Inbound AS2 message is encrypted.');
+                $payload = CryptoHelper::decrypt($payload, $receiver->getCertificate(), $receiver->getPrivateKey());
+                $this->getLogger()->debug('The inbound AS2 message data has been decrypted.');
+                $message->setEncrypted();
+            }
+
+            // Check if message from this partner are expected to be signed
+            //            if ($receiver->getSignatureAlgorithm() && !$payload->isSigned()) {
+            //                throw new \InvalidArgumentException('Incoming message from AS2 partner are defined to be signed');
+            //            }
+
+            // Check if message is signed and if so verify it
+            if ($payload->isSigned()) {
+                $this->getLogger()->debug('Inbound AS2 message is signed.');
+                $this->getLogger()->debug(sprintf('The sender used the algorithm "%s" to sign the inbound AS2 message.',
+                    $micalg));
+                $this->getLogger()->debug('Using certificate to verify inbound AS2 message signature.');
+                if (! CryptoHelper::verify($payload, $sender->getCertificate())) {
+                    throw new \RuntimeException('Signature Verification Failed');
+                }
+                $this->getLogger()->debug('Digital signature of inbound AS2 message has been verified successful.');
+                $this->getLogger()->debug(sprintf('Found %s payload attachments in the inbound AS2 message.',
+                    $payload->getCountParts() - 1));
+
+                if (! $micalg) {
+                    $micalg = $payload->getParsedHeader('content-type', 0, 'micalg');
+                }
+                foreach ($payload->getParts() as $part) {
+                    if (! $part->isPkc7Signature()) {
+                        $payload = $part;
+                    }
+                }
+                // TODO: AS2-Version: 1.1 multiple attachments
+                // Saving the message mic for sending it in the MDN
+                $message->setMic(CryptoHelper::calculateMIC($payload, $micalg));
+                $message->setSigned();
+            }
+
+            // Check if the message has been compressed and if so decompress it
+            if ($payload->isCompressed()) {
+                $this->getLogger()->debug('Decompressing the payload');
+                $payload = CryptoHelper::decompress($payload);
+                $message->setCompressed();
+            }
+
+            //  If this is a MDN, get the Message-Id and check if it exists
+            if ($payload->isReport()) {
+                // Get Original Message-Id
+                $messageId = null;
+                foreach ($payload->getParts() as $part) {
+                    if ($part->getParsedHeader('content-type', 0, 0) == 'message/disposition-notification') {
+                        $bodyPayload = MimePart::fromString($part->getBody());
+                        $messageId = trim($bodyPayload->getParsedHeader('original-message-id', 0, 0), '<>');
+                    }
+                }
+                $this->getLogger()->debug('Asynchronous MDN received for AS2 message', [$messageId]);
+                $message = $this->storage->getMessage($messageId);
+                if (! $message) {
+                    throw new \InvalidArgumentException('Unknown AS2 MDN received. Will not be processed');
+                }
+                $this->manager->processMdn($message, $payload);
+                $this->storage->saveMessage($message);
+                $responseBody = 'AS2 ASYNC MDN has been received';
+            } else {
+
+                $message->setPayload((string) $payload);
+                $message->setStatus(MessageInterface::STATUS_SUCCESS);
+                // $this->manager->processMessage($message, $payload);
+
+                // if MDN enabled than send notification
+                if ($mdnMode = $receiver->getMdnMode()) {
+                    $mdn = $this->manager->buildMdn($message);
+                    $message->setMdnStatus(MessageInterface::MDN_STATUS_SENT);
+                    if ($mdnMode == PartnerInterface::MDN_MODE_SYNC) {
+                        $this->getLogger()->debug(sprintf('Synchronous MDN sent as answer to message "%s".',
+                            $messageId));
+                        $responseHeaders = $mdn->getHeaders();
+                        $responseBody = $mdn->getBody();
+                    } else {
+                        $this->getLogger()->debug(sprintf('Asynchronous MDN sent as answer to message "%s".',
+                            $messageId));
+                        $this->manager->sendMdn($message);
+                    }
                 }
 
-                // Check if message from this partner are expected to be signed
-                //            if ($receiver->getSignatureAlgorithm() && !$payload->isSigned()) {
-                //                throw new \InvalidArgumentException('Incoming message from AS2 partner are defined to be signed');
-                //            }
-
-                // Check if message is signed and if so verify it
-                if ($payload->isSigned()) {
-                    $this->getLogger()->debug('Inbound AS2 message is signed.');
-                    $this->getLogger()->debug(sprintf('The sender used the algorithm "%s" to sign the inbound AS2 message.',
-                        $micalg));
-                    $this->getLogger()->debug('Using certificate to verify inbound AS2 message signature.');
-                    if (! CryptoHelper::verify($payload, $sender->getCertificate())) {
-                        throw new \RuntimeException('Signature Verification Failed');
-                    }
-                    $this->getLogger()->debug('Digital signature of inbound AS2 message has been verified successful.');
-                    $this->getLogger()->debug(sprintf('Found %s payload attachments in the inbound AS2 message.',
-                        $payload->getCountParts() - 1));
-
-                    if (! $micalg) {
-                        $micalg = $payload->getParsedHeader('content-type', 0, 'micalg');
-                    }
-                    foreach ($payload->getParts() as $part) {
-                        if (! $part->isPkc7Signature()) {
-                            $payload = $part;
-                        }
-                    }
-                    // TODO: AS2-Version: 1.1 multiple attachments
-                    // Saving the message mic for sending it in the MDN
-                    $message->setMic(CryptoHelper::calculateMIC($payload, $micalg));
-                    $message->setSigned();
-                }
-
-                // Check if the message has been compressed and if so decompress it
-                if ($payload->isCompressed()) {
-                    $this->getLogger()->debug('Decompressing the payload');
-                    $payload = CryptoHelper::decompress($payload);
-                    $message->setCompressed();
-                }
-
-                //  If this is a MDN, get the Message-Id and check if it exists
-                if ($payload->isReport()) {
-                    // Get Original Message-Id
-                    $messageId = null;
-                    foreach ($payload->getParts() as $part) {
-                        if ($part->getParsedHeader('content-type', 0, 0) == 'message/disposition-notification') {
-                            $bodyPayload = MimePart::fromString($part->getBody());
-                            $messageId = trim($bodyPayload->getParsedHeader('original-message-id', 0, 0), '<>');
-                        }
-                    }
-                    $this->getLogger()->debug('Asynchronous MDN received for AS2 message', [$messageId]);
-                    $message = $this->storage->getMessage($messageId);
-                    if (! $message) {
-                        throw new \InvalidArgumentException('Unknown AS2 MDN received. Will not be processed');
-                    }
-                    $this->manager->processMdn($message, $payload);
-                    $this->storage->saveMessage($message);
-                    $responseBody = 'AS2 ASYNC MDN has been received';
-                } else {
-
-                    $message->setPayload((string) $payload);
-                    $message->setStatus(MessageInterface::STATUS_SUCCESS);
-                    //                $this->manager->processMessage($message, $payload);
-
-                    // if MDN enabled than send notification
-                    if ($mdnMode = $receiver->getMdnMode()) {
-                        $mdn = $this->manager->buildMdn($message);
-                        $message->setMdnStatus(MessageInterface::MDN_STATUS_SENT);
-                        if ($mdnMode == PartnerInterface::MDN_MODE_SYNC) {
-                            $this->getLogger()->debug(sprintf('Synchronous MDN sent as answer to message "%s".',
-                                $messageId));
-                            $responseHeaders = $mdn->getHeaders();
-                            $responseBody = $mdn->getBody();
-                        } else {
-                            $this->getLogger()->debug(sprintf('Asynchronous MDN sent as answer to message "%s".',
-                                $messageId));
-                            $this->manager->sendMdn($message);
-                        }
-                    }
-
-                    $this->storage->saveMessage($message);
-                    $this->getLogger()->debug('AS2 communication successful, message has been saved.', [$messageId]);
-                }
-
-            } catch (\Exception $e) {
-
+                $this->storage->saveMessage($message);
+                $this->getLogger()->debug('AS2 communication successful, message has been saved.', [$messageId]);
             }
 
         } catch (\Exception $e) {

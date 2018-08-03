@@ -393,7 +393,10 @@ class Management
 
         // Parse Message Headers
         $messageHeaders = MimePart::fromString($message->getHeaders());
-        $isSignedRequested = $messageHeaders->hasHeader('disposition-notification-options');
+        $notificationOptions = $messageHeaders->hasHeader('disposition-notification-options');
+
+        // TODO: parse (signed-receipt-protocol, signed-receipt-micalg)
+        // $notificationOptions = Utils::parseHeader($notificationOptions);
 
         $headers = [
             'Message-ID' => '<' . Utils::generateMessageID($receiver) . '>',
@@ -406,7 +409,7 @@ class Management
             'Connection' => 'close',
         ];
 
-        if (! $isSignedRequested) {
+        if (! $notificationOptions) {
             $reportHeaders['Mime-Version'] = '1.0';
             $reportHeaders += $headers;
         }
@@ -439,7 +442,7 @@ class Management
         ], Utils::normalizeHeaders($mdnData)));
 
         // If signed MDN is requested by partner then sign the MDN and attach to report
-        if ($isSignedRequested) {
+        if ($notificationOptions) {
             $this->getLogger()->debug('Outbound MDN has been signed.');
             $x509 = openssl_x509_read($receiver->getCertificate());
             $key = openssl_get_privatekey($receiver->getPrivateKey(), $receiver->getPrivateKeyPassPhrase());

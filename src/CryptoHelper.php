@@ -26,7 +26,7 @@ class CryptoHelper
         if (! ($payload instanceof MimePart)) {
             $payload = MimePart::fromString($payload);
         }
-        //        $digest = base64_encode(openssl_digest($payload, $digestAlgorithm, true));
+        // $digest = base64_encode(openssl_digest($payload, $digestAlgorithm, true));
         $digest = base64_encode(hash(
             $digestAlgorithm,
             $includeHeaders ? $payload : $payload->getBody(),
@@ -109,8 +109,9 @@ class CryptoHelper
         if ($data instanceof MimePart) {
             $data = self::getTempFilename((string) $data);
         }
-
-        return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY, null, $caInfo);
+        // TODO: implement
+        // return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY, null, $caInfo);
+        return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY);
     }
 
     /**
