@@ -3,10 +3,8 @@
 namespace AS2;
 
 use GuzzleHttp\Psr7\MessageTrait;
-use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\RequestInterface;
 
-class MimePart implements MessageInterface
+class MimePart implements \Psr\Http\Message\MessageInterface
 {
     use MessageTrait;
 
@@ -55,10 +53,10 @@ class MimePart implements MessageInterface
     /**
      * Instantiate from Request Object
      *
-     * @param RequestInterface $request
+     * @param \Psr\Http\Message\RequestInterface $request
      * @return static
      */
-    public static function fromRequest(RequestInterface $request)
+    public static function fromRequest(\Psr\Http\Message\RequestInterface $request)
     {
         return new static($request->getHeaders(), $request->getBody()->getContents());
     }

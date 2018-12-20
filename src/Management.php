@@ -3,10 +3,11 @@
 namespace AS2;
 
 use GuzzleHttp\Client;
+use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-class Management
+class Management implements LoggerAwareInterface
 {
     const AS2_VERSION = '1.2';
     const USER_AGENT = 'PHPAS2';
@@ -43,10 +44,11 @@ class Management
      * @param MessageInterface $message
      * @param string $filePath
      * @param string $contentType
+     * @param string $encoding
      * @return MimePart
      * @throws \Exception
      */
-    public function buildMessageFromFile(MessageInterface $message, $filePath, $contentType = null)
+    public function buildMessageFromFile(MessageInterface $message, $filePath, $contentType = null, $encoding = 'binary')
     {
         if (! $contentType) {
             $contentType = $message->getReceiver()->getContentType();
@@ -54,6 +56,7 @@ class Management
         $payload = new MimePart([
             'Content-Type' => $contentType ? $contentType : 'text/plain',
             'Content-Disposition' => 'attachment; filename="' . basename($filePath) . '"',
+            'Content-Transfer-Encoding' => $encoding,
         ], file_get_contents($filePath));
 
         return $this->buildMessage($message, $payload);
@@ -204,7 +207,7 @@ class Management
      * Takes the message as argument and posts the as2 message to the partner.
      *
      * @param MessageInterface $message
-     * @param MimePart $payload
+     * @param MimePart|string $payload
      * @return \Psr\Http\Message\ResponseInterface|false
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
