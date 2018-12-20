@@ -101,7 +101,7 @@ class CryptoHelper
 
     /**
      * @param string|MimePart $data
-     * @param array $caInfo Information about the trusted CA certificates to use in the verification process
+     * @param array|null $caInfo Information about the trusted CA certificates to use in the verification process
      * @return bool
      */
     public static function verify($data, $caInfo = [])
@@ -109,7 +109,12 @@ class CryptoHelper
         if ($data instanceof MimePart) {
             $data = self::getTempFilename((string) $data);
         }
-        // TODO: implement
+        // TODO: refactory
+        // if (! is_array($caInfo)) {
+        //     $caInfo = [
+        //         self::getTempFilename($caInfo),
+        //     ];
+        // }
         // return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY, null, $caInfo);
         return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY);
     }
@@ -193,8 +198,8 @@ class CryptoHelper
                     'contentType' => ASN1Helper::ENVELOPED_DATA_OID,
                     'content' => gzcompress($content),
                 ],
-            ], ASN1Helper::COMPRESSED_DATA_MAP),
-        ], ASN1Helper::CONTENT_INFO_MAP);
+            ], ASN1Helper::getCompressedDataMap()),
+        ], ASN1Helper::getContentInfoMap());
 
         if ($encoding == MimePart::ENCODING_BASE64) {
             $content = Utils::encodeBase64($content);
@@ -222,10 +227,10 @@ class CryptoHelper
             $data = base64_decode($data);
         }
 
-        $payload = ASN1Helper::decodeDER($data, ASN1Helper::CONTENT_INFO_MAP);
+        $payload = ASN1Helper::decodeDER($data, ASN1Helper::getContentInfoMap());
 
         if ($payload['contentType'] == ASN1Helper::COMPRESSED_DATA_OID) {
-            $compressed = ASN1Helper::decodeDER($payload['content'], ASN1Helper::COMPRESSED_DATA_MAP);
+            $compressed = ASN1Helper::decodeDER($payload['content'], ASN1Helper::getCompressedDataMap());
             if (empty($compressed['payload'])) {
                 throw new \RuntimeException('Invalid compressed data.');
             }
@@ -234,5 +239,4 @@ class CryptoHelper
 
         return MimePart::fromString($data);
     }
-
 }

@@ -197,7 +197,7 @@ class Utils
      * @param string $charList
      * @return string
      */
-    public static function random(int $length = 10, $charList = '0-9a-z')
+    public static function random($length = 10, $charList = '0-9a-z')
     {
         $charList = count_chars(preg_replace_callback('#.-.#', function (array $m) {
             return implode('', range($m[0][0], $m[0][2]));
@@ -222,7 +222,7 @@ class Utils
      * @param string $s
      * @return bool
      */
-    public static function checkEncoding(string $s)
+    public static function checkEncoding($s)
     {
         return $s === self::fixEncoding($s);
     }
@@ -233,7 +233,7 @@ class Utils
      * @param string $s
      * @return bool
      */
-    public static function fixEncoding(string $s)
+    public static function fixEncoding($s)
     {
         // removes xD800-xDFFF, x110000 and higher
         return htmlspecialchars_decode(htmlspecialchars($s, ENT_NOQUOTES | ENT_IGNORE, 'UTF-8'), ENT_NOQUOTES);

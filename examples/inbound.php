@@ -21,10 +21,9 @@ file_put_contents('data/inbound/' . $messageId . '.raw', $headers . file_get_con
 
 $server = new \AS2\Server($manager, $storage);
 
-//$message = file_get_contents('data/inbound/mendelson_opensource_AS2-1514906682749-1@mycompanyAS2_phpas2.raw');
+//$message = file_get_contents('data/inbound/mendelson_opensource_AS2-1514912694550-2@mycompanyAS2_phpas2.raw');
 //$payload = \AS2\Utils::parseMessage($message);
-////$payload['body'] = \AS2\Utils::encodeBase64($payload['body']);
-//
+
 //$serverRequest = new ServerRequest(
 //    'POST',
 //    'http:://localhost',
@@ -41,7 +40,7 @@ $response = $server->execute();
 
 foreach ($response->getHeaders() as $name => $values) {
     foreach ($values as $value) {
-        header(sprintf('%s: %s', $name, $value), false);
+        @header(sprintf('%s: %s', $name, $value), false);
     }
 }
 
