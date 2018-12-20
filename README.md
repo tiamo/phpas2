@@ -8,13 +8,14 @@ EDI-X12, EDIFACT, XML, or binary payloads between trading partners.
 
 * php >= 5.5
 * ext-openssl
+* ext-zlib
 
 ## Installation
 
 The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
 Either run
 ```
-composer require --prefer-dist tiamo/phpas2 "^1.3"
+composer require tiamo/phpas2:^1.3
 ```
 or add
 ```
