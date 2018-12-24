@@ -130,6 +130,11 @@ class Server
 
             // Check if message is signed and if so verify it
             if ($payload->isSigned()) {
+
+                if (! $micalg) {
+                    $micalg = $payload->getParsedHeader('content-type', 0, 'micalg');
+                }
+
                 $this->getLogger()->debug('Inbound AS2 message is signed.');
                 $this->getLogger()->debug(
                     sprintf('The sender used the algorithm "%s" to sign the inbound AS2 message.', $micalg)
@@ -144,9 +149,6 @@ class Server
                 $this->getLogger()->debug(sprintf('Found %s payload attachments in the inbound AS2 message.',
                     $payload->getCountParts() - 1));
 
-                if (! $micalg) {
-                    $micalg = $payload->getParsedHeader('content-type', 0, 'micalg');
-                }
                 foreach ($payload->getParts() as $part) {
                     if (! $part->isPkc7Signature()) {
                         $payload = $part;
