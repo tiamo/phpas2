@@ -131,12 +131,15 @@ class Server
             // Check if message is signed and if so verify it
             if ($payload->isSigned()) {
                 $this->getLogger()->debug('Inbound AS2 message is signed.');
-                $this->getLogger()->debug(sprintf('The sender used the algorithm "%s" to sign the inbound AS2 message.',
-                    $micalg));
+                $this->getLogger()->debug(
+                    sprintf('The sender used the algorithm "%s" to sign the inbound AS2 message.', $micalg)
+                );
                 $this->getLogger()->debug('Using certificate to verify inbound AS2 message signature.');
+
                 if (! CryptoHelper::verify($payload, $sender->getCertificate())) {
                     throw new \RuntimeException('Signature Verification Failed');
                 }
+
                 $this->getLogger()->debug('Digital signature of inbound AS2 message has been verified successful.');
                 $this->getLogger()->debug(sprintf('Found %s payload attachments in the inbound AS2 message.',
                     $payload->getCountParts() - 1));

@@ -211,13 +211,11 @@ class MimePart implements \Psr\Http\Message\MessageInterface
         if ($index === null) {
             return $header;
         }
-        if (!isset($header[$index])) {
-            return [];
-        }
+        $params = isset($header[$index]) ? $header[$index] : [];
         if ($param !== null) {
-            return isset($header[$index][$param]) ? $header[$index][$param] : null;
+            return isset($params[$param]) ? $params[$param] : null;
         }
-        return $header[$index];
+        return $params;
     }
 
     /**
