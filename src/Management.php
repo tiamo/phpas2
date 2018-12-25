@@ -263,6 +263,7 @@ class Management implements LoggerAwareInterface
         } catch (\Exception $e) {
             $this->getLogger()->critical($e->getMessage());
             $message->setStatus(MessageInterface::STATUS_ERROR);
+            $message->setStatusMsg($e->getMessage());
         }
 
         return false;
