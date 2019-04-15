@@ -39,6 +39,7 @@ class MimePart implements \Psr\Http\Message\MessageInterface
 
     /**
      * MimePart constructor.
+     *
      * @param array $headers
      * @param null $body
      */

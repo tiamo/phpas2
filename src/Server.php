@@ -89,7 +89,10 @@ class Server
 
             $encoding = $request->getHeaderLine('content-transfer-encoding');
             if (! $encoding) {
-                $encoding = $sender->getContentTransferEncoding();
+                $encoding = $request->getHeaderLine('content-encoding');
+                if (! $encoding) {
+                    $encoding = $sender->getContentTransferEncoding();
+                }
             }
             // Force encode binary data to base64, because openssl_pkcs7 doesn't work with binary data
             if ($encoding != 'base64') {
@@ -114,11 +117,14 @@ class Server
 
             $micalg = $payload->getParsedHeader('Disposition-Notification-Options', 2, 0);
 
-
             // Check if payload is encrypted and if so decrypt it
             if ($payload->isEncrypted()) {
                 $this->getLogger()->debug('Inbound AS2 message is encrypted.');
-                $payload = CryptoHelper::decrypt($payload, $receiver->getCertificate(), $receiver->getPrivateKey());
+                // TODO: check passKey
+                $payload = CryptoHelper::decrypt($payload, $receiver->getCertificate(), [
+                    $receiver->getPrivateKey(),
+                    $receiver->getPrivateKeyPassPhrase(),
+                ]);
                 $this->getLogger()->debug('The inbound AS2 message data has been decrypted.');
                 $message->setEncrypted();
             }
@@ -186,7 +192,6 @@ class Server
                 $this->storage->saveMessage($message);
                 $responseBody = 'AS2 ASYNC MDN has been received';
             } else {
-
                 $message->setPayload((string) $payload);
                 $message->setStatus(MessageInterface::STATUS_SUCCESS);
                 // $this->manager->processMessage($message, $payload);
@@ -201,6 +206,7 @@ class Server
                         $responseHeaders = $mdn->getHeaders();
                         $responseBody = $mdn->getBody();
                     } else {
+                        // TODO: cron, queue, new thread
                         $this->getLogger()->debug(sprintf('Asynchronous MDN sent as answer to message "%s".',
                             $messageId));
                         $this->manager->sendMdn($message);

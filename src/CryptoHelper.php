@@ -40,20 +40,20 @@ class CryptoHelper
      * Sign data which contains mime headers
      *
      * @param string|MimePart $data
-     * @param string $cert
-     * @param string $key
+     * @param string|resource $cert
+     * @param string|resource $privateKey
      * @param array $headers
      * @param array $micAlgo
      * @return MimePart
      * @throws \RuntimeException
      */
-    public static function sign($data, $cert, $key = null, $headers = [], $micAlgo = null)
+    public static function sign($data, $cert, $privateKey = null, $headers = [], $micAlgo = null)
     {
         if ($data instanceof MimePart) {
             $data = self::getTempFilename($data->toString());
         }
         $temp = self::getTempFilename();
-        if (! openssl_pkcs7_sign($data, $temp, $cert, $key, $headers, PKCS7_DETACHED)) {
+        if (! openssl_pkcs7_sign($data, $temp, $cert, $privateKey, $headers, PKCS7_DETACHED)) {
             throw new \RuntimeException(
                 sprintf('Failed to sign S/Mime message. Error: "%s".', openssl_error_string())
             );
@@ -67,6 +67,7 @@ class CryptoHelper
         if ($micAlgo) {
             $contentType = preg_replace('/micalg=(.+);/i', 'micalg="' . $micAlgo . '";', $contentType);
         }
+
         /** @var MimePart $payload */
         $payload = $payload->withHeader('Content-Type', $contentType);
         foreach ($payload->getParts() as $key => $part) {
@@ -131,9 +132,11 @@ class CryptoHelper
         if ($data instanceof MimePart) {
             $data = self::getTempFilename((string) $data);
         }
+
         if (is_string($cipher) && defined('OPENSSL_CIPHER_' . strtoupper($cipher))) {
             $cipher = constant('OPENSSL_CIPHER_' . strtoupper($cipher));
         }
+
         $temp = self::getTempFilename();
         if (! openssl_pkcs7_encrypt($data, $temp, (array) $cert, [], PKCS7_BINARY, $cipher)) {
             throw new \RuntimeException(
@@ -156,6 +159,7 @@ class CryptoHelper
         if ($data instanceof MimePart) {
             $data = self::getTempFilename((string) $data);
         }
+
         $temp = self::getTempFilename();
         if (! openssl_pkcs7_decrypt($data, $temp, $cert, $key)) {
             throw new \RuntimeException(
@@ -218,8 +222,10 @@ class CryptoHelper
     public static function decompress($data, $encoding = MimePart::ENCODING_BASE64)
     {
         if ($data instanceof MimePart) {
-            // $encoding = $data->getHeaderLine('Content-Transfer-Encoding');
             $encoding = $data->getHeaderLine('Content-Encoding');
+            if (empty($encoding)) {
+                $encoding = $data->getHeaderLine('Content-Transfer-Encoding');
+            }
             $data = $data->getBody();
         }
 
