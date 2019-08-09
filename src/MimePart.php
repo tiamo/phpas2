@@ -27,6 +27,11 @@ class MimePart implements \Psr\Http\Message\MessageInterface
     const ENCODING_QUOTEDPRINTABLE = 'quoted-printable';
     const ENCODING_BASE64 = 'base64';
 
+    /**s
+     * @var string
+     */
+    private $rawMessage;
+
     /**
      * @var string
      */
@@ -43,9 +48,14 @@ class MimePart implements \Psr\Http\Message\MessageInterface
      * @param array $headers
      * @param null $body
      */
-    public function __construct($headers = [], $body = null)
+    public function __construct($headers = [], $body = null, $rawMessage = null)
     {
+        if (null !== $rawMessage) {
+            $this->rawMessage = $rawMessage;
+        }
+
         $this->setHeaders((array)$headers);
+
         if (!is_null($body)) {
             $this->setBody($body);
         }
@@ -71,7 +81,7 @@ class MimePart implements \Psr\Http\Message\MessageInterface
     public static function fromString($rawMessage)
     {
         $payload = Utils::parseMessage($rawMessage);
-        return new static($payload['headers'], $payload['body']);
+        return new static($payload['headers'], $payload['body'], $rawMessage);
     }
 
     /**
@@ -259,7 +269,15 @@ class MimePart implements \Psr\Http\Message\MessageInterface
             if ($boundary) {
                 $separator = '--' . preg_quote($boundary, '/');
                 // Get multi-part content
-                if (preg_match('/' . $separator . '\r?\n(.+?)\r?\n' . $separator . '--/s', $body, $matches)) {
+
+                if (preg_match(
+                    '/' .
+                    $separator .
+                    '\r?\n(.+?)\r?\n' .
+                    $separator . '--/s',
+                    $this->getRawBody() ? $this->getRawBody() : $body,
+                    $matches
+                )) {
                     $parts = preg_split('/\r?\n' . $separator . '\r?\n/', $matches[1]);
                     foreach ($parts as $part) {
                         $this->addPart($part);
@@ -272,6 +290,24 @@ class MimePart implements \Psr\Http\Message\MessageInterface
         return $this;
     }
 
+    public function getRawBody()
+    {
+        if (null===$this->rawMessage) {
+            return null;
+        }
+
+        $lines = preg_split('/(\\r?\\n)/', $this->rawMessage, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+        for ($i = 0, $totalLines = count($lines); $i < $totalLines; $i += 2) {
+            $line = $lines[$i];
+            if (empty($line)) {
+                if ($i < $totalLines - 1) {
+                    return implode('', array_slice($lines, $i + 2));
+                }
+            }
+        }
+    }
+
     /**
      * Serialize to string
      *
@@ -279,6 +315,9 @@ class MimePart implements \Psr\Http\Message\MessageInterface
      */
     public function toString()
     {
+        if ($this->rawMessage) {
+            return $this->rawMessage;
+        }
         return $this->getHeaderLines() . self::EOL . $this->getBody();
     }
 
