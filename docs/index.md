@@ -1,6 +1,6 @@
 # DOCUMENTATION
 
-TODO...
+TODO ...
 
 - Implement Storage class based on \AS2\StorageInterface
 - Implement Message class based on \AS2\MessageInterface
