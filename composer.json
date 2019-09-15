@@ -26,8 +26,10 @@
         "psr/log": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.4 || ^7.0",
-        "friendsofphp/php-cs-fixer": "^2.15"
+        "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.4 || ^7.0"
+    },
+    "suggest": {
+        "friendsofphp/php-cs-fixer": "to use php-cs"
     },
     "autoload": {
         "psr-4": {
