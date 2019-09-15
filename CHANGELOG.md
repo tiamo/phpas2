@@ -5,3 +5,4 @@
 * Fix: Compression
 * Fix: Mic calculation
 * Code refactory
+* Tests added
