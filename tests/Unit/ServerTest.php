@@ -88,10 +88,9 @@ class ServerTest extends TestCase
         // generate message payload
         $payload = $this->management->buildMessage($message, $contents);
 
-        // CryptoHelper::decompress($payload);
-
-        echo $payload;
-        exit;
+        $this->assertTrue($payload->isCompressed());
+        $this->assertEquals('A', $payload->getHeaderLine('as2-from'));
+        $this->assertEquals('B', $payload->getHeaderLine('as2-to'));
     }
 
     protected function setUp()
