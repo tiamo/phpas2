@@ -29,7 +29,7 @@ class BaseTest extends TestCase
     {
         $contents = $this->loadFixture('mic-calculation');
         $this->assertEquals(
-            "rqrsInCnD6/dLvr5UO1ng0YGuqaG1wETIMTunzc77a0=, sha256",
+            "9IVZAN9QhjQINLzl/tdUvTMhMOSQ+96TjK7brHXQFys=, sha256",
             CryptoHelper::calculateMIC($contents, 'sha256')
         );
     }

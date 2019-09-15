@@ -1,11 +1,14 @@
-dist: trusty
 language: php
 
+sudo: false
+
 php:
-  - 5.5
   - 5.6
   - 7.0
   - 7.1
+  - 7.2
+  - 7.3
+  - nightly
 
 #before_install:
 #- if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.5" ]]; then composer require --dev --no-update phpunit/phpunit ~4; fi
@@ -16,5 +19,16 @@ install:
 before_script:
   - phpenv config-rm xdebug.ini
 
-script:
-  - composer test
+script: composer test
+
+matrix:
+  allow_failures:
+    - php: hhvm
+      dist: trusty
+    - php: nightly
+  include:
+    - php: 5.5
+      dist: trusty
+    - php: hhvm
+      dist: trusty
+  fast_finish: true
