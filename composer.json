@@ -21,9 +21,8 @@
         "php": ">=5.5",
         "ext-openssl": "*",
         "ext-zlib": "*",
-        "fgrosse/phpasn1": "^2.1",
         "guzzlehttp/guzzle": "^6.3",
-        "phpseclib/phpseclib": "2.0.x-dev",
+        "phpseclib/phpseclib": "^2.0",
         "psr/log": "^1.0"
     },
     "require-dev": {
