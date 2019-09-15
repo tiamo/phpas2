@@ -23,7 +23,7 @@ class DataObject
      * By default is looking for first argument as array and assigns it as object attributes
      * This behavior may change in child classes
      *
-     * @param array $data
+     * @param  array  $data
      */
     public function __construct(array $data = [])
     {
@@ -35,7 +35,7 @@ class DataObject
      *
      * Retains previous data in the object.
      *
-     * @param array $arr
+     * @param  array  $arr
      * @return $this
      */
     public function addData(array $arr)
@@ -43,35 +43,14 @@ class DataObject
         foreach ($arr as $index => $value) {
             $this->setData($index, $value);
         }
-        return $this;
-    }
 
-    /**
-     * Overwrite data in the object.
-     *
-     * The $key parameter can be string or array.
-     * If $key is string, the attribute value will be overwritten by $value
-     *
-     * If $key is an array, it will overwrite all the data in the object.
-     *
-     * @param string|array $key
-     * @param mixed $value
-     * @return $this
-     */
-    public function setData($key, $value = null)
-    {
-        if ($key === (array)$key) {
-            $this->_data = $key;
-        } else {
-            $this->_data[$key] = $value;
-        }
         return $this;
     }
 
     /**
      * Unset data from the object.
      *
-     * @param null|string|array $key
+     * @param  null|string|array  $key
      * @return $this
      */
     public function unsetData($key = null)
@@ -87,6 +66,7 @@ class DataObject
                 $this->unsetData($element);
             }
         }
+
         return $this;
     }
 
@@ -101,8 +81,8 @@ class DataObject
      * and retrieve corresponding member. If data is the string - it will be explode
      * by new line character and converted to array.
      *
-     * @param string $key
-     * @param string|int $index
+     * @param  string  $key
+     * @param  string|int  $index
      * @return mixed
      */
     public function getData($key = '', $index = null)
@@ -128,7 +108,46 @@ class DataObject
                 $data = null;
             }
         }
+
         return $data;
+    }
+
+    /**
+     * Get value from _data array without parse key
+     *
+     * @param  string  $key
+     * @return  mixed
+     */
+    protected function _getData($key)
+    {
+        if (isset($this->_data[$key])) {
+            return $this->_data[$key];
+        }
+
+        return null;
+    }
+
+    /**
+     * Overwrite data in the object.
+     *
+     * The $key parameter can be string or array.
+     * If $key is string, the attribute value will be overwritten by $value
+     *
+     * If $key is an array, it will overwrite all the data in the object.
+     *
+     * @param  string|array  $key
+     * @param  mixed  $value
+     * @return $this
+     */
+    public function setData($key, $value = null)
+    {
+        if ($key === (array)$key) {
+            $this->_data = $key;
+        } else {
+            $this->_data[$key] = $value;
+        }
+
+        return $this;
     }
 
     /**
@@ -136,7 +155,7 @@ class DataObject
      *
      * Method consider the path as chain of keys: a/b/c => ['a']['b']['c']
      *
-     * @param string $path
+     * @param  string  $path
      * @return mixed
      */
     public function getDataByPath($path)
@@ -152,14 +171,14 @@ class DataObject
                 return null;
             }
         }
+
         return $data;
     }
-
 
     /**
      * Get object data by particular key
      *
-     * @param string $key
+     * @param  string  $key
      * @return mixed
      */
     public function getDataByKey($key)
@@ -170,13 +189,14 @@ class DataObject
     /**
      * Get object data by key with calling getter method
      *
-     * @param string $key
-     * @param mixed $args
+     * @param  string  $key
+     * @param  mixed  $args
      * @return mixed
      */
     public function getDataUsingMethod($key, $args = null)
     {
-        $method = 'get' . str_replace(' ', '', ucwords(str_replace('_', ' ', $key)));
+        $method = 'get'.str_replace(' ', '', ucwords(str_replace('_', ' ', $key)));
+
         return $this->{$method}($args);
     }
 
@@ -184,22 +204,23 @@ class DataObject
      * If $key is empty, checks whether there's any data in the object
      * Otherwise checks if the specified attribute is set.
      *
-     * @param string $key
+     * @param  string  $key
      * @return bool
      */
     public function hasData($key = '')
     {
-        if (empty($key) || !is_string($key)) {
-            return !empty($this->_data);
+        if (empty($key) || ! is_string($key)) {
+            return ! empty($this->_data);
         }
+
         return array_key_exists($key, $this->_data);
     }
 
     /**
      * Set/Get attribute wrapper
      *
-     * @param   string $method
-     * @param   array $args
+     * @param  string  $method
+     * @param  array  $args
      * @return  mixed
      * @throws \Exception
      */
@@ -209,16 +230,20 @@ class DataObject
             case 'get':
                 $key = $this->_underscore(substr($method, 3));
                 $index = isset($args[0]) ? $args[0] : null;
+
                 return $this->getData($key, $index);
             case 'set':
                 $key = $this->_underscore(substr($method, 3));
                 $value = isset($args[0]) ? $args[0] : null;
+
                 return $this->setData($key, $value);
             case 'uns':
                 $key = $this->_underscore(substr($method, 3));
+
                 return $this->unsetData($key);
             case 'has':
                 $key = $this->_underscore(substr($method, 3));
+
                 return isset($this->_data[$key]);
         }
         throw new \Exception(sprintf('Invalid method %s::%s', get_class($this), $method));
@@ -227,8 +252,8 @@ class DataObject
     /**
      * Implementation of \ArrayAccess::offsetSet()
      *
-     * @param string $offset
-     * @param mixed $value
+     * @param  string  $offset
+     * @param  mixed  $value
      * @return void
      * @link http://www.php.net/manual/en/arrayaccess.offsetset.php
      */
@@ -240,7 +265,7 @@ class DataObject
     /**
      * Implementation of \ArrayAccess::offsetExists()
      *
-     * @param string $offset
+     * @param  string  $offset
      * @return bool
      * @link http://www.php.net/manual/en/arrayaccess.offsetexists.php
      */
@@ -252,7 +277,7 @@ class DataObject
     /**
      * Implementation of \ArrayAccess::offsetUnset()
      *
-     * @param string $offset
+     * @param  string  $offset
      * @return void
      * @link http://www.php.net/manual/en/arrayaccess.offsetunset.php
      */
@@ -264,7 +289,7 @@ class DataObject
     /**
      * Implementation of \ArrayAccess::offsetGet()
      *
-     * @param string $offset
+     * @param  string  $offset
      * @return mixed
      * @link http://www.php.net/manual/en/arrayaccess.offsetget.php
      */
@@ -273,20 +298,7 @@ class DataObject
         if (isset($this->_data[$offset])) {
             return $this->_data[$offset];
         }
-        return null;
-    }
 
-    /**
-     * Get value from _data array without parse key
-     *
-     * @param   string $key
-     * @return  mixed
-     */
-    protected function _getData($key)
-    {
-        if (isset($this->_data[$key])) {
-            return $this->_data[$key];
-        }
         return null;
     }
 
@@ -296,7 +308,7 @@ class DataObject
      * $this->setMyField($value) === $this->setData('my_field', $value)
      * Uses cache to eliminate unnecessary preg_replace
      *
-     * @param string $name
+     * @param  string  $name
      * @return string
      */
     protected function _underscore($name)
@@ -306,6 +318,7 @@ class DataObject
         }
         $result = strtolower(trim(preg_replace('/([A-Z]|[0-9]+)/', "_$1", $name), '_'));
         self::$_underscoreCache[$name] = $result;
+
         return $result;
     }
 }

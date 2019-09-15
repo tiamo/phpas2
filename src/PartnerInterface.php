@@ -9,6 +9,7 @@ interface PartnerInterface
 
     /**
      * Partner Unique Identifier
+     *
      * @return string
      */
     public function getAs2Id();

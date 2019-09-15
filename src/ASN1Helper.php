@@ -4,6 +4,9 @@ namespace AS2;
 
 use phpseclib\File\ASN1;
 
+/**
+ * TODO: new version of phpspeclib includes static methods "encodeDER", "decodeBER" ...
+ */
 class ASN1Helper extends ASN1
 {
     const PKCS_OID = '1.2.840.113549';
@@ -40,7 +43,8 @@ class ASN1Helper extends ASN1
     /**
      * @return array
      */
-    public static function getAlgorithmIdentifierMap() {
+    public static function getAlgorithmIdentifierMap()
+    {
         return [
             'type' => ASN1::TYPE_SEQUENCE,
             'children' => [
@@ -54,15 +58,17 @@ class ASN1Helper extends ASN1
     }
 
     /**
+     * @param  int  $type
      * @return array
      */
-    public static function getContentInfoMap() {
+    public static function getContentInfoMap($type = ASN1::TYPE_ANY)
+    {
         return [
             'type' => ASN1::TYPE_SEQUENCE,
             'children' => [
                 'contentType' => ['type' => ASN1::TYPE_OBJECT_IDENTIFIER],
                 'content' => [
-                    'type' => ASN1::TYPE_OCTET_STRING,
+                    'type' => $type,
                     'constant' => 0,
                     'optional' => true,
                     'explicit' => true,
@@ -74,7 +80,8 @@ class ASN1Helper extends ASN1
     /**
      * @return array
      */
-    public static function getCompressedDataMap() {
+    public static function getCompressedDataMap()
+    {
         return [
             'type' => ASN1::TYPE_SEQUENCE,
             'children' => [
@@ -83,23 +90,50 @@ class ASN1Helper extends ASN1
                     'mapping' => ['0', '1', '2', '4', '5'],
                 ],
                 'compression' => self::getAlgorithmIdentifierMap(),
-                'payload' => self::getContentInfoMap(),
+                'payload' => [
+                    'type' => ASN1::TYPE_SEQUENCE,
+                    'children' => [
+                        'contentType' => ['type' => ASN1::TYPE_OBJECT_IDENTIFIER],
+                        'content' => [
+                            'type' => ASN1::TYPE_OCTET_STRING,
+                            'constant' => 0,
+                            'explicit' => true,
+                            'optional' => true,
+                        ],
+                    ],
+                ],
             ],
         ];
     }
 
     /**
-     * @param string $data
-     * @param array $mapping
+     * @param  array|string  $source
+     * @param  array|string  $mapping
+     * @param  array  $filters
+     * @return string
+     */
+    public static function encode($source, $mapping, $filters = [])
+    {
+        $asn1 = new self();
+        $asn1->loadFilters($filters);
+
+        return $asn1->encodeDER($source, $mapping, $filters = []);
+    }
+
+    /**
+     * @param  string  $data
+     * @param  array  $mapping
      * @return array
      */
-    public static function decodeDER($data, $mapping)
+    public static function decode($data, $mapping = [])
     {
-        $decoded = ASN1::decodeBER($data);
+        $asn1 = new self();
+        $decoded = $asn1->decodeBER($data);
+
         if (empty($decoded)) {
             throw new \RuntimeException('Invalid ASN1 Data.');
         }
 
-        return ASN1::asn1map($decoded[0], $mapping);
+        return $asn1->asn1map($decoded[0], $mapping);
     }
 }

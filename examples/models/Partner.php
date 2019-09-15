@@ -8,6 +8,7 @@ class Partner extends DataObject implements PartnerInterface
 {
     /**
      * AS2 Partner ID
+     *
      * @return string
      */
     public function getAs2Id()

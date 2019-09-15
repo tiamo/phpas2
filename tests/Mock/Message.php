@@ -26,6 +26,23 @@ class Message extends DataObject implements MessageInterface
     }
 
     /**
+     * @param string $dir
+     * @return $this
+     */
+    public function setDirection($dir)
+    {
+        return $this->setData('direction', $dir);
+    }
+
+    /**
+     * @return string
+     */
+    public function getDirection()
+    {
+        return $this->getData('direction');
+    }
+
+    /**
      * @param string $id
      * @return $this
      */
@@ -166,6 +183,23 @@ class Message extends DataObject implements MessageInterface
     /**
      * @return string
      */
+    public function getMdnMode()
+    {
+        return $this->getData('mdn_mode');
+    }
+
+    /**
+     * @param string $status
+     * @return $this
+     */
+    public function setMdnMode($status)
+    {
+        return $this->setData('mdn_mode', $status);
+    }
+
+    /**
+     * @return string
+     */
     public function getMdnStatus()
     {
         return $this->getData('mdn_status');
@@ -200,7 +234,7 @@ class Message extends DataObject implements MessageInterface
     /**
      * @return string
      */
-    public function getCalculatedMic()
+    public function getMic()
     {
         return $this->getData('mic');
     }
@@ -209,7 +243,7 @@ class Message extends DataObject implements MessageInterface
      * @param string $mic
      * @return $this
      */
-    public function setCalculatedMic($mic)
+    public function setMic($mic)
     {
         return $this->setData('mic', $mic);
     }

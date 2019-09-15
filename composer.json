@@ -1,40 +1,52 @@
 {
-  "name": "tiamo/phpas2",
-  "description": "PHPAS2 is a php-based implementation of the EDIINT AS2 standard",
-  "version": "1.3.4",
-  "authors": [
-    {
-      "name": "Vladyslav K",
-      "role": "Developer",
-      "email": "vk.tiamo@gmail.com"
+    "name": "tiamo/phpas2",
+    "description": "PHPAS2 is a php-based implementation of the EDIINT AS2 standard",
+    "type": "library",
+    "version": "1.3.5",
+    "authors": [
+        {
+            "name": "Vladyslav K",
+            "email": "vk.tiamo@gmail.com"
+        }
+    ],
+    "keywords": [
+        "edi",
+        "ediint",
+        "as2",
+        "x12",
+        "server"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": ">=5.5",
+        "ext-openssl": "*",
+        "ext-zlib": "*",
+        "fgrosse/phpasn1": "^2.1",
+        "guzzlehttp/guzzle": "^6.3",
+        "phpseclib/phpseclib": "2.0.x-dev",
+        "psr/log": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~6.5",
+        "friendsofphp/php-cs-fixer": "^2.15"
+    },
+    "autoload": {
+        "psr-4": {
+            "AS2\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AS2\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "test": "phpunit --verbose",
+        "codestyle": "php-cs-fixer fix --path-mode=intersection --config=.php_cs.dist"
     }
-  ],
-  "keywords": [
-    "edi",
-    "ediint",
-    "as2",
-    "server"
-  ],
-  "license": "MIT",
-  "require": {
-    "php": ">=5.5",
-    "ext-zlib": "*",
-    "ext-openssl": "*",
-    "psr/log": "^1.0",
-    "guzzlehttp/guzzle": "^6.3",
-    "phpseclib/phpseclib": "^2.0"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "~5.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "AS2\\": "src/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "AS2\\Tests\\": "tests/"
-    }
-  }
 }

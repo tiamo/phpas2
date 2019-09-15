@@ -106,7 +106,7 @@ class FileStorage implements StorageInterface
      */
     protected function getFile($type, $id, $format = 'json')
     {
-        $basePath = realpath(__DIR__ . '/../resources');
+        $basePath = realpath(__DIR__.'/../resources');
         return $basePath . DIRECTORY_SEPARATOR . $type . DIRECTORY_SEPARATOR . strtolower($id) . '.' . $format;
     }
 }

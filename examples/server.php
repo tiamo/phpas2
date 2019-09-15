@@ -1,25 +1,31 @@
 <?php
 
-require_once "bootstrap.php";
+require_once __DIR__."/bootstrap.php";
 
-use GuzzleHttp\Psr7\ServerRequest;
+use AS2\Server;
 
-$request = ServerRequest::fromGlobals();
-$messageId = trim($request->getHeaderLine('message-id'), '<>');
+if ($_SERVER["REQUEST_URI"] !== '/') {
+    return;
+}
+
+// use GuzzleHttp\Psr7\ServerRequest;
+
+// $request = ServerRequest::fromGlobals();
+// $messageId = trim($request->getHeaderLine('message-id'), '<>');
 
 //if (!$messageId) {
 //    throw new \RuntimeException('Message-ID required.');
 //}
 
-$headers = '';
-foreach($request->getHeaders() as $name => $header) {
-    $headers .= $name .= ': ' . implode(',', $header) . "\r\n";
-}
-$headers .= "\r\n";
+// $headers = '';
+// foreach ($request->getHeaders() as $name => $header) {
+//     $headers .= $name .= ': '.implode(',', $header)."\r\n";
+// }
+// $headers .= "\r\n";
 
-file_put_contents('data/inbound/' . $messageId . '.raw', $headers . file_get_contents('php://input'));
+// file_put_contents(__DIR__.'/tmp/data/inbound/'.$messageId.'.raw', $headers.file_get_contents('php://input'));
 
-$server = new \AS2\Server($manager, $storage);
+$server = new Server($manager, $storage);
 
 //$message = file_get_contents('data/inbound/mendelson_opensource_AS2-1514912694550-2@mycompanyAS2_phpas2.raw');
 //$payload = \AS2\Utils::parseMessage($message);

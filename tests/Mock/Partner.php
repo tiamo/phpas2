@@ -90,9 +90,9 @@ class Partner extends DataObject implements PartnerInterface
     /**
      * @return string
      */
-    public function getPublicKey()
+    public function getCertificate()
     {
-        return $this->getData('public_key');
+        return $this->getData('certificate');
     }
 
     /**
@@ -142,5 +142,13 @@ class Partner extends DataObject implements PartnerInterface
     public function getMdnSubject()
     {
         return $this->getData('mdn_subject');
+    }
+
+    /**
+     * @return string
+     */
+    public function getContentTransferEncoding()
+    {
+        return $this->getData('content_transfer_encoding');
     }
 }

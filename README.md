@@ -15,7 +15,7 @@ EDI-X12, EDIFACT, XML, or binary payloads between trading partners.
 The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
 Either run
 ```
-composer require tiamo/phpas2:^1.3
+composer require tiamo/phpas2
 ```
 or add
 ```
@@ -23,7 +23,11 @@ or add
 ```
 to the require section of your `composer.json` file.
 
-## Example Usage
+## Usage
+```bash
+# start as2 server
+php -S localhost:8000 ./examples/server.php
+```
 
 - Implement Storage class based on \AS2\StorageInterface
 - Implement Message class based on \AS2\MessageInterface

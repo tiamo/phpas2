@@ -1,21 +1,41 @@
 <?php
 
-require_once "bootstrap.php";
+require_once __DIR__."/bootstrap.php";
 
+// use AS2\MimePart;
+use AS2\Utils;
+
+$senderId = 'phpas2';
+$receiverId = 'mycompanyAS2';
+
+$rawMessage = <<<MSG
+Content-type: Application/EDI-X12
+content-disposition: attachment; filename=payload
+content-id: <test@test.com>
+
+ISA*00~
+MSG;
+
+// -----------------------------------------------------
+
+$messageId = Utils::generateMessageID($senderId);
+
+$sender = $storage->getPartner($senderId);
+$receiver = $storage->getPartner($receiverId);
+
+// Initialize New Message
 $message = $storage->initMessage();
-$message->setSender($storage->getPartner('phpas2'));
-$message->setReceiver($storage->getPartner('mycompanyAS2'));
-$message->setMessageId(\AS2\Utils::generateMessageID($message->getSender()));
+$message->setMessageId($messageId);
+$message->setSender($sender);
+$message->setReceiver($receiver);
 
-$payload = new \AS2\MimePart([
-    'Content-Type' => 'text/plain',
-    'Content-Transfer-Encoding' => '7bit',
-], 'test');
+// Generate Message Payload
+$payload = $manager->buildMessage($message, $rawMessage);
 
-$manager->buildMessage($message, $payload);
+// Try to send a message
+if ($response = $manager->sendMessage($message, $payload)) {
+    // echo MimePart::fromPsrMessage($response);
+    echo 'OK';
+}
 
 $storage->saveMessage($message);
-
-$response = $manager->sendMessage($message);
-
-var_dump($response);
