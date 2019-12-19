@@ -1,7 +1,7 @@
 {
-  "name": "tiamo/phpas2",
+  "name": "ayrel/phpas2",
   "description": "PHPAS2 is a php-based implementation of the EDIINT AS2 standard",
-  "version": "1.3.4",
+  "version": "1.3.4.1",
   "authors": [
     {
       "name": "Vladyslav K",
