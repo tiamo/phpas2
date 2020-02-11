@@ -3,7 +3,7 @@
 use AS2\PartnerInterface;
 
 // load certificates
-openssl_pkcs12_read(file_get_contents(__DIR__.'/data/phpas2.12'), $certs, null);
+openssl_pkcs12_read(file_get_contents(__DIR__.'/data/phpas2.p12'), $certs, null);
 
 return [
     'storage_path' => __DIR__.'/tmp/storage',
