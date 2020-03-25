@@ -98,7 +98,10 @@ class ServerTest extends TestCase
         parent::setUp();
 
         $this->storage = new FileStorage();
-        $this->management = new Management();
+        $this->management = new Management([
+            'sign_mdn' => false,
+            'sign_message' => false,
+        ]);
         $this->server = new Server($this->management, $this->storage);
     }
 

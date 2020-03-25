@@ -127,7 +127,7 @@ class Management implements LoggerAwareInterface
         $micContent = Utils::canonicalize($payload);
 
         // Sign the message if requested in the profile
-        if ($signAlgo = $receiver->getSignatureAlgorithm()) {
+        if ($this->getOption('sign_message', true) && ($signAlgo = $receiver->getSignatureAlgorithm())) {
             $this->getLogger()->debug('Signing the message using partner key');
 
             //            // If MIC content is set, i.e. message has been signed then calculate the MIC
@@ -551,6 +551,7 @@ class Management implements LoggerAwareInterface
             'Content-Type' => 'multipart/report; report-type=disposition-notification; boundary="----'.$boundary.'"',
         ];
 
+        $shouldSign = $this->getOption('sign_mdn', true);
         $isSigned = $messageHeaders->hasHeader('disposition-notification-options');
 
         // Build the MDN report
@@ -608,7 +609,7 @@ class Management implements LoggerAwareInterface
         );
 
         // If signed MDN is requested by partner then sign the MDN and attach to report
-        if ($isSigned) {
+        if ($shouldSign && $isSigned) {
             // TODO: check
             $notificationOptions = $messageHeaders->getHeader('disposition-notification-options');
             $notificationOptions = Utils::parseHeader($notificationOptions);
