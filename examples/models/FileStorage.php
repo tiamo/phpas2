@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpComposerExtensionStubsInspection */
 
 namespace models;
 
@@ -34,15 +34,33 @@ class FileStorage implements StorageInterface
 
     /**
      * @param  string  $id
-     * @return MessageInterface|false
+     * @return MessageInterface|null
      */
     public function getMessage($id)
     {
-        $data = $this->loadEntity(self::TYPE_MESSAGE, $id);
+        $entity = $this->loadEntity(self::TYPE_MESSAGE, $id);
 
-        $message = new Message($data);
+        if (empty($entity)) {
+            return null;
+        }
+
+        $message = new Message($entity);
         $message->setSender($this->getPartner($message->getSenderId()));
         $message->setReceiver($this->getPartner($message->getReceiverId()));
+
+        return $message;
+    }
+
+    /**
+     * @param  string  $id
+     * @return MessageInterface
+     */
+    public function findMessage($id)
+    {
+        $message = $this->getMessage($id);
+        if (! $message) {
+            throw new \RuntimeException(sprintf('Unknown AS2 Message with id `%s`.', $id));
+        }
 
         return $message;
     }
@@ -88,15 +106,27 @@ class FileStorage implements StorageInterface
 
     /**
      * @param  string  $id
-     * @return PartnerInterface
-     *
-     * @throws \RuntimeException
+     * @return PartnerInterface|null
      */
     public function getPartner($id)
     {
-        $data = $this->loadEntity(self::TYPE_PARTNER, $id);
+        $entity = $this->loadEntity(self::TYPE_PARTNER, $id);
 
-        return new Partner($data);
+        return ! empty($entity) ? new Partner($entity) : null;
+    }
+
+    /**
+     * @param  string  $id
+     * @return PartnerInterface
+     */
+    public function findPartner($id)
+    {
+        $partner = $this->getPartner($id);
+        if (! $partner) {
+            throw new \RuntimeException(sprintf('Unknown AS2 Partner with id `%s`.', $id));
+        }
+
+        return $partner;
     }
 
     /**
@@ -114,27 +144,26 @@ class FileStorage implements StorageInterface
      * @param  string  $type
      * @param  string  $id
      * @return array
-     *
-     * @throws \RuntimeException
      */
     protected function loadEntity($type, $id)
     {
         $path = $this->getEntityPath($type, $id);
 
         if (! file_exists($path)) {
-            throw new \RuntimeException(
-                sprintf('Entity `%s:%s` not found.', $type, $id)
-            );
+            return null;
+            // throw new \RuntimeException(
+            //     sprintf('Entity `%s:%s` not found.', $type, $id)
+            // );
         }
 
-        $data = file_get_contents($this->getEntityPath($type, $id));
+        $data = file_get_contents($path);
         $data = json_decode($data, true);
 
-        if (empty($data)) {
-            throw new \RuntimeException(
-                sprintf('Invalid entity `%s:%s`.', $type, $id)
-            );
-        }
+        // if (empty($data)) {
+        //     throw new \RuntimeException(
+        //         sprintf('Invalid entity `%s:%s`.', $type, $id)
+        //     );
+        // }
 
         return $data;
     }
@@ -146,7 +175,7 @@ class FileStorage implements StorageInterface
      */
     protected function saveEntity($path, $data)
     {
-        return (bool)file_put_contents($path, json_encode($data));
+        return (bool) file_put_contents($path, json_encode($data));
     }
 
     /**

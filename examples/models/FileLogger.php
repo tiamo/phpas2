@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpComposerExtensionStubsInspection */
+
 namespace models;
 
 use Psr\Log\AbstractLogger;
@@ -24,17 +26,16 @@ class FileLogger extends AbstractLogger
      */
     public function log($level, $message, array $context = [])
     {
-        $message = implode(
-                ' - ',
-                [
-                    $level,
-                    $message,
-                    json_encode($context),
-                ]
-            ).PHP_EOL;
+        $message = trim(sprintf('[%s][%s] %s %s',
+                date('Y-m-d H:i:s'),
+                strtoupper($level),
+                $message,
+                !empty($context) ? json_encode($context) : null
+            )).PHP_EOL;
 
         $flags = 0;
-        if ($this->path != 'php://stdout') {
+
+        if ($this->path !== 'php://stdout') {
             $flags = FILE_APPEND;
         }
 

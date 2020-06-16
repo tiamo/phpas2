@@ -1,8 +1,9 @@
 <?php
 
+/** @noinspection ForgottenDebugOutputInspection */
+
 require_once __DIR__."/bootstrap.php";
 
-// use AS2\MimePart;
 use AS2\Utils;
 
 $senderId = 'phpas2';
@@ -18,10 +19,10 @@ MSG;
 
 // -----------------------------------------------------
 
-$messageId = Utils::generateMessageID($senderId);
+$sender = $storage->findPartner($senderId);
+$receiver = $storage->findPartner($receiverId);
 
-$sender = $storage->getPartner($senderId);
-$receiver = $storage->getPartner($receiverId);
+$messageId = Utils::generateMessageID($senderId);
 
 // Initialize New Message
 $message = $storage->initMessage();

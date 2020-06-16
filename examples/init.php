@@ -2,14 +2,21 @@
 
 require_once __DIR__."/bootstrap.php";
 
-// init storage
+//
+// Init storage
+//
+
 if (! is_dir($config['storage_path'])) {
     echo sprintf('Prepare storage').PHP_EOL;
-    mkdir($config['storage_path'], 0777, true);
+    if (! mkdir($concurrentDirectory = $config['storage_path'], 0777, true) && ! is_dir($concurrentDirectory)) {
+        throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+    }
     foreach ([$storage::TYPE_MESSAGE, $storage::TYPE_PARTNER] as $dir) {
         $path = $config['storage_path'].DIRECTORY_SEPARATOR.$dir;
         if (! is_dir($path)) {
-            mkdir($path, 0777, true);
+            if (! mkdir($path, 0777, true) && ! is_dir($path)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $path));
+            }
             echo sprintf('`%s` - created', $path).PHP_EOL;
         } else {
             echo sprintf('`%s` - already exists', $path).PHP_EOL;
@@ -17,8 +24,12 @@ if (! is_dir($config['storage_path'])) {
     }
 }
 
-// init partners
+//
+// Init partners
+//
+
 echo sprintf('Prepare partners').PHP_EOL;
+
 foreach ($config['partners'] as $partner) {
     if (empty($partner['id'])) {
         throw new \InvalidArgumentException('`id` required.');
