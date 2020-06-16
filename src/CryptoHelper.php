@@ -154,8 +154,12 @@ class CryptoHelper
             $data = self::getTempFilename((string) $data);
         }
 
-        if (is_string($cipher) && defined('OPENSSL_CIPHER_'.strtoupper($cipher))) {
-            $cipher = constant('OPENSSL_CIPHER_'.strtoupper($cipher));
+        if (is_string($cipher)) {
+            $cipher = strtoupper($cipher);
+            $cipher = str_replace('-', '_', $cipher);
+            if (defined('OPENSSL_CIPHER_'.$cipher)) {
+                $cipher = constant('OPENSSL_CIPHER_'.$cipher);
+            }
         }
 
         $temp = self::getTempFilename();
