@@ -2,7 +2,6 @@
 
 namespace AS2;
 
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use InvalidArgumentException;
@@ -57,7 +56,7 @@ class Management implements LoggerAwareInterface
      * @param  string  $contentType
      * @param  string  $encoding
      * @return MimePart
-     * @throws Exception
+     * @throws \Throwable
      * @noinspection PhpUnused
      */
     public function buildMessageFromFile(
@@ -88,7 +87,7 @@ class Management implements LoggerAwareInterface
      * @param  MessageInterface  $message
      * @param  MimePart|string  $payload
      * @return MimePart
-     * @throws Exception
+     * @throws \Throwable
      */
     public function buildMessage(MessageInterface $message, $payload)
     {
@@ -409,7 +408,7 @@ class Management implements LoggerAwareInterface
 
             return $response;
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->getLogger()->critical($e->getMessage());
             $message->setStatus(MessageInterface::STATUS_ERROR);
             $message->setStatusMsg($e->getMessage());
@@ -425,7 +424,7 @@ class Management implements LoggerAwareInterface
      * @param  MessageInterface  $message
      * @param  MimePart|string  $payload
      * @return boolean
-     * @throws Exception
+     * @throws \Throwable
      */
     public function processMdn(MessageInterface $message, $payload)
     {
@@ -485,7 +484,7 @@ class Management implements LoggerAwareInterface
                             throw new RuntimeException('Partner failed to process file. '.$mdnStatus);
                         }
                     }
-                } catch (Exception $e) {
+                } catch (\Throwable $e) {
                     $message->setMdnStatus(MessageInterface::MDN_STATUS_ERROR);
                     $message->setStatusMsg($e->getMessage());
                     $this->getLogger()->error(
@@ -678,7 +677,7 @@ class Management implements LoggerAwareInterface
             $message->setMdnStatus(MessageInterface::MDN_STATUS_SENT);
 
             return $response;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->getLogger()->critical($e->getMessage());
             $message->setMdnStatus(MessageInterface::MDN_STATUS_ERROR);
         }
