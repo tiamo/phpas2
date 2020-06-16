@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnused */
+
 namespace AS2;
 
 use GuzzleHttp\Psr7\Response;
@@ -54,6 +56,8 @@ class Server
         $responseStatus = 200;
         $responseHeaders = [];
         $responseBody = null;
+
+        $message = null;
 
         try {
 
@@ -124,14 +128,17 @@ class Server
                 $message->setStatus(MessageInterface::STATUS_IN_PROCESS);
                 $message->setSender($sender);
                 $message->setReceiver($receiver);
+                $message->setHeaders($payload->getHeaderLines());
 
                 try {
                     // Process the received payload to extract the actual message from partner
                     $payload = $this->manager->processMessage($message, $payload);
+
                     $message->setPayload($payload);
 
                     // If MDN enabled than send notification
                     // Create MDN if it requested by partner
+
                     if (($mdnMode = $receiver->getMdnMode()) && ($mdn = $this->manager->buildMdn($message))) {
                         $mdnMessageId = trim($mdn->getHeaderLine('message-id'), '<>');
                         $message->setMdnPayload($mdn);
@@ -161,6 +168,7 @@ class Server
                 } catch (\Throwable $e) {
                     $message->setStatus(MessageInterface::STATUS_ERROR);
                     $message->setStatusMsg($e->getMessage());
+                    throw $e;
                 } finally {
                     $this->storage->saveMessage($message);
                 }
@@ -168,7 +176,7 @@ class Server
 
         } catch (\Throwable $e) {
             $this->getLogger()->critical($e->getMessage());
-            if (! empty($message)) {
+            if ($message !== null) {
                 // TODO: check
                 // Build the mdn for the message based on processing status
                 $mdn = $this->manager->buildMdn($message, null, $e->getMessage());
@@ -222,7 +230,7 @@ class Server
     {
         $partner = $this->storage->getPartner($id);
         if (! $partner) {
-            throw new \InvalidArgumentException(sprintf('Unknown AS2 Partner with id `%s`.', $id));
+            throw new \RuntimeException(sprintf('Unknown AS2 Partner with id `%s`.', $id));
         }
 
         return $partner;
