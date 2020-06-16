@@ -22,7 +22,7 @@
         "ext-openssl": "*",
         "ext-zlib": "*",
         "guzzlehttp/guzzle": "^6.3",
-        "phpseclib/phpseclib": "^2.0",
+        "phpseclib/phpseclib": "^2.0.27",
         "psr/log": "^1.0"
     },
     "require-dev": {
