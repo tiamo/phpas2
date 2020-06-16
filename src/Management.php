@@ -3,7 +3,6 @@
 namespace AS2;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -353,7 +352,7 @@ class Management implements LoggerAwareInterface
      * @param  MessageInterface  $message
      * @param  MimePart  $payload
      * @return ResponseInterface|false
-     * @throws GuzzleException
+     * @noinspection PhpDocMissingThrowsInspection
      */
     public function sendMessage(MessageInterface $message, $payload)
     {
@@ -374,6 +373,7 @@ class Management implements LoggerAwareInterface
                 $options['auth'] = [$partner->getAuthUser(), $partner->getAuthPassword(), $partner->getAuthMethod()];
             }
 
+            /** @noinspection PhpUnhandledExceptionInspection */
             $response = $this->getHttpClient()->request('POST', $partner->getTargetUrl(), $options);
             if ($response->getStatusCode() !== 200) {
                 throw new \RuntimeException('Message send failed with error');
