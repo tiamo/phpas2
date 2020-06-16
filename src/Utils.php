@@ -1,5 +1,6 @@
 <?php
 
+/** @noinspection PhpUnused */
 /** @noinspection PhpFullyQualifiedNameUsageInspection */
 
 namespace AS2;

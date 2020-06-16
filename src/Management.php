@@ -58,6 +58,7 @@ class Management implements LoggerAwareInterface
      * @param  string  $encoding
      * @return MimePart
      * @throws Exception
+     * @noinspection PhpUnused
      */
     public function buildMessageFromFile(
         MessageInterface $message,
@@ -70,7 +71,7 @@ class Management implements LoggerAwareInterface
         }
         $payload = new MimePart(
             [
-                'Content-Type' => $contentType ? $contentType : 'text/plain',
+                'Content-Type' => $contentType ?: 'text/plain',
                 'Content-Disposition' => 'attachment; filename="'.basename($filePath).'"',
                 'Content-Transfer-Encoding' => $encoding,
             ], file_get_contents($filePath)
@@ -113,7 +114,7 @@ class Management implements LoggerAwareInterface
             'Message-ID' => $message->getMessageId(),
             'AS2-From' => $sender->getAs2Id(),
             'AS2-To' => $receiver->getAs2Id(),
-            'Subject' => $receiver->getSubject() ? $receiver->getSubject() : 'AS2 Message',
+            'Subject' => $receiver->getSubject() ?: 'AS2 Message',
             'Date' => date('r'),
             // 'Recipient-Address' => $receiver->getTargetUrl(),
             'Ediint-Features' => self::EDIINT_FEATURES,
@@ -235,7 +236,7 @@ class Management implements LoggerAwareInterface
         // $payload = new MimePart($request->getHeaders(), $body);
 
         // Check if message from this partner are expected to be encrypted
-        if ($message->getSender()->getEncryptionAlgorithm() && ! $payload->isEncrypted()) {
+        if (! $payload->isEncrypted() && $message->getSender()->getEncryptionAlgorithm()) {
             sprintf(
                 'Incoming message from AS2 partner `%s` are defined to be encrypted',
                 $message->getSender()->getAs2Id()
@@ -270,7 +271,7 @@ class Management implements LoggerAwareInterface
         }
 
         // Check if message from this partner are expected to be signed
-        if ($message->getSender()->getSignatureAlgorithm() && ! $payload->isSigned()) {
+        if (! $payload->isSigned() && $message->getSender()->getSignatureAlgorithm()) {
             throw new RuntimeException(
                 sprintf(
                     'Incoming message from AS2 partner `%s` are defined to be signed.',
@@ -331,7 +332,7 @@ class Management implements LoggerAwareInterface
             // Per RFC5402 compression is always before encryption but can be before or
             // after signing of message but only in one place
             if ($isDecompressed) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     'Message has already been decompressed. Per RFC5402 it cannot occur twice.'
                 );
             }
@@ -341,7 +342,7 @@ class Management implements LoggerAwareInterface
         }
 
         // Saving the message mic for sending it in the MDN
-        if (! empty($micContent)) {
+        if ($micContent !== null) {
             // Saving the message mic for sending it in the MDN
             $message->setMic(CryptoHelper::calculateMIC($micContent, $micAlg));
         }
@@ -378,7 +379,7 @@ class Management implements LoggerAwareInterface
             }
 
             $response = $this->getHttpClient()->request('POST', $partner->getTargetUrl(), $options);
-            if ($response->getStatusCode() != 200) {
+            if ($response->getStatusCode() !== 200) {
                 throw new RuntimeException('Message send failed with error');
             }
 
@@ -386,7 +387,7 @@ class Management implements LoggerAwareInterface
 
             // Process the MDN based on the partner profile settings
             if ($mdnMode = $partner->getMdnMode()) {
-                if ($mdnMode == PartnerInterface::MDN_MODE_ASYNC) {
+                if ($mdnMode === PartnerInterface::MDN_MODE_ASYNC) {
                     $this->getLogger()->debug('Requested ASYNC MDN from partner, waiting for it');
                     $message->setStatus(MessageInterface::STATUS_PENDING);
                 } else {
@@ -452,29 +453,32 @@ class Management implements LoggerAwareInterface
         $message->setMdnPayload($payload);
 
         foreach ($payload->getParts() as $part) {
-            if ($part->getParsedHeader('content-type', 0, 0) == 'message/disposition-notification') {
+            if ($part->getParsedHeader('content-type', 0, 0) === 'message/disposition-notification') {
                 $this->getLogger()->debug('Found MDN report for message', [$messageId]);
                 try {
                     $bodyPayload = MimePart::fromString($part->getBody());
                     if ($bodyPayload->hasHeader('disposition')) {
                         $mdnStatus = $bodyPayload->getParsedHeader('Disposition', 0, 1);
-                        if ($mdnStatus == 'processed') {
+                        if ($mdnStatus === 'processed') {
                             $this->getLogger()->debug(
                                 'Message has been successfully processed, verifying the MIC if present.'
                             );
+
                             // Compare the MIC of the received message
                             $receivedMic = $bodyPayload->getHeaderLine('Received-Content-MIC');
-                            if ($receivedMic && $message->getMic()) {
-                                if (Utils::normalizeMic($message->getMic()) != Utils::normalizeMic($receivedMic)) {
-                                    throw new RuntimeException(
-                                        sprintf(
-                                            'The Message Integrity Code (MIC) does not match the sent AS2 message (required: %s, returned: %s)',
-                                            $message->getMic(),
-                                            $receivedMic
-                                        )
-                                    );
-                                }
+                            if ($receivedMic &&
+                                $message->getMic() &&
+                                Utils::normalizeMic($message->getMic()) !== Utils::normalizeMic($receivedMic)
+                            ) {
+                                throw new RuntimeException(
+                                    sprintf(
+                                        'The Message Integrity Code (MIC) does not match the sent AS2 message (required: %s, returned: %s)',
+                                        $message->getMic(),
+                                        $receivedMic
+                                    )
+                                );
                             }
+
                             $message->setMdnStatus(MessageInterface::MDN_STATUS_RECEIVED);
                             $this->getLogger()->debug('File Transferred successfully to the partner');
                         } else {
@@ -538,6 +542,7 @@ class Management implements LoggerAwareInterface
             if ($sender->getMdnSubject()) {
                 $confirmationText = $sender->getMdnSubject();
             }
+            /** @noinspection NotOptimalIfConditionsInspection */
             if (empty($confirmationText)) {
                 $confirmationText = 'Your message was successfully received and processed.';
             }
@@ -570,6 +575,7 @@ class Management implements LoggerAwareInterface
         // TODO: refactory
         if (! $isSigned) {
             $reportHeaders['Mime-Version'] = '1.0';
+            /* @noinspection AdditionOperationOnArraysInspection */
             $reportHeaders += $mdnHeaders;
         }
 
@@ -665,7 +671,7 @@ class Management implements LoggerAwareInterface
                 $options['auth'] = [$partner->getAuthUser(), $partner->getAuthPassword(), $partner->getAuthMethod()];
             }
             $response = $this->getHttpClient()->post($partner->getTargetUrl(), $options);
-            if ($response->getStatusCode() != 200) {
+            if ($response->getStatusCode() !== 200) {
                 throw new RuntimeException('Message send failed with error');
             }
             $this->getLogger()->debug('AS2 MDN has been sent.');

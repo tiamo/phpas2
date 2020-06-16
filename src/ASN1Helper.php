@@ -1,8 +1,11 @@
 <?php
 
+/** @noinspection PhpUnused */
+
 namespace AS2;
 
 use phpseclib\File\ASN1;
+use RuntimeException;
 
 /**
  * TODO: new version of phpspeclib includes static methods "encodeDER", "decodeBER" ...
@@ -131,7 +134,7 @@ class ASN1Helper extends ASN1
         $decoded = $asn1->decodeBER($data);
 
         if (empty($decoded)) {
-            throw new \RuntimeException('Invalid ASN1 Data.');
+            throw new RuntimeException('Invalid ASN1 Data.');
         }
 
         return $asn1->asn1map($decoded[0], $mapping);

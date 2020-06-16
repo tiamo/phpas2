@@ -95,7 +95,7 @@ class Server
                 // Get Original Message-Id
                 $origMessageId = null;
                 foreach ($payload->getParts() as $part) {
-                    if ($part->getParsedHeader('content-type', 0, 0) == 'message/disposition-notification') {
+                    if ($part->getParsedHeader('content-type', 0, 0) === 'message/disposition-notification') {
                         $bodyPayload = MimePart::fromString($part->getBody());
                         $origMessageId = trim($bodyPayload->getParsedHeader('original-message-id', 0, 0), '<>');
                     }
@@ -134,31 +134,29 @@ class Server
                     $message->setPayload($payload);
 
                     // If MDN enabled than send notification
-                    if ($mdnMode = $receiver->getMdnMode()) {
-                        // Create MDN if it requested by partner
-                        if ($mdn = $this->manager->buildMdn($message)) {
-                            $mdnMessageId = trim($mdn->getHeaderLine('message-id'), '<>');
-                            $message->setMdnPayload($mdn);
-                            if ($mdnMode == PartnerInterface::MDN_MODE_SYNC) {
-                                $this->getLogger()->debug(
-                                    sprintf(
-                                        'Synchronous MDN with id `%s` sent as answer to message `%s`.',
-                                        $mdnMessageId,
-                                        $messageId
-                                    )
-                                );
-                                $responseHeaders = $mdn->getHeaders();
-                                $responseBody = $mdn->getBody();
-                            } else {
-                                $this->getLogger()->debug(
-                                    sprintf(
-                                        'Asynchronous MDN with id `%s` sent as answer to message `%s`.',
-                                        $mdnMessageId,
-                                        $messageId
-                                    )
-                                );
-                                $this->manager->sendMdn($message);
-                            }
+                    // Create MDN if it requested by partner
+                    if (($mdnMode = $receiver->getMdnMode()) && ($mdn = $this->manager->buildMdn($message))) {
+                        $mdnMessageId = trim($mdn->getHeaderLine('message-id'), '<>');
+                        $message->setMdnPayload($mdn);
+                        if ($mdnMode === PartnerInterface::MDN_MODE_SYNC) {
+                            $this->getLogger()->debug(
+                                sprintf(
+                                    'Synchronous MDN with id `%s` sent as answer to message `%s`.',
+                                    $mdnMessageId,
+                                    $messageId
+                                )
+                            );
+                            $responseHeaders = $mdn->getHeaders();
+                            $responseBody = $mdn->getBody();
+                        } else {
+                            $this->getLogger()->debug(
+                                sprintf(
+                                    'Asynchronous MDN with id `%s` sent as answer to message `%s`.',
+                                    $mdnMessageId,
+                                    $messageId
+                                )
+                            );
+                            $this->manager->sendMdn($message);
                         }
                     }
 
@@ -168,7 +166,6 @@ class Server
                     $message->setStatusMsg($e->getMessage());
                 } finally {
                     $this->storage->saveMessage($message);
-                    $responseBody = 'AS2 message has been received';
                 }
             }
 
@@ -184,6 +181,10 @@ class Server
                 $responseStatus = 500;
                 $responseBody = $e->getMessage();
             }
+        }
+
+        if (empty($responseBody)) {
+            $responseBody = 'AS2 message has been received';
         }
 
         return new Response($responseStatus, $responseHeaders, $responseBody);

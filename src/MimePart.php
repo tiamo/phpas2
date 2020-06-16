@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnused */
+
 namespace AS2;
 
 use GuzzleHttp\Psr7\MessageTrait;
@@ -109,7 +111,7 @@ class MimePart implements PsrMessageInterface
         $type = $this->getParsedHeader('content-type', 0, 0);
         $type = strtolower($type);
 
-        return $type == self::TYPE_PKCS7_MIME || $type == self::TYPE_X_PKCS7_MIME;
+        return $type === self::TYPE_PKCS7_MIME || $type === self::TYPE_X_PKCS7_MIME;
     }
 
     /**
@@ -120,7 +122,7 @@ class MimePart implements PsrMessageInterface
         $type = $this->getParsedHeader('content-type', 0, 0);
         $type = strtolower($type);
 
-        return $type == self::TYPE_PKCS7_SIGNATURE || $type == self::TYPE_X_PKCS7_SIGNATURE;
+        return $type === self::TYPE_PKCS7_SIGNATURE || $type === self::TYPE_X_PKCS7_SIGNATURE;
     }
 
     /**
@@ -128,7 +130,7 @@ class MimePart implements PsrMessageInterface
      */
     public function isEncrypted()
     {
-        return $this->getParsedHeader('content-type', 0, 'smime-type') == self::SMIME_TYPE_ENCRYPTED;
+        return $this->getParsedHeader('content-type', 0, 'smime-type') === self::SMIME_TYPE_ENCRYPTED;
     }
 
     /**
@@ -136,7 +138,7 @@ class MimePart implements PsrMessageInterface
      */
     public function isCompressed()
     {
-        return $this->getParsedHeader('content-type', 0, 'smime-type') == self::SMIME_TYPE_COMPRESSED;
+        return $this->getParsedHeader('content-type', 0, 'smime-type') === self::SMIME_TYPE_COMPRESSED;
     }
 
     /**
@@ -144,7 +146,7 @@ class MimePart implements PsrMessageInterface
      */
     public function isSigned()
     {
-        return $this->getParsedHeader('content-type', 0, 0) == self::MULTIPART_SIGNED;
+        return $this->getParsedHeader('content-type', 0, 0) === self::MULTIPART_SIGNED;
     }
 
     /**
@@ -152,7 +154,7 @@ class MimePart implements PsrMessageInterface
      */
     public function isReport()
     {
-        $isReport = $this->getParsedHeader('content-type', 0, 0) == self::MULTIPART_REPORT;
+        $isReport = $this->getParsedHeader('content-type', 0, 0) === self::MULTIPART_REPORT;
 
         if ($isReport) {
             return true;
@@ -174,7 +176,7 @@ class MimePart implements PsrMessageInterface
      */
     public function isBinary()
     {
-        return $this->getParsedHeader('content-transfer-encoding', 0, 0) == 'binary';
+        return $this->getParsedHeader('content-transfer-encoding', 0, 0) === 'binary';
     }
 
     /**
@@ -256,6 +258,7 @@ class MimePart implements PsrMessageInterface
      */
     public function getParsedHeader($header, $index = null, $param = null)
     {
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $header = Utils::parseHeader($this->getHeader($header));
         if ($index === null) {
             return $header;
