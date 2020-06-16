@@ -22,7 +22,7 @@ class CryptoHelper
 
         if (! in_array($digestAlgorithm, hash_algos(), true)) {
             throw new \InvalidArgumentException(
-                sprintf('Invalid hash algorithm `%s`.', $digestAlgorithm)
+                sprintf('(MIC) Invalid hash algorithm `%s`.', $digestAlgorithm)
             );
         }
 
@@ -126,14 +126,16 @@ class CryptoHelper
             }
         }
 
-        if (! empty($rootCerts) && openssl_pkcs7_verify($data, 0, null, $rootCerts) === true) {
-            return true;
+        $flags = PKCS7_BINARY | PKCS7_NOSIGS;
+
+        if (empty($rootCerts)) {
+            $flags |= PKCS7_NOVERIFY;
         }
 
-        // return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY, null, $caInfo);
-        // Message verified successfully but the signer's certificate could not be verified.
+        // php warning if is null
+        $outFile = self::getTempFilename();
 
-        return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY) === true;
+        return openssl_pkcs7_verify($data, $flags, $outFile, $rootCerts) === true;
     }
 
     /**
