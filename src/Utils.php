@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpFullyQualifiedNameUsageInspection */
+
 namespace AS2;
 
 class Utils
@@ -10,11 +12,7 @@ class Utils
      */
     public static function canonicalize($content)
     {
-        $content = str_replace("\r\n", "\n", $content);
-        $content = str_replace("\r", "\n", $content);
-        $content = str_replace("\n", "\r\n", $content);
-
-        return $content;
+        return str_replace(["\r\n", "\r", "\n"], ["\n", "\n", "\r\n"], $content);
     }
 
     /**
@@ -23,10 +21,10 @@ class Utils
      */
     public static function normalizeMic($mic)
     {
-        $mic = explode(',', $mic, 2);
-        $mic[1] = strtolower(str_replace('-', '', $mic[1]));
+        $parts = explode(',', $mic, 2);
+        $parts[1] = strtolower(str_replace('-', '', $parts[1]));
 
-        return implode(',', $mic);
+        return implode(',', $parts);
     }
 
     /**
@@ -35,7 +33,8 @@ class Utils
      */
     public static function normalizeBase64($data)
     {
-        if ((strlen($data) % 4 == 0) && preg_match(
+        /** @noinspection NotOptimalRegularExpressionsInspection */
+        if ((strlen($data) % 4 === 0) && preg_match(
                 '/^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/isU',
                 $data
             )) {
@@ -102,7 +101,7 @@ class Utils
     public static function parseHeader($header)
     {
         static $trimmed = "'\" \t\n\r\0\x0B";
-        $params = $matches = [];
+        $params = [];
         foreach (self::normalizeHeader($header) as $val) {
             $part = [];
             foreach (preg_split('/;(?=([^"]*"[^"]*")*[^"]*$)/', $val) as $kvp) {
@@ -136,7 +135,7 @@ class Utils
         }
         $result = [];
         foreach ($header as $value) {
-            foreach ((array)$value as $v) {
+            foreach ((array) $value as $v) {
                 if (strpos($v, ',') === false) {
                     $result[] = $v;
                     continue;
@@ -162,8 +161,8 @@ class Utils
     {
         $result = '';
         foreach ($headers as $name => $values) {
-            $values = implode(', ', (array)$values);
-            if ($name == 'Content-Type') {
+            $values = implode(', ', (array) $values);
+            if ($name === 'Content-Type') {
                 // some servers don't support "x-"
                 $values = str_replace('x-pkcs7-', 'pkcs7-', $values);
             }
@@ -184,7 +183,7 @@ class Utils
      */
     public static function encodeBase64($str, $lineLength = 64, $lineEnd = "\r\n")
     {
-        $lineLength = $lineLength - ($lineLength % 4);
+        $lineLength -= ($lineLength % 4);
 
         return rtrim(chunk_split(base64_encode($str), $lineLength, $lineEnd));
     }
@@ -220,10 +219,11 @@ class Utils
      */
     public static function random($length = 10, $charList = '0-9a-z')
     {
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $charList = count_chars(
             preg_replace_callback(
                 '#.-.#',
-                function (array $m) {
+                static function (array $m) {
                     return implode('', range($m[0][0], $m[0][2]));
                 },
                 $charList
@@ -231,11 +231,15 @@ class Utils
             3
         );
         $chLen = strlen($charList);
+
         if ($length < 1) {
             throw new \InvalidArgumentException('Length must be greater than zero.');
-        } elseif ($chLen < 2) {
+        }
+
+        if ($chLen < 2) {
             throw new \InvalidArgumentException('Character list must contain as least two chars.');
         }
+
         $res = '';
         for ($i = 0; $i < $length; $i++) {
             $res .= $charList[mt_rand(0, $chLen - 1)];

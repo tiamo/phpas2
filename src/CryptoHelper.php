@@ -24,7 +24,7 @@ class CryptoHelper
     {
         $digestAlgorithm = str_replace('-', '', strtolower($algo));
 
-        if (! in_array($digestAlgorithm, hash_algos())) {
+        if (! in_array($digestAlgorithm, hash_algos(), true)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid hash algorithm `%s`.', $digestAlgorithm)
             );
@@ -62,6 +62,7 @@ class CryptoHelper
             $data = self::getTempFilename($data->toString());
         }
         $temp = self::getTempFilename();
+
         if (! openssl_pkcs7_sign($data, $temp, $cert, $privateKey, $headers, PKCS7_DETACHED)) {
             throw new RuntimeException(
                 sprintf('Failed to sign S/Mime message. Error: "%s".', openssl_error_string())
@@ -118,13 +119,13 @@ class CryptoHelper
     public static function verify($data, $caInfo = null, $rootCerts = [])
     {
         if ($data instanceof MimePart) {
-            $data = self::getTempFilename((string)$data);
+            $data = self::getTempFilename((string) $data);
         }
 
         if (! empty($caInfo)) {
             if (! is_array($caInfo)) {
                 $caInfo = [$caInfo];
-            };
+            }
             foreach ($caInfo as $cert) {
                 $rootCerts[] = self::getTempFilename($cert);
             }
@@ -143,14 +144,14 @@ class CryptoHelper
     /**
      * @param  string|MimePart  $data
      * @param  string|array  $cert
-     * @param  int  $cipher
+     * @param  int|string  $cipher
      * @return MimePart
      * @throws RuntimeException
      */
-    public static function encrypt($data, $cert, $cipher = OPENSSL_CIPHER_3DES)
+    public static function encrypt($data, $cert, $cipher = OPENSSL_CIPHER_AES_128_CBC)
     {
         if ($data instanceof MimePart) {
-            $data = self::getTempFilename((string)$data);
+            $data = self::getTempFilename((string) $data);
         }
 
         if (is_string($cipher) && defined('OPENSSL_CIPHER_'.strtoupper($cipher))) {
@@ -158,7 +159,7 @@ class CryptoHelper
         }
 
         $temp = self::getTempFilename();
-        if (! openssl_pkcs7_encrypt($data, $temp, (array)$cert, [], PKCS7_BINARY, $cipher)) {
+        if (! openssl_pkcs7_encrypt($data, $temp, (array) $cert, [], PKCS7_BINARY, $cipher)) {
             throw new RuntimeException(
                 sprintf('Failed to encrypt S/Mime message. Error: "%s".', openssl_error_string())
             );
@@ -177,7 +178,7 @@ class CryptoHelper
     public static function decrypt($data, $cert, $key = null)
     {
         if ($data instanceof MimePart) {
-            $data = self::getTempFilename((string)$data);
+            $data = self::getTempFilename((string) $data);
         }
 
         $temp = self::getTempFilename();
@@ -236,7 +237,7 @@ class CryptoHelper
             ]
         );
 
-        if ($encoding == MimePart::ENCODING_BASE64) {
+        if ($encoding === MimePart::ENCODING_BASE64) {
             $content = Utils::encodeBase64($content);
         }
 
@@ -255,17 +256,18 @@ class CryptoHelper
             $data = $data->getBody();
         }
 
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $data = Utils::normalizeBase64($data);
 
         $payload = ASN1Helper::decode($data, ASN1Helper::getContentInfoMap());
 
-        if ($payload['contentType'] == ASN1Helper::COMPRESSED_DATA_OID) {
+        if ($payload['contentType'] === ASN1Helper::COMPRESSED_DATA_OID) {
             $compressed = ASN1Helper::decode($payload['content'], ASN1Helper::getCompressedDataMap());
             if (empty($compressed['compression']) || empty($compressed['payload'])) {
                 throw new RuntimeException('Invalid compressed data.');
             }
             $algorithm = $compressed['compression']['algorithm'];
-            if ($algorithm == ASN1Helper::ALG_ZLIB_OID) {
+            if ($algorithm === ASN1Helper::ALG_ZLIB_OID) {
                 $data = gzuncompress(base64_decode($compressed['payload']['content']));
             }
         }

@@ -180,7 +180,7 @@ class Management implements LoggerAwareInterface
             }
 
             // PARTNER IS ASYNC MDN
-            if ($mdnMode == PartnerInterface::MDN_MODE_ASYNC) {
+            if ($mdnMode === PartnerInterface::MDN_MODE_ASYNC) {
                 $message->setMdnMode(PartnerInterface::MDN_MODE_ASYNC);
                 $as2headers['Receipt-Delivery-Option'] = $sender->getTargetUrl();
             } else {
