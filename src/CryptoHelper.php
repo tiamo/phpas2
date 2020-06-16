@@ -2,9 +2,6 @@
 
 namespace AS2;
 
-use InvalidArgumentException;
-use RuntimeException;
-
 /**
  * TODO: Implement pure methods without "openssl_pkcs7"
  * check openssl_pkcs7 doesn't work with binary data
@@ -18,14 +15,13 @@ class CryptoHelper
      * @param  string  $algo  Default is SHA256
      * @param  bool  $includeHeaders
      * @return string
-     * @throws InvalidArgumentException
      */
     public static function calculateMIC($payload, $algo = 'sha256', $includeHeaders = true)
     {
         $digestAlgorithm = str_replace('-', '', strtolower($algo));
 
         if (! in_array($digestAlgorithm, hash_algos(), true)) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 sprintf('Invalid hash algorithm `%s`.', $digestAlgorithm)
             );
         }
@@ -54,7 +50,6 @@ class CryptoHelper
      * @param  array  $headers
      * @param  array  $micAlgo
      * @return MimePart
-     * @throws RuntimeException
      */
     public static function sign($data, $cert, $privateKey = null, $headers = [], $micAlgo = null)
     {
@@ -64,7 +59,7 @@ class CryptoHelper
         $temp = self::getTempFilename();
 
         if (! openssl_pkcs7_sign($data, $temp, $cert, $privateKey, $headers, PKCS7_DETACHED)) {
-            throw new RuntimeException(
+            throw new \RuntimeException(
                 sprintf('Failed to sign S/Mime message. Error: "%s".', openssl_error_string())
             );
         }
@@ -146,7 +141,6 @@ class CryptoHelper
      * @param  string|array  $cert
      * @param  int|string  $cipher
      * @return MimePart
-     * @throws RuntimeException
      */
     public static function encrypt($data, $cert, $cipher = OPENSSL_CIPHER_AES_128_CBC)
     {
@@ -164,7 +158,7 @@ class CryptoHelper
 
         $temp = self::getTempFilename();
         if (! openssl_pkcs7_encrypt($data, $temp, (array) $cert, [], PKCS7_BINARY, $cipher)) {
-            throw new RuntimeException(
+            throw new \RuntimeException(
                 sprintf('Failed to encrypt S/Mime message. Error: "%s".', openssl_error_string())
             );
         }
@@ -177,7 +171,6 @@ class CryptoHelper
      * @param  mixed  $cert
      * @param  mixed  $key
      * @return MimePart
-     * @throws RuntimeException
      */
     public static function decrypt($data, $cert, $key = null)
     {
@@ -187,7 +180,7 @@ class CryptoHelper
 
         $temp = self::getTempFilename();
         if (! openssl_pkcs7_decrypt($data, $temp, $cert, $key)) {
-            throw new RuntimeException(
+            throw new \RuntimeException(
                 sprintf('Failed to decrypt S/Mime message. Error: "%s".', openssl_error_string())
             );
         }
@@ -268,7 +261,7 @@ class CryptoHelper
         if ($payload['contentType'] === ASN1Helper::COMPRESSED_DATA_OID) {
             $compressed = ASN1Helper::decode($payload['content'], ASN1Helper::getCompressedDataMap());
             if (empty($compressed['compression']) || empty($compressed['payload'])) {
-                throw new RuntimeException('Invalid compressed data.');
+                throw new \RuntimeException('Invalid compressed data.');
             }
             $algorithm = $compressed['compression']['algorithm'];
             if ($algorithm === ASN1Helper::ALG_ZLIB_OID) {

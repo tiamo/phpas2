@@ -2,14 +2,11 @@
 
 namespace AS2;
 
-use Exception;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
-use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use RuntimeException;
 
 class Server
 {
@@ -46,7 +43,6 @@ class Server
      *
      * @param  ServerRequestInterface|null  $request
      * @return Response
-     * @throws RuntimeException|InvalidArgumentException
      * @throws \Throwable
      */
     public function execute(ServerRequestInterface $request = null)
@@ -69,7 +65,7 @@ class Server
 
             foreach (['message-id', 'as2-from', 'as2-to'] as $header) {
                 if (! $request->hasHeader($header)) {
-                    throw new InvalidArgumentException(sprintf('Missing required header `%s`.', $header));
+                    throw new \InvalidArgumentException(sprintf('Missing required header `%s`.', $header));
                 }
             }
 
@@ -103,7 +99,7 @@ class Server
                 }
                 $message = $this->storage->getMessage($origMessageId);
                 if (! $message) {
-                    throw new RuntimeException('Unknown AS2 MDN received. Will not be processed');
+                    throw new \RuntimeException('Unknown AS2 MDN received. Will not be processed');
                 }
                 // TODO: check if mdn already exists
                 $this->manager->processMdn($message, $payload);
@@ -115,7 +111,7 @@ class Server
                 // Raise duplicate message error in case message already exists in the system
                 $message = $this->storage->getMessage($messageId);
                 if ($message) {
-                    throw new RuntimeException('An identical message has already been sent to our server');
+                    throw new \RuntimeException('An identical message has already been sent to our server');
                 }
 
                 $sender = $this->findPartner($senderId);
@@ -162,7 +158,7 @@ class Server
                     }
 
                     $message->setStatus(MessageInterface::STATUS_SUCCESS);
-                } catch (Exception $e) {
+                } catch (\Throwable $e) {
                     $message->setStatus(MessageInterface::STATUS_ERROR);
                     $message->setStatusMsg($e->getMessage());
                 } finally {
@@ -170,7 +166,7 @@ class Server
                 }
             }
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->getLogger()->critical($e->getMessage());
             if (! empty($message)) {
                 // TODO: check
@@ -226,7 +222,7 @@ class Server
     {
         $partner = $this->storage->getPartner($id);
         if (! $partner) {
-            throw new InvalidArgumentException(sprintf('Unknown AS2 Partner with id `%s`.', $id));
+            throw new \InvalidArgumentException(sprintf('Unknown AS2 Partner with id `%s`.', $id));
         }
 
         return $partner;
