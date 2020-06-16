@@ -47,6 +47,7 @@ class Server
      * @param  ServerRequestInterface|null  $request
      * @return Response
      * @throws RuntimeException|InvalidArgumentException
+     * @throws \Throwable
      */
     public function execute(ServerRequestInterface $request = null)
     {

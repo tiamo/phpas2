@@ -4,12 +4,10 @@ namespace AS2;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use RuntimeException;
 
 /**
  * TODO: AS2-Version: 1.1 multiple attachments
@@ -87,17 +85,16 @@ class Management implements LoggerAwareInterface
      * @param  MessageInterface  $message
      * @param  MimePart|string  $payload
      * @return MimePart
-     * @throws \Throwable
      */
     public function buildMessage(MessageInterface $message, $payload)
     {
         $sender = $message->getSender();
         if (! $sender) {
-            throw new InvalidArgumentException('Unknown Sender');
+            throw new \InvalidArgumentException('Unknown Sender');
         }
         $receiver = $message->getReceiver();
         if (! $receiver) {
-            throw new InvalidArgumentException('Unknown Receiver');
+            throw new \InvalidArgumentException('Unknown Receiver');
         }
 
         $message->setStatus(MessageInterface::STATUS_PENDING);
@@ -271,7 +268,7 @@ class Management implements LoggerAwareInterface
 
         // Check if message from this partner are expected to be signed
         if (! $payload->isSigned() && $message->getSender()->getSignatureAlgorithm()) {
-            throw new RuntimeException(
+            throw new \RuntimeException(
                 sprintf(
                     'Incoming message from AS2 partner `%s` are defined to be signed.',
                     $message->getSender()->getAs2Id()
@@ -291,12 +288,12 @@ class Management implements LoggerAwareInterface
             $cert = $message->getSender()->getCertificate();
 
             if (empty($cert)) {
-                throw new RuntimeException('Partner has no signature verification key defined');
+                throw new \RuntimeException('Partner has no signature verification key defined');
             }
 
             // Verify message using raw payload received from partner
             if (! CryptoHelper::verify($payload, $cert)) {
-                throw new RuntimeException('Signature Verification Failed');
+                throw new \RuntimeException('Signature Verification Failed');
             }
 
             $this->getLogger()->debug('Digital signature of inbound AS2 message has been verified successful.');
@@ -331,7 +328,7 @@ class Management implements LoggerAwareInterface
             // Per RFC5402 compression is always before encryption but can be before or
             // after signing of message but only in one place
             if ($isDecompressed) {
-                throw new RuntimeException(
+                throw new \RuntimeException(
                     'Message has already been decompressed. Per RFC5402 it cannot occur twice.'
                 );
             }
@@ -379,7 +376,7 @@ class Management implements LoggerAwareInterface
 
             $response = $this->getHttpClient()->request('POST', $partner->getTargetUrl(), $options);
             if ($response->getStatusCode() !== 200) {
-                throw new RuntimeException('Message send failed with error');
+                throw new \RuntimeException('Message send failed with error');
             }
 
             $this->getLogger()->debug('AS2 message successfully sent to partner');
@@ -442,7 +439,7 @@ class Management implements LoggerAwareInterface
 
         // Raise error if message is not an MDN
         if (! $payload->isReport()) {
-            throw new RuntimeException('MDN report not found in the response');
+            throw new \RuntimeException('MDN report not found in the response');
         }
 
         $messageId = $message->getMessageId();
@@ -469,7 +466,7 @@ class Management implements LoggerAwareInterface
                                 $message->getMic() &&
                                 Utils::normalizeMic($message->getMic()) !== Utils::normalizeMic($receivedMic)
                             ) {
-                                throw new RuntimeException(
+                                throw new \RuntimeException(
                                     sprintf(
                                         'The Message Integrity Code (MIC) does not match the sent AS2 message (required: %s, returned: %s)',
                                         $message->getMic(),
@@ -481,7 +478,7 @@ class Management implements LoggerAwareInterface
                             $message->setMdnStatus(MessageInterface::MDN_STATUS_RECEIVED);
                             $this->getLogger()->debug('File Transferred successfully to the partner');
                         } else {
-                            throw new RuntimeException('Partner failed to process file. '.$mdnStatus);
+                            throw new \RuntimeException('Partner failed to process file. '.$mdnStatus);
                         }
                     }
                 } catch (\Throwable $e) {
@@ -509,7 +506,6 @@ class Management implements LoggerAwareInterface
      * @param  string  $confirmationText
      * @param  string  $errorMessage  // TODO: detailedStatus
      * @return MimePart
-     * @throws RuntimeException
      */
     public function buildMdn(MessageInterface $message, $confirmationText = null, $errorMessage = null)
     {
@@ -525,12 +521,12 @@ class Management implements LoggerAwareInterface
 
         $sender = $message->getSender();
         if (! $sender) {
-            throw new RuntimeException('Message Sender is required.');
+            throw new \RuntimeException('Message Sender is required.');
         }
 
         $receiver = $message->getReceiver();
         if (! $receiver) {
-            throw new RuntimeException('Message Receiver is required.');
+            throw new \RuntimeException('Message Receiver is required.');
         }
 
         // Set the confirmation text message here
@@ -671,7 +667,7 @@ class Management implements LoggerAwareInterface
             }
             $response = $this->getHttpClient()->post($partner->getTargetUrl(), $options);
             if ($response->getStatusCode() !== 200) {
-                throw new RuntimeException('Message send failed with error');
+                throw new \RuntimeException('Message send failed with error');
             }
             $this->getLogger()->debug('AS2 MDN has been sent.');
             $message->setMdnStatus(MessageInterface::MDN_STATUS_SENT);
