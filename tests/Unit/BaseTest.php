@@ -12,8 +12,9 @@ class BaseTest extends TestCase
     // TODO: verify binary data
     // public function testVerify()
     // {
-    //     $contents = $this->loadResource('si_signed.mdn');
+    //     $contents = $this->loadFixture('si_signed.mdn');
     //     $payload = MimePart::fromString($contents);
+    //     $certs = $this->getCerts();
     //
     //     $this->assertTrue($payload->isSigned());
     //
@@ -22,7 +23,7 @@ class BaseTest extends TestCase
     //     // print_r(openssl_error_string());
     //     // exit;
     //
-    //     $this->assertTrue(empty(openssl_error_string()));
+    //     $this->assertEmpty(openssl_error_string());
     // }
 
     public function testMicCalculation()
@@ -71,7 +72,7 @@ class BaseTest extends TestCase
         $payload = CryptoHelper::encrypt($payload, $certs['cert']);
         $payload = CryptoHelper::decrypt($payload, $certs['cert'], $certs['pkey']);
 
-        $this->assertTrue($payload->getHeaderLine('content-type') == 'application/EDI-Consent');
+        $this->assertEquals($payload->getHeaderLine('content-type'), 'application/EDI-Consent');
     }
 
     public function testCompress()
@@ -106,7 +107,6 @@ class BaseTest extends TestCase
         $payload = CryptoHelper::decompress($payload);
 
         $this->assertEquals('Application/EDI-X12', $payload->getHeaderLine('content-type'));
-        $this->assertTrue(strlen($payload->getBody()) == 2247);
+        $this->assertEquals(strlen($payload->getBody()), 2247);
     }
-
 }

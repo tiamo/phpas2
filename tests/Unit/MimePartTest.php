@@ -68,7 +68,7 @@ class MimePartTest extends TestCase
             ]
         );
         $mimePart->addPart("1");
-        $mimePart->addPart("2");;
+        $mimePart->addPart("2");
 
         $this->assertTrue($mimePart->isMultiPart());
         $this->assertEquals($boundary, $mimePart->getParsedHeader('content-type', 0, 'boundary'));
@@ -86,9 +86,9 @@ class MimePartTest extends TestCase
         $this->assertEquals('test', $mimePart->getBody());
 
         $mimePart->setBody(new MimePart([], '1'));
-        $this->assertTrue($mimePart->getCountParts() == 1);
+        $this->assertEquals($mimePart->getCountParts(), 1);
 
         $mimePart->setBody(['2', '3',]);
-        $this->assertTrue($mimePart->getCountParts() == 3);
+        $this->assertEquals($mimePart->getCountParts(), 3);
     }
 }
