@@ -1,5 +1,6 @@
 language: php
 dist: trusty
+
 branches:
   only:
     - master
@@ -26,6 +27,10 @@ before_script:
 
 script:
   - composer test
+
+matrix:
+  allow_failures:
+    - php: nightly
 
 #matrix:
 #  fast_finish: true
