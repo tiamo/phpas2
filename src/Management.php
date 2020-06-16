@@ -303,12 +303,6 @@ class Management implements LoggerAwareInterface
                 )
             );
 
-            foreach ($payload->getParts() as $part) {
-                if (! $part->isPkc7Signature()) {
-                    $payload = $part;
-                }
-            }
-
             /*
              * Calculate the MIC after signing or encryption of the message but prior to
              * doing any decompression but include headers for unsigned messages
@@ -317,6 +311,12 @@ class Management implements LoggerAwareInterface
             $micAlg = $payload->getParsedHeader('Disposition-Notification-Options', 2, 0);
             if (! $micAlg) {
                 $micAlg = $payload->getParsedHeader('Content-Type', 0, 'micalg');
+            }
+
+            foreach ($payload->getParts() as $part) {
+                if (! $part->isPkc7Signature()) {
+                    $payload = $part;
+                }
             }
 
             $micContent = $payload;
@@ -510,7 +510,7 @@ class Management implements LoggerAwareInterface
     public function buildMdn(MessageInterface $message, $confirmationText = null, $errorMessage = null)
     {
         // Parse Message Headers
-        $messageHeaders = MimePart::fromString($message->getHeaders());
+        $messageHeaders = MimePart::fromString(trim($message->getHeaders())."\r\n\r\n");
 
         // In case no MDN is requested exit from process
         if (! $messageHeaders->hasHeader('disposition-notification-to')) {
