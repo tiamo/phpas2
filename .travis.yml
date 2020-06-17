@@ -17,7 +17,7 @@ php:
   - 7.2
   - 7.3
   - 7.4
-  - nightly
+#  - nightly
 
 install:
   - travis_retry composer update --no-interaction --no-suggest --prefer-source
