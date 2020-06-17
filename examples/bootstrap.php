@@ -1,5 +1,9 @@
 <?php
 
+use AS2\Management;
+use models\FileLogger;
+use models\FileStorage;
+
 require_once __DIR__."/../vendor/autoload.php";
 require_once __DIR__."/functions.php";
 
@@ -11,11 +15,12 @@ spl_autoload_register(
 
 $config = require 'config.php';
 
-// init storage provider
-$storage = new \models\FileStorage($config['storage_path']);
+// Initialize AS2 storage provider
+$storage = new FileStorage($config['storage_path']);
 
-$manager = new \AS2\Management();
+// Initialize AS2 manager
+$manager = new Management();
 
 if (! empty($config['log_path'])) {
-    $manager->setLogger(new \models\FileLogger($config['log_path']));
+    $manager->setLogger(new FileLogger($config['log_path']));
 }

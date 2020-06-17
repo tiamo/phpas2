@@ -2,13 +2,13 @@
 
 use AS2\PartnerInterface;
 
-// load certificates
+// local certificates
 openssl_pkcs12_read(file_get_contents(__DIR__.'/data/phpas2.p12'), $certs, null);
 
 return [
     'storage_path' => __DIR__.'/tmp/storage',
-    'log_path' => 'php://stdout',
-    // 'log_path' => __DIR__.'/tmp/logs.txt',
+    'log_path' => __DIR__.'/tmp/logs.txt',
+    // 'log_path' => 'php://stdout',
     'partners' => [
 
         // add your partners here ...
@@ -49,8 +49,8 @@ uYUCAwEAATANBgkqhkiG9w0BAQUFAAOBgQC8DiHP61jAADXRIfxoDvw0pFTMMTOVAa905GGy1P+Y
             'id' => 'phpas2',
             'email' => 'phpas2@example.com',
             'target_url' => 'http://127.0.0.1:8000',
-            'certificate' => $certs['cert'],
-            'private_key' => $certs['pkey'],
+            'certificate' => isset($certs['cert']) ? $certs['cert'] : null,
+            'private_key' => isset($certs['pkey']) ? $certs['pkey'] : null,
             // 'private_key_pass_phrase' => 'password',
             // 'content_type' => 'application/edi-x12',
             'content_type' => 'application/EDI-Consent',
