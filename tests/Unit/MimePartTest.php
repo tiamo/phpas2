@@ -5,27 +5,44 @@ namespace AS2\Tests\Unit;
 use AS2\Tests\TestCase;
 use AS2\MimePart;
 
+/**
+ * @see MimePart
+ */
 class MimePartTest extends TestCase
 {
     public function testIsEncrypted()
     {
-        $mimePart = new MimePart(
-            [
-                'Content-Type' => 'application/pkcs7-mime; name="smime.p7m"; smime-type=enveloped-data',
-            ]
-        );
-        $this->assertTrue($mimePart->isPkc7Mime());
-        $this->assertTrue($mimePart->isEncrypted());
+        $cTypes = [
+            'application/pkcs7-mime; name="smime.p7m"; smime-type=enveloped-data',
+            'application/x-pkcs7-mime; name="smime.p7m"; smime-type=enveloped-data',
+        ];
+
+        foreach ($cTypes as $cType) {
+            $mimePart = new MimePart(
+                [
+                    'Content-Type' => $cType,
+                ]
+            );
+            $this->assertTrue($mimePart->isPkc7Mime());
+            $this->assertTrue($mimePart->isEncrypted());
+        }
     }
 
     public function testIsCompressed()
     {
-        $mimePart = new MimePart(
-            [
-                'Content-Type' => 'application/pkcs7-mime; name="smime.p7m"; smime-type=compressed-data',
-            ]
-        );
-        $this->assertTrue($mimePart->isCompressed());
+        $cTypes = [
+            'application/pkcs7-mime; name="smime.p7m"; smime-type=compressed-data',
+            'application/x-pkcs7-mime; name="smime.p7m"; smime-type=compressed-data',
+        ];
+
+        foreach ($cTypes as $cType) {
+            $mimePart = new MimePart(
+                [
+                    'Content-Type' => $cType,
+                ]
+            );
+            $this->assertTrue($mimePart->isCompressed());
+        }
     }
 
     public function testIsSigned()

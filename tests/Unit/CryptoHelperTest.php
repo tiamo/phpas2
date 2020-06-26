@@ -5,27 +5,12 @@ namespace AS2\Tests\Unit;
 use AS2\Tests\TestCase;
 use AS2\CryptoHelper;
 use AS2\MimePart;
-use AS2\Utils;
 
-class BaseTest extends TestCase
+/**
+ * @see CryptoHelper
+ */
+class CryptoHelperTest extends TestCase
 {
-    // TODO: verify binary data
-    // public function testVerify()
-    // {
-    //     $contents = $this->loadFixture('si_signed.mdn');
-    //     $payload = MimePart::fromString($contents);
-    //     $certs = $this->getCerts();
-    //
-    //     $this->assertTrue($payload->isSigned());
-    //
-    //     $payload = CryptoHelper::verify($payload);
-    //
-    //     // print_r(openssl_error_string());
-    //     // exit;
-    //
-    //     $this->assertEmpty(openssl_error_string());
-    // }
-
     public function testMicCalculation()
     {
         $contents = $this->loadFixture('mic-calculation');
@@ -52,6 +37,22 @@ class BaseTest extends TestCase
             }
         }
         $this->assertTrue($hasSignature);
+    }
+
+    /**
+     * TODO: verify binary data
+     */
+    public function testVerify()
+    {
+        // $contents = $this->loadFixture('si_signed.mdn');
+        $contents = $this->loadFixture('signed-msg.txt');
+        $payload = MimePart::fromString($contents);
+        $certs = $this->getCerts();
+
+        $this->assertTrue($payload->isSigned());
+        $this->assertTrue(
+            CryptoHelper::verify($payload, $certs['cert'])
+        );
     }
 
     public function testEncrypt()

@@ -28,7 +28,7 @@ composer require tiamo/phpas2
 Basic example
 ```bash
 # start a server to receive messages in 8000 port
-php -S localhost:8000 ./examples/server.php
+php -S 127.0.0.1:8000 ./examples/server.php
 ```
 
 ```bash
