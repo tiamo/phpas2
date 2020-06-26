@@ -6,8 +6,8 @@ require_once __DIR__."/bootstrap.php";
 
 use AS2\Utils;
 
-$senderId = 'phpas2';
-$receiverId = 'mycompanyAS2';
+$senderId = 'mycompanyAS2';
+$receiverId = 'mendelsontestAS2';
 
 $rawMessage = <<<MSG
 Content-type: Application/EDI-X12

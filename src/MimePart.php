@@ -59,7 +59,7 @@ class MimePart implements PsrMessageInterface
             $this->rawMessage = $rawMessage;
         }
 
-        $this->setHeaders((array)$headers);
+        $this->setHeaders($this->normalizeHeaders($headers));
 
         if (! is_null($body)) {
             $this->setBody($body);
@@ -221,7 +221,7 @@ class MimePart implements PsrMessageInterface
         if ($part instanceof static) {
             $this->parts[] = $part;
         } else {
-            $this->parts[] = self::fromString((string)$part);
+            $this->parts[] = self::fromString((string) $part);
         }
 
         return $this;
@@ -356,5 +356,22 @@ class MimePart implements PsrMessageInterface
     public function __toString()
     {
         return $this->toString();
+    }
+
+    /**
+     * @param $headers
+     * @return array
+     */
+    private function normalizeHeaders($headers)
+    {
+        if (is_array($headers)) {
+            foreach ($headers as $key => $value) {
+                if (strtolower($key) === 'content-type') {
+                    $headers[$key] = str_replace('x-pkcs7-', 'pkcs7-', $headers[$key]);
+                }
+            }
+        }
+
+        return $headers;
     }
 }

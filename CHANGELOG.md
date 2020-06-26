@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.3.7
+
+* Added header normalization
+* Some code refactory
+
 ## 1.3.6
 
 * psr/log@^1.1

@@ -16,20 +16,13 @@ EDI-X12, EDIFACT, XML, or binary payloads between trading partners.
 
 ## Installation
 
-The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
-Either run
 ```
 composer require tiamo/phpas2
 ```
-or add
-```
-"tiamo/phpas2": "^1.3"
-```
-to the require section of your `composer.json` file.
 
 ## Usage
 
-* [Docs](./docs/index.md)
+* [Documentation](./docs/index.md)
 * [Examples](./examples)
 
 Basic example

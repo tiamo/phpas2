@@ -170,7 +170,14 @@ class Management implements LoggerAwareInterface
 
         //  If MDN is to be requested from the partner, set the appropriate headers
         if ($mdnMode = $receiver->getMdnMode()) {
-            $as2headers['Disposition-Notification-To'] = $sender->getEmail();
+
+            // TODO:
+            if ($sender->getEmail()) {
+                $as2headers['Disposition-Notification-To'] = $sender->getEmail();
+            } else {
+                $as2headers['Disposition-Notification-To'] = $sender->getTargetUrl();
+            }
+
             if ($mdnOptions = $receiver->getMdnOptions()) {
                 $as2headers['Disposition-Notification-Options'] = $mdnOptions;
             }
