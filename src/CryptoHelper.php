@@ -53,26 +53,25 @@ class CryptoHelper
      */
     public static function sign($data, $cert, $privateKey = null, $headers = [], $micAlgo = null)
     {
-        if ($data instanceof MimePart) {
-            $data = self::getTempFilename($data->toString());
-        }
+        $data = self::getTempFilename((string) $data);
         $temp = self::getTempFilename();
 
-        if (! openssl_pkcs7_sign($data, $temp, $cert, $privateKey, $headers, PKCS7_DETACHED)) {
+        if (! openssl_pkcs7_sign($data, $temp, $cert, $privateKey, $headers)) {
             throw new \RuntimeException(
                 sprintf('Failed to sign S/Mime message. Error: "%s".', openssl_error_string())
             );
         }
+
         $payload = MimePart::fromString(file_get_contents($temp), false);
 
-        $contentType = $payload->getHeaderLine('content-type');
         if ($micAlgo) {
+            $contentType = $payload->getHeaderLine('content-type');
             $contentType = preg_replace('/micalg=(.+);/i', 'micalg="'.$micAlgo.'";', $contentType);
+            /** @var MimePart $payload */
+            $payload = $payload->withHeader('Content-Type', $contentType);
         }
 
-        /** @var MimePart $payload */
-        $payload = $payload->withHeader('Content-Type', $contentType);
-
+        // replace x-pkcs7-signature > pkcs7-signature
         foreach ($payload->getParts() as $key => $part) {
             if ($part->isPkc7Signature()) {
                 $payload->removePart($key);
@@ -89,53 +88,31 @@ class CryptoHelper
     }
 
     /**
-     * Create a temporary file into temporary directory
-     *
-     * @param  string  $content
-     * @return string The temporary file generated
-     */
-    public static function getTempFilename($content = null)
-    {
-        $dir = sys_get_temp_dir();
-        $filename = tempnam($dir, 'phpas2_');
-        if ($content) {
-            file_put_contents($filename, $content);
-        }
-
-        return $filename;
-    }
-
-    /**
      * @param  string|MimePart  $data
      * @param  array|null  $caInfo  Information about the trusted CA certificates to use in the verification process
      * @param  array  $rootCerts
      * @return bool
      */
-    public static function verify($data, $caInfo = null, $rootCerts = [])
+    public static function verify($data, $caInfo = null, $rootCerts = null)
     {
         if ($data instanceof MimePart) {
             $data = self::getTempFilename((string) $data);
         }
 
         if (! empty($caInfo)) {
-            if (! is_array($caInfo)) {
-                $caInfo = [$caInfo];
-            }
-            foreach ($caInfo as $cert) {
+            foreach ((array) $caInfo as $cert) {
                 $rootCerts[] = self::getTempFilename($cert);
             }
         }
 
         $flags = PKCS7_BINARY | PKCS7_NOSIGS;
 
-        if (empty($rootCerts)) {
-            $flags |= PKCS7_NOVERIFY;
-        }
+        // if (empty($rootCerts)) {
+        $flags |= PKCS7_NOVERIFY;
 
-        // php warning if is null
-        $outFile = self::getTempFilename();
+        // }
 
-        return openssl_pkcs7_verify($data, $flags, $outFile, $rootCerts) === true;
+        return openssl_pkcs7_verify($data, $flags, '/dev/null', $rootCerts) === true;
     }
 
     /**
@@ -272,5 +249,22 @@ class CryptoHelper
         }
 
         return MimePart::fromString($data);
+    }
+
+    /**
+     * Create a temporary file into temporary directory
+     *
+     * @param  string  $content
+     * @return string The temporary file generated
+     */
+    public static function getTempFilename($content = null)
+    {
+        $dir = sys_get_temp_dir();
+        $filename = tempnam($dir, 'phpas2_');
+        if ($content) {
+            file_put_contents($filename, $content);
+        }
+
+        return $filename;
     }
 }
