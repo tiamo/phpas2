@@ -1,6 +1,7 @@
 <?php
 
 /** @noinspection PhpUnused */
+
 /** @noinspection PhpFullyQualifiedNameUsageInspection */
 
 namespace AS2;
@@ -34,13 +35,9 @@ class Utils
      */
     public static function normalizeBase64($data)
     {
-        /** @noinspection NotOptimalRegularExpressionsInspection */
-        if ((strlen($data) % 4 === 0) && preg_match(
-                '/^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/isU',
-                $data
-            )) {
+        if (preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $data)) {
             $decoded = base64_decode($data, true);
-            if (base64_encode($decoded) === $data) {
+            if (base64_encode($decoded) === str_replace(["\r", "\n"], '', $data)) {
                 return $decoded;
             }
         }
