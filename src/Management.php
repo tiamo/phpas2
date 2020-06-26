@@ -33,6 +33,10 @@ class Management implements LoggerAwareInterface
      * @var array
      */
     protected $options = [
+        // Per RFC5402 compression is always before encryption but can be before or
+        // after signing of message but only in one place
+        'compress_before_sign' => false,
+
         /** @see \GuzzleHttp\Client */
         'client_config' => [],
     ];
@@ -122,6 +126,15 @@ class Management implements LoggerAwareInterface
         $encoding = $receiver->getContentTransferEncoding();
         $micContent = Utils::canonicalize($payload);
 
+        $compressBeforeSign = (bool) $this->getOption('compress_before_sign');
+
+        // Compress the message before sign if requested in the profile
+        if ($compressBeforeSign && $receiver->getCompressionType()) {
+            $this->getLogger()->debug('Compressing outbound message before signing...');
+            $payload = CryptoHelper::compress($payload, $encoding);
+            $message->setCompressed();
+        }
+
         // Sign the message if requested in the profile
         if ($signAlgo = $receiver->getSignatureAlgorithm()) {
             $this->getLogger()->debug('Signing the message using partner key');
@@ -154,9 +167,9 @@ class Management implements LoggerAwareInterface
             $message->setSigned();
         }
 
-        // Compress the message if requested in the profile
-        if ($receiver->getCompressionType()) {
-            $this->getLogger()->debug('Compress the message');
+        // Compress the message after sign if requested in the profile
+        if (! $compressBeforeSign && $receiver->getCompressionType()) {
+            $this->getLogger()->debug('Compressing outbound message after signing...');
             $payload = CryptoHelper::compress($payload, $encoding);
             $message->setCompressed();
         }
@@ -274,6 +287,7 @@ class Management implements LoggerAwareInterface
 
         // Check if message from this partner are expected to be signed
         if (! $payload->isSigned() && $message->getSender()->getSignatureAlgorithm()) {
+
             throw new \RuntimeException(
                 sprintf(
                     'Incoming message from AS2 partner `%s` are defined to be signed.',
@@ -397,6 +411,7 @@ class Management implements LoggerAwareInterface
                     $this->getLogger()->debug('Synchronous MDN received from partner');
 
                     $body = $response->getBody()->getContents();
+
                     $payload = new MimePart($response->getHeaders(), $body);
                     $response->getBody()->rewind();
 
