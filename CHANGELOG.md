@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.3.8
+
+* Fixed binary encoding bug
+* Global code improvements
+
 ## 1.3.7
 
 * Added header normalization

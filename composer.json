@@ -2,7 +2,7 @@
     "name": "tiamo/phpas2",
     "description": "PHPAS2 is a php-based implementation of the EDIINT AS2 standard",
     "type": "library",
-    "version": "1.3.7",
+    "version": "1.3.8",
     "authors": [
         {
             "name": "Vladyslav K",
