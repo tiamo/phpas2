@@ -235,20 +235,11 @@ class Management implements LoggerAwareInterface
             ]
         );
 
-        // $body = $request->getBody()->getContents();
-        // $encoding = $request->getHeaderLine('content-transfer-encoding');
-        // if (! $encoding) {
-        //     $encoding = $request->getHeaderLine('content-encoding');
-        //     if (! $encoding) {
-        //         $encoding = $sender->getContentTransferEncoding();
-        //     }
-        // }
-        // // Force encode binary data to base64, because openssl_pkcs7 doesn't work with binary data
-        // if ($encoding != 'base64') {
-        //     $request = $request->withHeader('Content-Transfer-Encoding', 'base64');
-        //     $body = Utils::encodeBase64($body);
-        // }
-        // $payload = new MimePart($request->getHeaders(), $body);
+        // Force encode binary data to base64, `openssl_pkcs7_` doesn't work with binary data
+        $body = $payload->getBody();
+        $body = Utils::normalizeBase64($body);
+        $body = Utils::encodeBase64($body);
+        $payload->setBody($body);
 
         // Check if message from this partner are expected to be encrypted
         if (! $payload->isEncrypted() && $message->getSender()->getEncryptionAlgorithm()) {
