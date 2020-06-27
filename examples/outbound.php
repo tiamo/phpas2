@@ -11,8 +11,8 @@ $receiverId = 'mendelsontestAS2';
 
 $rawMessage = <<<MSG
 Content-type: Application/EDI-X12
-content-disposition: attachment; filename=payload
-content-id: <test@test.com>
+Content-disposition: attachment; filename=payload
+Content-id: <test@test.com>
 
 ISA*00~
 MSG;

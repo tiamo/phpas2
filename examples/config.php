@@ -3,13 +3,13 @@
 use AS2\PartnerInterface;
 
 // local certificates
-// openssl_pkcs12_read(file_get_contents(__DIR__.'/data/phpas2.p12'), $certs, null);
-openssl_pkcs12_read(file_get_contents(__DIR__.'/data/key3.pfx'), $certs, 'test');
+openssl_pkcs12_read(file_get_contents(__DIR__.'/data/phpas2.p12'), $local, null);
+openssl_pkcs12_read(file_get_contents(__DIR__.'/data/key3.pfx'), $key3, 'test');
 
 return [
     'storage_path' => __DIR__.'/tmp/storage',
-    'log_path' => __DIR__.'/tmp/logs.txt',
-    // 'log_path' => 'php://stdout',
+    // 'log_path' => __DIR__.'/tmp/logs.txt',
+    'log_path' => 'php://stdout',
     'partners' => [
 
         // add your partners here ...
@@ -45,7 +45,7 @@ ej7IBY7WKy9OvCErUoH0zXsdfkuJlJXf1jS+qtEbWRGnbxwfXgH0S1uw7QU0q8EECvEb+MNrCEtD
             'compression' => true,
             'signature_algorithm' => 'sha1',
             'encryption_algorithm' => '3des',
-            'content_transfer_encoding' => 'binary',
+            // 'content_transfer_encoding' => 'binary',
             'mdn_mode' => PartnerInterface::MDN_MODE_SYNC,
             'mdn_options' => 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha256',
         ],
@@ -54,28 +54,15 @@ ej7IBY7WKy9OvCErUoH0zXsdfkuJlJXf1jS+qtEbWRGnbxwfXgH0S1uw7QU0q8EECvEb+MNrCEtD
             /** @see http://mendelson-e-c.com/as2_software */
 
             'id' => 'mycompanyAS2',
+            //     'target_url' => 'http://127.0.0.1:8000',
             'target_url' => 'http://127.0.0.1:8080/as2/HttpReceiver',
-            'certificate' => '-----BEGIN CERTIFICATE-----
-MIIC0DCCAjkCBEOO/bswDQYJKoZIhvcNAQEFBQAwga4xJjAkBgkqhkiG9w0BCQEWF3Jvc2V0dGFu
-ZXRAbWVuZGVsc29uLmRlMQswCQYDVQQGEwJERTEPMA0GA1UECBMGQmVybGluMQ8wDQYDVQQHEwZC
-ZXJsaW4xIjAgBgNVBAoTGW1lbmRlbHNvbi1lLWNvbW1lcmNlIEdtYkgxIjAgBgNVBAsTGW1lbmRl
-bHNvbi1lLWNvbW1lcmNlIEdtYkgxDTALBgNVBAMTBG1lbmQwHhcNMDUxMjAxMTM0MjE5WhcNMTkw
-ODEwMTM0MjE5WjCBrjEmMCQGCSqGSIb3DQEJARYXcm9zZXR0YW5ldEBtZW5kZWxzb24uZGUxCzAJ
-BgNVBAYTAkRFMQ8wDQYDVQQIEwZCZXJsaW4xDzANBgNVBAcTBkJlcmxpbjEiMCAGA1UEChMZbWVu
-ZGVsc29uLWUtY29tbWVyY2UgR21iSDEiMCAGA1UECxMZbWVuZGVsc29uLWUtY29tbWVyY2UgR21i
-SDENMAsGA1UEAxMEbWVuZDCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAvl9YOib23cCSOpkD
-DU+NRnMnB1G8AhViieKhw2h33895+IfrkCSaEL3PMi0wn55ddPRgdMi9mOWELU6ITkvSMMsjFgYY
-e+1ibQjfK3Tnw9g1te/O+7XvjZaboEb4Onjh+p6fVZ90WTg1ccU8sifKSPFTJ59d2HsjDMO1VWhD
-uYUCAwEAATANBgkqhkiG9w0BAQUFAAOBgQC8DiHP61jAADXRIfxoDvw0pFTMMTOVAa905GGy1P+Y
-4NC8I92PviobpmEq8Z2HsEi6iviVwODrPTSfm93mUWZ52EPXinlGYHRP0D/VxNOMvFi+mRyweLA5
-5rIFWk1PqdJRch9E3vTcjwRtCfPNdPQlynVwk0jeYKtEtQn2J9LLWg==
------END CERTIFICATE-----
-',
+            'private_key' => isset($key3['pkey']) ? $key3['pkey'] : null,
+            'certificate' => isset($key3['cert']) ? $key3['cert'] : null,
             'content_type' => 'application/EDI-Consent',
             'compression' => true,
             'signature_algorithm' => 'sha256',
             'encryption_algorithm' => '3des',
-            'content_transfer_encoding' => 'binary',
+            // 'content_transfer_encoding' => 'binary',
             'mdn_mode' => PartnerInterface::MDN_MODE_SYNC,
             'mdn_options' => 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha256',
         ],
@@ -83,15 +70,15 @@ uYUCAwEAATANBgkqhkiG9w0BAQUFAAOBgQC8DiHP61jAADXRIfxoDvw0pFTMMTOVAa905GGy1P+Y
         // local station
 
         [
-            'id' => 'mycompanyAS2',
+            'id' => 'phpas2',
             'email' => 'phpas2@example.com',
             'target_url' => 'http://127.0.0.1:8000',
-            'certificate' => isset($certs['cert']) ? $certs['cert'] : null,
-            'private_key' => isset($certs['pkey']) ? $certs['pkey'] : null,
+            'certificate' => isset($local['cert']) ? $local['cert'] : null,
+            'private_key' => isset($local['pkey']) ? $local['pkey'] : null,
             // 'private_key_pass_phrase' => 'password',
             // 'content_type' => 'application/edi-x12',
             'content_type' => 'application/EDI-Consent',
-            'compression' => false,
+            'compression' => true,
             'signature_algorithm' => 'sha256',
             'encryption_algorithm' => '3des',
             'mdn_mode' => PartnerInterface::MDN_MODE_SYNC,

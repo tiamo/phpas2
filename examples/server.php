@@ -12,25 +12,25 @@ if ($_SERVER["REQUEST_URI"] !== '/') {
 
 // $request = ServerRequest::fromGlobals();
 // $messageId = trim($request->getHeaderLine('message-id'), '<>');
-
-//if (!$messageId) {
+//
+// if (!$messageId) {
 //    throw new \RuntimeException('Message-ID required.');
-//}
-
+// }
+//
 // $headers = '';
 // foreach ($request->getHeaders() as $name => $header) {
 //     $headers .= $name .= ': '.implode(',', $header)."\r\n";
 // }
 // $headers .= "\r\n";
-
+//
 // file_put_contents(__DIR__.'/tmp/data/inbound/'.$messageId.'.raw', $headers.file_get_contents('php://input'));
 
 $server = new Server($manager, $storage);
 
-//$message = file_get_contents('data/inbound/mendelson_opensource_AS2-1514912694550-2@mycompanyAS2_phpas2.raw');
-//$payload = \AS2\Utils::parseMessage($message);
-
-//$serverRequest = new ServerRequest(
+// $message = file_get_contents(__DIR__ . '/tmp/data/inbound/mendelson_opensource_AS2-1593248663696-1@mycompanyAS2_phpas2.raw');
+// $payload = \AS2\Utils::parseMessage($message);
+//
+// $serverRequest = new ServerRequest(
 //    'POST',
 //    'http:://localhost',
 //    $payload['headers'],
@@ -39,8 +39,8 @@ $server = new Server($manager, $storage);
 //    [
 //        'REMOTE_ADDR' => '127.0.0.1'
 //    ]
-//);
-//$response = $server->execute($serverRequest);
+// );
+// $response = $server->execute($serverRequest);
 
 $response = $server->execute();
 
