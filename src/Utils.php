@@ -9,7 +9,8 @@ namespace AS2;
 class Utils
 {
     /**
-     * @param  string  $content
+     * @param string $content
+     *
      * @return string
      */
     public static function canonicalize($content)
@@ -18,19 +19,21 @@ class Utils
     }
 
     /**
-     * @param  string  $mic
+     * @param string $mic
+     *
      * @return string
      */
     public static function normalizeMic($mic)
     {
-        $parts = explode(',', $mic, 2);
+        $parts    = explode(',', $mic, 2);
         $parts[1] = strtolower(str_replace('-', '', $parts[1]));
 
         return implode(',', $parts);
     }
 
     /**
-     * @param  string  $data
+     * @param string $data
+     *
      * @return bool|string
      */
     public static function normalizeBase64($data)
@@ -51,20 +54,20 @@ class Utils
      * The array contains the "headers" key containing an associative array of header
      * array values, and a "body" key containing the body of the message.
      *
-     * @param  string  $message  HTTP request or response to parse.
+     * @param string $message HTTP request or response to parse
      *
      * @return array
      */
     public static function parseMessage($message)
     {
-        if (! $message) {
+        if (!$message) {
             throw new \InvalidArgumentException('Invalid message');
         }
 
         // TODO: refactory (RFC2231)
         $message = preg_replace("/; \r?\n\s/i", '; ', $message);
         // Iterate over each line in the message, accounting for line endings
-        $lines = preg_split('/(\\r?\\n)/', $message, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $lines  = preg_split('/(\\r?\\n)/', $message, -1, PREG_SPLIT_DELIM_CAPTURE);
         $result = ['headers' => [], 'body' => ''];
         for ($i = 0, $totalLines = count($lines); $i < $totalLines; $i += 2) {
             $line = $lines[$i];
@@ -76,9 +79,9 @@ class Utils
                 break;
             }
             if (strpos($line, ':')) {
-                $parts = explode(':', $line, 2);
-                $key = trim($parts[0]);
-                $value = isset($parts[1]) ? trim($parts[1]) : '';
+                $parts                     = explode(':', $line, 2);
+                $key                       = trim($parts[0]);
+                $value                     = isset($parts[1]) ? trim($parts[1]) : '';
                 $result['headers'][$key][] = $value;
             }
         }
@@ -92,14 +95,14 @@ class Utils
      * data of the header. When a parameter does not contain a value, but just
      * contains a key, this function will inject a key with a '' string value.
      *
-     * @param  string|array  $header  Header to parse into components.
+     * @param string|array $header header to parse into components
      *
-     * @return array Returns the parsed header values.
+     * @return array returns the parsed header values
      */
     public static function parseHeader($header)
     {
         static $trimmed = "'\" \t\n\r\0\x0B";
-        $params = [];
+        $params         = [];
         foreach (self::normalizeHeader($header) as $val) {
             $part = [];
             foreach (preg_split('/;(?=([^"]*"[^"]*")*[^"]*$)/', $val) as $kvp) {
@@ -122,13 +125,13 @@ class Utils
      * Converts an array of header values that may contain comma separated
      * headers into an array of headers with no comma separated values.
      *
-     * @param  string|array  $header  Header to normalize.
+     * @param string|array $header header to normalize
      *
-     * @return array Returns the normalized header field values.
+     * @return array returns the normalized header field values
      */
     public static function normalizeHeader($header)
     {
-        if (! is_array($header)) {
+        if (!is_array($header)) {
             return array_map('trim', explode(',', $header));
         }
         $result = [];
@@ -151,8 +154,9 @@ class Utils
      * Converts an array of header values that may contain comma separated
      * headers into a string representation.
      *
-     * @param  string[]  $headers
-     * @param  string  $eol
+     * @param string[] $headers
+     * @param string   $eol
+     *
      * @return string
      */
     public static function normalizeHeaders($headers, $eol = "\r\n")
@@ -164,7 +168,7 @@ class Utils
                 // some servers don't support "x-"
                 $values = str_replace('x-pkcs7-', 'pkcs7-', $values);
             }
-            $result .= $name.': '.$values.$eol;
+            $result .= $name . ': ' . $values . $eol;
         }
 
         return $result;
@@ -174,9 +178,10 @@ class Utils
      * Encode a given string in base64 encoding and break lines
      * according to the maximum line length.
      *
-     * @param  string  $str
-     * @param  int  $lineLength
-     * @param  string  $lineEnd
+     * @param string $str
+     * @param int    $lineLength
+     * @param string $lineEnd
+     *
      * @return string
      */
     public static function encodeBase64($str, $lineLength = 64, $lineEnd = "\r\n")
@@ -188,9 +193,10 @@ class Utils
 
     /**
      * Generate Unique Message Id
-     * TODO: uuid4
+     * TODO: uuid4.
      *
-     * @param  mixed  $partner
+     * @param mixed $partner
+     *
      * @return string
      */
     public static function generateMessageID($partner = null)
@@ -200,19 +206,20 @@ class Utils
         }
 
         return date('Y-m-d')
-            .'-'.
+            . '-' .
             uniqid('', true)
-            .'@'.
-            ($partner ? strtolower($partner).'.' : '')
+            . '@' .
+            ($partner ? strtolower($partner) . '.' : '')
             .
             str_replace(' ', '', php_uname('n'));
     }
 
     /**
-     * Generate random string
+     * Generate random string.
      *
-     * @param  int  $length
-     * @param  string  $charList
+     * @param int    $length
+     * @param string $charList
+     *
      * @return string
      */
     public static function random($length = 10, $charList = '0-9a-z')
@@ -247,9 +254,10 @@ class Utils
     }
 
     /**
-     * Checks if the string is valid for UTF-8 encoding
+     * Checks if the string is valid for UTF-8 encoding.
      *
-     * @param  string  $s
+     * @param string $s
+     *
      * @return bool
      */
     public static function checkEncoding($s)
@@ -258,9 +266,10 @@ class Utils
     }
 
     /**
-     * Removes invalid code unit sequences from UTF-8 string
+     * Removes invalid code unit sequences from UTF-8 string.
      *
-     * @param  string  $s
+     * @param string $s
+     *
      * @return bool
      */
     public static function fixEncoding($s)

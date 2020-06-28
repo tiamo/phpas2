@@ -29,9 +29,6 @@ class Server
 
     /**
      * Server constructor.
-     *
-     * @param  Management  $management
-     * @param  StorageInterface  $storage
      */
     public function __construct(Management $management, StorageInterface $storage)
     {
@@ -43,23 +40,21 @@ class Server
      * Function receives AS2 requests from partner.
      * Checks whether it's an AS2 message or an MDN and acts accordingly.
      *
-     * @param  ServerRequestInterface|null  $request
      * @return Response
      */
     public function execute(ServerRequestInterface $request = null)
     {
-        if (! $request) {
+        if (!$request) {
             $request = ServerRequest::fromGlobals();
         }
 
-        $responseStatus = 200;
+        $responseStatus  = 200;
         $responseHeaders = [];
-        $responseBody = null;
+        $responseBody    = null;
 
         $message = null;
 
         try {
-
             if ($request->getMethod() !== 'POST') {
                 return new Response(200, [], 'To submit an AS2 message, you must POST the message to this URL.');
             }
@@ -67,14 +62,14 @@ class Server
             $this->getLogger()->debug(sprintf('Received an HTTP POST from `%s`.', $_SERVER['REMOTE_ADDR']));
 
             foreach (['message-id', 'as2-from', 'as2-to'] as $header) {
-                if (! $request->hasHeader($header)) {
+                if (!$request->hasHeader($header)) {
                     throw new \InvalidArgumentException(sprintf('Missing required header `%s`.', $header));
                 }
             }
 
             // Get the message id, sender and receiver AS2 IDs
-            $messageId = trim($request->getHeaderLine('message-id'), '<>');
-            $senderId = $request->getHeaderLine('as2-from');
+            $messageId  = trim($request->getHeaderLine('message-id'), '<>');
+            $senderId   = $request->getHeaderLine('as2-from');
             $receiverId = $request->getHeaderLine('as2-to');
 
             $this->getLogger()->debug(sprintf('Check payload to see if its an AS2 Message or ASYNC MDN.'));
@@ -96,12 +91,12 @@ class Server
                 $origMessageId = null;
                 foreach ($payload->getParts() as $part) {
                     if ($part->getParsedHeader('content-type', 0, 0) === 'message/disposition-notification') {
-                        $bodyPayload = MimePart::fromString($part->getBody());
+                        $bodyPayload   = MimePart::fromString($part->getBody());
                         $origMessageId = trim($bodyPayload->getParsedHeader('original-message-id', 0, 0), '<>');
                     }
                 }
                 $message = $this->storage->getMessage($origMessageId);
-                if (! $message) {
+                if (!$message) {
                     throw new \RuntimeException('Unknown AS2 MDN received. Will not be processed');
                 }
                 // TODO: check if mdn already exists
@@ -117,7 +112,7 @@ class Server
                     throw new \RuntimeException('An identical message has already been sent to our server');
                 }
 
-                $sender = $this->findPartner($senderId);
+                $sender   = $this->findPartner($senderId);
                 $receiver = $this->findPartner($receiverId);
 
                 // Create a new message
@@ -150,7 +145,7 @@ class Server
                                 )
                             );
                             $responseHeaders = $mdn->getHeaders();
-                            $responseBody = $mdn->getBody();
+                            $responseBody    = $mdn->getBody();
                         } else {
                             $this->getLogger()->debug(
                                 sprintf(
@@ -172,18 +167,17 @@ class Server
                     $this->storage->saveMessage($message);
                 }
             }
-
         } catch (\Throwable $e) {
             $this->getLogger()->critical($e->getMessage());
             if ($message !== null) {
                 // TODO: check
                 // Build the mdn for the message based on processing status
-                $mdn = $this->manager->buildMdn($message, null, $e->getMessage());
+                $mdn             = $this->manager->buildMdn($message, null, $e->getMessage());
                 $responseHeaders = $mdn->getHeaders();
-                $responseBody = $mdn->getBody();
+                $responseBody    = $mdn->getBody();
             } else {
                 $responseStatus = 500;
-                $responseBody = $e->getMessage();
+                $responseBody   = $e->getMessage();
             }
         }
 
@@ -199,11 +193,11 @@ class Server
      */
     public function getLogger()
     {
-        if (! $this->logger) {
+        if (!$this->logger) {
             $this->logger = $this->manager->getLogger();
         }
 
-        if (! $this->logger) {
+        if (!$this->logger) {
             $this->logger = new NullLogger();
         }
 
@@ -211,7 +205,6 @@ class Server
     }
 
     /**
-     * @param  LoggerInterface  $logger
      * @return $this
      */
     public function setLogger(LoggerInterface $logger)
@@ -222,13 +215,14 @@ class Server
     }
 
     /**
-     * @param  string  $id
+     * @param string $id
+     *
      * @return PartnerInterface
      */
     protected function findPartner($id)
     {
         $partner = $this->storage->getPartner($id);
-        if (! $partner) {
+        if (!$partner) {
             throw new \RuntimeException(sprintf('Unknown AS2 Partner with id `%s`.', $id));
         }
 

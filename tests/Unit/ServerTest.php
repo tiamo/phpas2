@@ -2,13 +2,10 @@
 
 namespace AS2\Tests;
 
-use AS2\CryptoHelper;
 use AS2\Management;
 use AS2\MimePart;
-use AS2\PartnerInterface;
 use AS2\Server;
 use AS2\StorageInterface;
-use AS2\Tests\Mock\ConsoleLogger;
 use AS2\Tests\Mock\FileStorage;
 use GuzzleHttp\Psr7\ServerRequest;
 
@@ -53,11 +50,11 @@ class ServerTest extends TestCase
     {
         $sender = $this->storage->initPartner(
             [
-                'id' => 'A',
-                'content_type' => 'application/EDI-Consent',
-                'compression' => false,
-                'signature_algorithm' => 'sha256',
-                'encryption_algorithm' => '3des',
+                'id'                        => 'A',
+                'content_type'              => 'application/EDI-Consent',
+                'compression'               => false,
+                'signature_algorithm'       => 'sha256',
+                'encryption_algorithm'      => '3des',
                 'content_transfer_encoding' => 'binary',
                 // 'mdn_mode' => 'sync',
                 // 'mdn_options' => 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha256',
@@ -66,11 +63,11 @@ class ServerTest extends TestCase
 
         $receiver = $this->storage->initPartner(
             [
-                'id' => 'B',
-                'content_type' => 'application/EDI-Consent',
-                'compression' => true,
-                'signature_algorithm' => 'sha256',
-                'encryption_algorithm' => '3des',
+                'id'                        => 'B',
+                'content_type'              => 'application/EDI-Consent',
+                'compression'               => true,
+                'signature_algorithm'       => 'sha256',
+                'encryption_algorithm'      => '3des',
                 'content_transfer_encoding' => 'binary',
                 // 'mdn_mode' => 'sync',
                 // 'mdn_options' => 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha256',
@@ -97,9 +94,8 @@ class ServerTest extends TestCase
     {
         parent::setUp();
 
-        $this->storage = new FileStorage();
+        $this->storage    = new FileStorage();
         $this->management = new Management();
-        $this->server = new Server($this->management, $this->storage);
+        $this->server     = new Server($this->management, $this->storage);
     }
-
 }

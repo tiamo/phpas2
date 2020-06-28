@@ -4,11 +4,11 @@ namespace AS2;
 
 interface PartnerInterface
 {
-    const MDN_MODE_SYNC = 'sync';
+    const MDN_MODE_SYNC  = 'sync';
     const MDN_MODE_ASYNC = 'async';
 
     /**
-     * Partner Unique Identifier
+     * Partner Unique Identifier.
      *
      * @return string
      */
@@ -98,5 +98,4 @@ interface PartnerInterface
      * @return string (Example: Your requested MDN response from $receiver.as2_id$)
      */
     public function getMdnSubject();
-
 }

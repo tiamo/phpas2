@@ -2,8 +2,8 @@
 
 namespace AS2\Tests\Unit;
 
-use AS2\Tests\TestCase;
 use AS2\MimePart;
+use AS2\Tests\TestCase;
 
 /**
  * @see MimePart
@@ -81,11 +81,11 @@ class MimePartTest extends TestCase
 
         $mimePart = new MimePart(
             [
-                'Content-Type' => 'multipart/mixed; boundary="'.$boundary.'"',
+                'Content-Type' => 'multipart/mixed; boundary="' . $boundary . '"',
             ]
         );
-        $mimePart->addPart("1");
-        $mimePart->addPart("2");
+        $mimePart->addPart('1');
+        $mimePart->addPart('2');
 
         $this->assertTrue($mimePart->isMultiPart());
         $this->assertEquals($boundary, $mimePart->getParsedHeader('content-type', 0, 'boundary'));
@@ -96,7 +96,7 @@ class MimePartTest extends TestCase
         $mimePart = MimePart::fromString("content-type:text/plain;\n\ntest");
         $this->assertEquals('test', $mimePart->getBody());
 
-        $mimePart->setBody("test2");
+        $mimePart->setBody('test2');
         $this->assertEquals('test2', $mimePart->getBody());
 
         $mimePart = MimePart::fromString("content-type:multipart/mixed;\r\n\r\ntest");
@@ -105,7 +105,7 @@ class MimePartTest extends TestCase
         $mimePart->setBody(new MimePart([], '1'));
         $this->assertEquals($mimePart->getCountParts(), 1);
 
-        $mimePart->setBody(['2', '3',]);
+        $mimePart->setBody(['2', '3']);
         $this->assertEquals($mimePart->getCountParts(), 3);
     }
 }

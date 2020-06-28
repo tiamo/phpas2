@@ -14,22 +14,22 @@ class MimePart implements PsrMessageInterface
 
     const EOL = "\r\n";
 
-    const TYPE_PKCS7_MIME = 'application/pkcs7-mime';
-    const TYPE_X_PKCS7_MIME = 'application/x-pkcs7-mime';
-    const TYPE_PKCS7_SIGNATURE = 'application/pkcs7-signature';
+    const TYPE_PKCS7_MIME        = 'application/pkcs7-mime';
+    const TYPE_X_PKCS7_MIME      = 'application/x-pkcs7-mime';
+    const TYPE_PKCS7_SIGNATURE   = 'application/pkcs7-signature';
     const TYPE_X_PKCS7_SIGNATURE = 'application/x-pkcs7-signature';
 
     const MULTIPART_SIGNED = 'multipart/signed';
     const MULTIPART_REPORT = 'multipart/report';
 
     const SMIME_TYPE_COMPRESSED = 'compressed-data';
-    const SMIME_TYPE_ENCRYPTED = 'enveloped-data';
-    const SMIME_TYPE_SIGNED = 'signed-data';
+    const SMIME_TYPE_ENCRYPTED  = 'enveloped-data';
+    const SMIME_TYPE_SIGNED     = 'signed-data';
 
-    const ENCODING_7BIT = '7bit';
-    const ENCODING_8BIT = '8bit';
+    const ENCODING_7BIT            = '7bit';
+    const ENCODING_8BIT            = '8bit';
     const ENCODING_QUOTEDPRINTABLE = 'quoted-printable';
-    const ENCODING_BASE64 = 'base64';
+    const ENCODING_BASE64          = 'base64';
 
     /**
      * @var string
@@ -49,9 +49,9 @@ class MimePart implements PsrMessageInterface
     /**
      * MimePart constructor.
      *
-     * @param  array  $headers
-     * @param  string  $body
-     * @param  string  $rawMessage
+     * @param array  $headers
+     * @param string $body
+     * @param string $rawMessage
      */
     public function __construct($headers = [], $body = null, $rawMessage = null)
     {
@@ -61,15 +61,14 @@ class MimePart implements PsrMessageInterface
 
         $this->setHeaders($this->normalizeHeaders($headers));
 
-        if (! is_null($body)) {
+        if (!is_null($body)) {
             $this->setBody($body);
         }
     }
 
     /**
-     * Instantiate from Request Object
+     * Instantiate from Request Object.
      *
-     * @param  PsrMessageInterface  $message
      * @return static
      */
     public static function fromPsrMessage(PsrMessageInterface $message)
@@ -78,10 +77,10 @@ class MimePart implements PsrMessageInterface
     }
 
     /**
-     * Instantiate from Request Object
+     * Instantiate from Request Object.
      *
-     * @param  RequestInterface  $request
      * @return static
+     *
      * @deprecated Please use MimePart::fromPsrMessage
      */
     public static function fromRequest(RequestInterface $request)
@@ -90,10 +89,11 @@ class MimePart implements PsrMessageInterface
     }
 
     /**
-     * Instantiate from raw message string
+     * Instantiate from raw message string.
      *
-     * @param  string  $rawMessage
-     * @param  bool  $saveRaw
+     * @param string $rawMessage
+     * @param bool   $saveRaw
+     *
      * @return static
      */
     public static function fromString($rawMessage, $saveRaw = true)
@@ -192,7 +192,7 @@ class MimePart implements PsrMessageInterface
      */
     public function isMultiPart()
     {
-        return (count($this->parts) > 1);
+        return count($this->parts) > 1;
     }
 
     /**
@@ -205,6 +205,7 @@ class MimePart implements PsrMessageInterface
 
     /**
      * @param $num
+     *
      * @return static|null
      */
     public function getPart($num)
@@ -213,7 +214,8 @@ class MimePart implements PsrMessageInterface
     }
 
     /**
-     * @param  mixed  $part
+     * @param mixed $part
+     *
      * @return $this
      */
     public function addPart($part)
@@ -228,7 +230,8 @@ class MimePart implements PsrMessageInterface
     }
 
     /**
-     * @param  int  $num
+     * @param int $num
+     *
      * @return bool
      */
     public function removePart($num)
@@ -251,9 +254,10 @@ class MimePart implements PsrMessageInterface
     }
 
     /**
-     * @param  string  $header
-     * @param  int  $index
-     * @param  string|int  $param
+     * @param string     $header
+     * @param int        $index
+     * @param string|int $param
+     *
      * @return array|string|null
      */
     public function getParsedHeader($header, $index = null, $param = null)
@@ -272,7 +276,7 @@ class MimePart implements PsrMessageInterface
     }
 
     /**
-     * Return the currently set message body
+     * Return the currently set message body.
      *
      * @return string
      */
@@ -285,10 +289,10 @@ class MimePart implements PsrMessageInterface
                 //                $body .= self::EOL;
                 foreach ($this->getParts() as $part) {
                     //                    $body .= self::EOL;
-                    $body .= '--'.$boundary.self::EOL;
-                    $body .= $part->toString().self::EOL;
+                    $body .= '--' . $boundary . self::EOL;
+                    $body .= $part->toString() . self::EOL;
                 }
-                $body .= '--'.$boundary.'--'.self::EOL;
+                $body .= '--' . $boundary . '--' . self::EOL;
             }
         }
 
@@ -296,7 +300,8 @@ class MimePart implements PsrMessageInterface
     }
 
     /**
-     * @param  static|array|string  $body
+     * @param static|array|string $body
+     *
      * @return $this
      */
     public function setBody($body)
@@ -310,10 +315,10 @@ class MimePart implements PsrMessageInterface
         } else {
             $boundary = $this->getParsedHeader('content-type', 0, 'boundary');
             if ($boundary) {
-                $separator = '--'.preg_quote($boundary, '/');
+                $separator = '--' . preg_quote($boundary, '/');
                 // Get multi-part content
-                if (preg_match('/'.$separator.'\r?\n(.+?)\r?\n'.$separator.'--/s', $body, $matches)) {
-                    $parts = preg_split('/\r?\n'.$separator.'\r?\n/', $matches[1]);
+                if (preg_match('/' . $separator . '\r?\n(.+?)\r?\n' . $separator . '--/s', $body, $matches)) {
+                    $parts = preg_split('/\r?\n' . $separator . '\r?\n/', $matches[1]);
                     foreach ($parts as $part) {
                         $this->addPart($part);
                     }
@@ -337,7 +342,7 @@ class MimePart implements PsrMessageInterface
     }
 
     /**
-     * Serialize to string
+     * Serialize to string.
      *
      * @return string
      */
@@ -347,7 +352,7 @@ class MimePart implements PsrMessageInterface
             return $this->rawMessage;
         }
 
-        return $this->getHeaderLines().self::EOL.$this->getBody();
+        return $this->getHeaderLines() . self::EOL . $this->getBody();
     }
 
     /**
@@ -360,6 +365,7 @@ class MimePart implements PsrMessageInterface
 
     /**
      * @param $headers
+     *
      * @return array
      */
     private function normalizeHeaders($headers)

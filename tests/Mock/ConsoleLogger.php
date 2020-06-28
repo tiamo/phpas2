@@ -9,9 +9,8 @@ class ConsoleLogger extends AbstractLogger
     /**
      * Logs with an arbitrary level.
      *
-     * @param  mixed  $level
-     * @param  string  $message
-     * @param  array  $context
+     * @param mixed  $level
+     * @param string $message
      *
      * @return void
      */
@@ -24,6 +23,6 @@ class ConsoleLogger extends AbstractLogger
                     $message,
                     json_encode($context),
                 ]
-            ).PHP_EOL;
+            ) . PHP_EOL;
     }
 }

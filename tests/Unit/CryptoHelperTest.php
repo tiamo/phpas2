@@ -2,9 +2,9 @@
 
 namespace AS2\Tests\Unit;
 
-use AS2\Tests\TestCase;
 use AS2\CryptoHelper;
 use AS2\MimePart;
+use AS2\Tests\TestCase;
 
 /**
  * @see CryptoHelper
@@ -15,7 +15,7 @@ class CryptoHelperTest extends TestCase
     {
         $contents = $this->loadFixture('mic-calculation');
         $this->assertEquals(
-            "9IVZAN9QhjQINLzl/tdUvTMhMOSQ+96TjK7brHXQFys=, sha256",
+            '9IVZAN9QhjQINLzl/tdUvTMhMOSQ+96TjK7brHXQFys=, sha256',
             CryptoHelper::calculateMIC($contents, 'sha256')
         );
     }
@@ -23,7 +23,7 @@ class CryptoHelperTest extends TestCase
     public function testSign()
     {
         $payload = $this->initMessage();
-        $certs = $this->getCerts();
+        $certs   = $this->getCerts();
 
         $payload = CryptoHelper::sign($payload, $certs['cert'], $certs['pkey']);
 
@@ -40,14 +40,14 @@ class CryptoHelperTest extends TestCase
     }
 
     /**
-     * TODO: verify binary data
+     * TODO: verify binary data.
      */
     public function testVerify()
     {
         // $contents = $this->loadFixture('si_signed.mdn');
         $contents = $this->loadFixture('signed-msg.txt');
-        $payload = MimePart::fromString($contents);
-        $certs = $this->getCerts();
+        $payload  = MimePart::fromString($contents);
+        $certs    = $this->getCerts();
 
         $this->assertTrue($payload->isSigned());
         $this->assertTrue(
@@ -58,7 +58,7 @@ class CryptoHelperTest extends TestCase
     public function testEncrypt()
     {
         $payload = $this->initMessage();
-        $certs = $this->getCerts();
+        $certs   = $this->getCerts();
 
         $payload = CryptoHelper::encrypt($payload, $certs['cert']);
 
@@ -68,7 +68,7 @@ class CryptoHelperTest extends TestCase
     public function testDecrypt()
     {
         $payload = $this->initMessage();
-        $certs = $this->getCerts();
+        $certs   = $this->getCerts();
 
         $payload = CryptoHelper::encrypt($payload, $certs['cert']);
         $payload = CryptoHelper::decrypt($payload, $certs['cert'], $certs['pkey']);
@@ -98,7 +98,7 @@ class CryptoHelperTest extends TestCase
         $this->assertTrue($payload->isSigned());
 
         foreach ($payload->getParts() as $part) {
-            if (! $part->isPkc7Signature()) {
+            if (!$part->isPkc7Signature()) {
                 $payload = $part;
             }
         }

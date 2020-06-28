@@ -2,8 +2,8 @@
 
 namespace AS2\Tests\Unit;
 
-use AS2\Tests\TestCase;
 use AS2\Management;
+use AS2\Tests\TestCase;
 
 class ManagementTest extends TestCase
 {

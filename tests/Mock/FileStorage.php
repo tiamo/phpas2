@@ -13,6 +13,7 @@ class FileStorage implements StorageInterface
 
     /**
      * @param array $data
+     *
      * @return Message
      */
     public function initMessage($data = [])
@@ -22,6 +23,7 @@ class FileStorage implements StorageInterface
 
     /**
      * @param string $id
+     *
      * @return MessageInterface|false
      */
     public function getMessage($id)
@@ -31,13 +33,16 @@ class FileStorage implements StorageInterface
             $message = new Message(json_decode(file_get_contents($path), true));
             $message->setSender($this->getPartner($message->getSenderId()));
             $message->setReceiver($this->getPartner($message->getReceiverId()));
+
             return $message;
         }
+
         return false;
     }
 
     /**
      * @param Message|MessageInterface $message
+     *
      * @return bool
      */
     public function saveMessage(MessageInterface $message)
@@ -63,11 +68,12 @@ class FileStorage implements StorageInterface
             file_put_contents(str_replace('.json', '.txt', $path), $headers . PHP_EOL . $payload);
         }
 
-        return (bool)file_put_contents($path, json_encode($message->getData()));
+        return (bool) file_put_contents($path, json_encode($message->getData()));
     }
 
     /**
      * @param array $data
+     *
      * @return PartnerInterface
      */
     public function initPartner($data = [])
@@ -77,6 +83,7 @@ class FileStorage implements StorageInterface
 
     /**
      * @param string $id
+     *
      * @return PartnerInterface|false
      */
     public function getPartner($id)
@@ -85,28 +92,33 @@ class FileStorage implements StorageInterface
         if (file_exists($path)) {
             return new Partner(json_decode(file_get_contents($path), true));
         }
+
         return false;
     }
 
     /**
      * @param PartnerInterface|Partner $partner
+     *
      * @return bool
      */
     public function savePartner(PartnerInterface $partner)
     {
         $path = $this->getFile(self::TYPE_PARTNER, $partner->getAs2Id());
-        return (bool)file_put_contents($path, json_encode($partner->getData()));
+
+        return (bool) file_put_contents($path, json_encode($partner->getData()));
     }
 
     /**
      * @param string $type
      * @param string $id
      * @param string $format
+     *
      * @return string
      */
     protected function getFile($type, $id, $format = 'json')
     {
-        $basePath = realpath(__DIR__.'/../resources');
+        $basePath = realpath(__DIR__ . '/../resources');
+
         return $basePath . DIRECTORY_SEPARATOR . $type . DIRECTORY_SEPARATOR . strtolower($id) . '.' . $format;
     }
 }

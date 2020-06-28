@@ -8,7 +8,8 @@ use AS2\PartnerInterface;
 class Message extends DataObject implements MessageInterface
 {
     /**
-     * Unique Message Id
+     * Unique Message Id.
+     *
      * @return string
      */
     public function getMessageId()
@@ -18,6 +19,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param string $id
+     *
      * @return $this
      */
     public function setMessageId($id)
@@ -27,6 +29,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param string $dir
+     *
      * @return $this
      */
     public function setDirection($dir)
@@ -44,6 +47,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param string $id
+     *
      * @return $this
      */
     public function setSenderId($id)
@@ -68,17 +72,18 @@ class Message extends DataObject implements MessageInterface
     }
 
     /**
-     * @param PartnerInterface $partner
      * @return $this
      */
     public function setSender(PartnerInterface $partner)
     {
         $this->setSenderId($partner->getAs2Id());
+
         return $this->setData('sender', $partner);
     }
 
     /**
      * @param string $id
+     *
      * @return $this
      */
     public function setReceiverId($id)
@@ -103,12 +108,12 @@ class Message extends DataObject implements MessageInterface
     }
 
     /**
-     * @param PartnerInterface $partner
      * @return $this
      */
     public function setReceiver(PartnerInterface $partner)
     {
         $this->setReceiverId($partner->getAs2Id());
+
         return $this->setData('receiver', $partner);
     }
 
@@ -122,6 +127,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param string $headers
+     *
      * @return $this
      */
     public function setHeaders($headers)
@@ -139,6 +145,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param string $payload
+     *
      * @return $this
      */
     public function setPayload($payload)
@@ -156,6 +163,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param string $status
+     *
      * @return $this
      */
     public function setStatus($status)
@@ -173,6 +181,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param string $msg
+     *
      * @return $this
      */
     public function setStatusMsg($msg)
@@ -190,6 +199,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param string $status
+     *
      * @return $this
      */
     public function setMdnMode($status)
@@ -207,6 +217,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param string $status
+     *
      * @return $this
      */
     public function setMdnStatus($status)
@@ -224,6 +235,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param mixed $mdn
+     *
      * @return $this
      */
     public function setMdnPayload($mdn)
@@ -241,6 +253,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param string $mic
+     *
      * @return $this
      */
     public function setMic($mic)
@@ -258,6 +271,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param bool $val
+     *
      * @return $this
      */
     public function setSigned($val = true)
@@ -275,6 +289,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param bool $val
+     *
      * @return $this
      */
     public function setEncrypted($val = true)
@@ -292,6 +307,7 @@ class Message extends DataObject implements MessageInterface
 
     /**
      * @param bool $val
+     *
      * @return $this
      */
     public function setCompressed($val = true)

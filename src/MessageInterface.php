@@ -4,30 +4,31 @@ namespace AS2;
 
 interface MessageInterface
 {
-    const STATUS_PENDING = 'pending';
-    const STATUS_SUCCESS = 'success';
-    const STATUS_ERROR = 'error';
-    const STATUS_WARNING = 'warning';
-    const STATUS_RETRY = 'retry';
+    const STATUS_PENDING    = 'pending';
+    const STATUS_SUCCESS    = 'success';
+    const STATUS_ERROR      = 'error';
+    const STATUS_WARNING    = 'warning';
+    const STATUS_RETRY      = 'retry';
     const STATUS_IN_PROCESS = 'in_process';
 
-    const MDN_STATUS_PENDING = 'pending';
+    const MDN_STATUS_PENDING  = 'pending';
     const MDN_STATUS_RECEIVED = 'received';
-    const MDN_STATUS_SENT = 'sent';
-    const MDN_STATUS_ERROR = 'error';
+    const MDN_STATUS_SENT     = 'sent';
+    const MDN_STATUS_ERROR    = 'error';
 
-    const DIR_INBOUND = 1;
+    const DIR_INBOUND  = 1;
     const DIR_OUTBOUND = 0;
 
     /**
-     * Unique Message Id
+     * Unique Message Id.
      *
      * @return string
      */
     public function getMessageId();
 
     /**
-     * @param  string  $id
+     * @param string $id
+     *
      * @return $this
      */
     public function setMessageId($id);
@@ -38,7 +39,8 @@ interface MessageInterface
     public function getDirection();
 
     /**
-     * @param  int  $dir
+     * @param int $dir
+     *
      * @return $this
      */
     public function setDirection($dir);
@@ -49,7 +51,6 @@ interface MessageInterface
     public function getSender();
 
     /**
-     * @param  PartnerInterface  $partner
      * @return $this
      */
     public function setSender(PartnerInterface $partner);
@@ -60,7 +61,6 @@ interface MessageInterface
     public function getReceiver();
 
     /**
-     * @param  PartnerInterface  $partner
      * @return $this
      */
     public function setReceiver(PartnerInterface $partner);
@@ -71,7 +71,8 @@ interface MessageInterface
     public function getHeaders();
 
     /**
-     * @param  string  $headers
+     * @param string $headers
+     *
      * @return $this
      */
     public function setHeaders($headers);
@@ -82,7 +83,8 @@ interface MessageInterface
     public function getPayload();
 
     /**
-     * @param  string  $payload
+     * @param string $payload
+     *
      * @return $this
      */
     public function setPayload($payload);
@@ -93,7 +95,8 @@ interface MessageInterface
     public function getStatus();
 
     /**
-     * @param  string  $status
+     * @param string $status
+     *
      * @return $this
      */
     public function setStatus($status);
@@ -104,7 +107,8 @@ interface MessageInterface
     public function getStatusMsg();
 
     /**
-     * @param  string  $msg
+     * @param string $msg
+     *
      * @return $this
      */
     public function setStatusMsg($msg);
@@ -115,7 +119,8 @@ interface MessageInterface
     public function getMdnStatus();
 
     /**
-     * @param  string  $status
+     * @param string $status
+     *
      * @return $this
      */
     public function setMdnStatus($status);
@@ -126,7 +131,8 @@ interface MessageInterface
     public function getMdnPayload();
 
     /**
-     * @param  mixed  $mdn
+     * @param mixed $mdn
+     *
      * @return $this
      */
     public function setMdnPayload($mdn);
@@ -137,22 +143,24 @@ interface MessageInterface
     public function getMdnMode();
 
     /**
-     * @param  string  $mode
+     * @param string $mode
+     *
      * @return $this
      */
     public function setMdnMode($mode);
 
     /**
-     * Get Message Integrity Check value
+     * Get Message Integrity Check value.
      *
      * @return string
      */
     public function getMic();
 
     /**
-     * Set Message Integrity Check value
+     * Set Message Integrity Check value.
      *
-     * @param  string  $mic
+     * @param string $mic
+     *
      * @return $this
      */
     public function setMic($mic);
@@ -163,7 +171,8 @@ interface MessageInterface
     public function getSigned();
 
     /**
-     * @param  bool  $val
+     * @param bool $val
+     *
      * @return $this
      */
     public function setSigned($val = true);
@@ -174,7 +183,8 @@ interface MessageInterface
     public function getEncrypted();
 
     /**
-     * @param  bool  $val
+     * @param bool $val
+     *
      * @return $this
      */
     public function setEncrypted($val = true);
@@ -185,7 +195,8 @@ interface MessageInterface
     public function getCompressed();
 
     /**
-     * @param  bool  $val
+     * @param bool $val
+     *
      * @return $this
      */
     public function setCompressed($val = true);
