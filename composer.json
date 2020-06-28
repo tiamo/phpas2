@@ -41,14 +41,15 @@
             "AS2\\Tests\\": "tests/"
         }
     },
-    "config": {
-        "sort-packages": true
-    },
     "minimum-stability": "dev",
     "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "preferred-install": "dist"
+    },
     "scripts": {
+        "lint": "php-cs-fixer fix -v",
         "test": "phpunit --no-coverage",
-        "test-cover": "phpunit --coverage-text",
-        "codestyle": "php-cs-fixer fix --path-mode=intersection --config=.php_cs.dist"
+        "test-cover": "phpunit --coverage-text"
     }
 }
