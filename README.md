@@ -4,6 +4,7 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/tiamo/phpas2.svg?style=flat-square)](https://packagist.org/packages/tiamo/phpas2)
 [![Build Status](https://travis-ci.org/tiamo/phpas2.svg?branch=master)](https://travis-ci.org/tiamo/phpas2)
 [![Total Downloads](https://img.shields.io/packagist/dt/tiamo/phpas2.svg?style=flat-square)](https://packagist.org/packages/tiamo/phpas2)
+[![License](https://poser.pugx.org/tiamo/phpas2/license)](https://packagist.org/packages/tiamo/phpas2)
 
 The PHPAS2 application enables you to transmit and receive AS2 messages with 
 EDI-X12, EDIFACT, XML, or binary payloads between trading partners.
