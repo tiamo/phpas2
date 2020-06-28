@@ -47,7 +47,8 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-        "test": "phpunit --verbose",
+        "test": "phpunit --no-coverage",
+        "test-cover": "phpunit --coverage-text",
         "codestyle": "php-cs-fixer fix --path-mode=intersection --config=.php_cs.dist"
     }
 }
