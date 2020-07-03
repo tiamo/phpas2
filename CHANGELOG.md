@@ -1,5 +1,14 @@
 # Change Log
 
+## 1.4.0
+
+* Bugfixes
+* Minimum php >= 5.6
+* Improved tests
+* Removed StorageInterface
+* Added PartnerRepositoryInterface
+* Added MessageRepositoryInterface
+
 ## 1.3.8
 
 * Fixed binary encoding bug

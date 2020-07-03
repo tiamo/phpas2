@@ -18,9 +18,14 @@ class Server
     protected $manager;
 
     /**
-     * @var StorageInterface
+     * @var PartnerRepositoryInterface
      */
-    protected $storage;
+    protected $partnerRepository;
+
+    /**
+     * @var MessageRepositoryInterface
+     */
+    protected $messageRepository;
 
     /**
      * @var LoggerInterface
@@ -30,10 +35,14 @@ class Server
     /**
      * Server constructor.
      */
-    public function __construct(Management $management, StorageInterface $storage)
-    {
-        $this->manager = $management;
-        $this->storage = $storage;
+    public function __construct(
+        Management $management,
+        PartnerRepositoryInterface $partnerRepository,
+        MessageRepositoryInterface $messageRepository
+    ) {
+        $this->manager           = $management;
+        $this->partnerRepository = $partnerRepository;
+        $this->messageRepository = $messageRepository;
     }
 
     /**
@@ -59,7 +68,12 @@ class Server
                 return new Response(200, [], 'To submit an AS2 message, you must POST the message to this URL.');
             }
 
-            $this->getLogger()->debug(sprintf('Received an HTTP POST from `%s`.', $_SERVER['REMOTE_ADDR']));
+            $this->getLogger()->debug(
+                sprintf(
+                    'Received an HTTP POST from `%s`.',
+                    isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'Unknown'
+                )
+            );
 
             foreach (['message-id', 'as2-from', 'as2-to'] as $header) {
                 if (!$request->hasHeader($header)) {
@@ -87,6 +101,7 @@ class Server
                         $senderId
                     )
                 );
+
                 // Get Original Message-Id
                 $origMessageId = null;
                 foreach ($payload->getParts() as $part) {
@@ -95,19 +110,22 @@ class Server
                         $origMessageId = trim($bodyPayload->getParsedHeader('original-message-id', 0, 0), '<>');
                     }
                 }
-                $message = $this->storage->getMessage($origMessageId);
+
+                $message = $this->messageRepository->findMessageById($origMessageId);
                 if (!$message) {
                     throw new \RuntimeException('Unknown AS2 MDN received. Will not be processed');
                 }
+
                 // TODO: check if mdn already exists
                 $this->manager->processMdn($message, $payload);
-                $this->storage->saveMessage($message);
+                $this->messageRepository->saveMessage($message);
+
                 $responseBody = 'AS2 ASYNC MDN has been received';
             } else {
                 // Process the received AS2 message from partner
 
                 // Raise duplicate message error in case message already exists in the system
-                $message = $this->storage->getMessage($messageId);
+                $message = $this->messageRepository->findMessageById($messageId);
                 if ($message) {
                     throw new \RuntimeException('An identical message has already been sent to our server');
                 }
@@ -116,7 +134,7 @@ class Server
                 $receiver = $this->findPartner($receiverId);
 
                 // Create a new message
-                $message = $this->storage->initMessage();
+                $message = $this->messageRepository->createMessage();
                 $message->setMessageId($messageId);
                 $message->setDirection(MessageInterface::DIR_INBOUND);
                 $message->setStatus(MessageInterface::STATUS_IN_PROCESS);
@@ -159,15 +177,15 @@ class Server
                     }
 
                     $message->setStatus(MessageInterface::STATUS_SUCCESS);
-                } catch (\Throwable $e) {
+                } catch (\Exception $e) {
                     $message->setStatus(MessageInterface::STATUS_ERROR);
                     $message->setStatusMsg($e->getMessage());
                     throw $e;
                 } finally {
-                    $this->storage->saveMessage($message);
+                    $this->messageRepository->saveMessage($message);
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->getLogger()->critical($e->getMessage());
             if ($message !== null) {
                 // TODO: check
@@ -221,7 +239,7 @@ class Server
      */
     protected function findPartner($id)
     {
-        $partner = $this->storage->getPartner($id);
+        $partner = $this->partnerRepository->findPartnerById($id);
         if (!$partner) {
             throw new \RuntimeException(sprintf('Unknown AS2 Partner with id `%s`.', $id));
         }

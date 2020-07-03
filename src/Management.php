@@ -3,6 +3,7 @@
 namespace AS2;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -56,7 +57,6 @@ class Management implements LoggerAwareInterface
      *
      * @return MimePart
      *
-     * @throws \Throwable
      * @noinspection PhpUnused
      */
     public function buildMessageFromFile(
@@ -348,9 +348,11 @@ class Management implements LoggerAwareInterface
      * Sends the AS2 message to the partner.
      * Takes the message as argument and posts the as2 message to the partner.
      *
-     * @param MimePart $payload
+     * @param MimePart|string $payload
      *
      * @return ResponseInterface|false
+     *
+     * @throws GuzzleException
      */
     public function sendMessage(MessageInterface $message, $payload)
     {
@@ -402,7 +404,7 @@ class Management implements LoggerAwareInterface
             $message->setStatus(MessageInterface::STATUS_SUCCESS);
 
             return $response;
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->getLogger()->critical($e->getMessage());
             $message->setStatus(MessageInterface::STATUS_ERROR);
             $message->setStatusMsg($e->getMessage());
@@ -418,8 +420,6 @@ class Management implements LoggerAwareInterface
      * @param MimePart|string $payload
      *
      * @return bool
-     *
-     * @throws \Throwable
      */
     public function processMdn(MessageInterface $message, $payload)
     {
@@ -437,7 +437,7 @@ class Management implements LoggerAwareInterface
 
         // Raise error if message is not an MDN
         if (!$payload->isReport()) {
-            throw new \RuntimeException('MDN report not found in the response');
+            throw new \RuntimeException('MDN report not found in the response [' . $payload . ']');
         }
 
         $messageId = $message->getMessageId();
@@ -473,7 +473,7 @@ class Management implements LoggerAwareInterface
                             throw new \RuntimeException('Partner failed to process file. ' . $mdnStatus);
                         }
                     }
-                } catch (\Throwable $e) {
+                } catch (\Exception $e) {
                     $message->setMdnStatus(MessageInterface::MDN_STATUS_ERROR);
                     $message->setStatusMsg($e->getMessage());
                     $this->getLogger()->error(
@@ -664,7 +664,7 @@ class Management implements LoggerAwareInterface
             $message->setMdnStatus(MessageInterface::MDN_STATUS_SENT);
 
             return $response;
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->getLogger()->critical($e->getMessage());
             $message->setMdnStatus(MessageInterface::MDN_STATUS_ERROR);
         }
@@ -686,7 +686,7 @@ class Management implements LoggerAwareInterface
 
     /**
      * @param string $name
-     * @param null   $default
+     * @param string $default
      *
      * @return mixed|null
      */

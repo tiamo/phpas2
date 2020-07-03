@@ -129,7 +129,7 @@ class CryptoHelper
 
         if (is_string($cipher)) {
             $cipher = strtoupper($cipher);
-            $cipher = str_replace('-', '_', $cipher);
+            $cipher = \str_replace('-', '_', $cipher);
             if (defined('OPENSSL_CIPHER_' . $cipher)) {
                 $cipher = constant('OPENSSL_CIPHER_' . $cipher);
             }
