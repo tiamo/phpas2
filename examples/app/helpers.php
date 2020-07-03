@@ -7,7 +7,7 @@ if (! function_exists('getallheaders')) {
     /**
      * Get all HTTP header key/values as an associative array for the current request.
      *
-     * @return string[string] The HTTP header key/value pairs.
+     * @return array [string] The HTTP header key/value pairs.
      */
     function getallheaders()
     {
@@ -18,9 +18,9 @@ if (! function_exists('getallheaders')) {
             'CONTENT_MD5' => 'Content-Md5',
         ];
         foreach ($_SERVER as $key => $value) {
-            if (substr($key, 0, 5) === 'HTTP_') {
+            if (strpos($key, 'HTTP_') === 0) {
                 $key = substr($key, 5);
-                if (! isset($copy_server[$key]) || ! isset($_SERVER[$key])) {
+                if (! isset($copy_server[$key], $_SERVER[$key])) {
                     $key = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', $key))));
                     $headers[$key] = $value;
                 }

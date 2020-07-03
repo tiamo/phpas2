@@ -1,6 +1,6 @@
 <?php
 
-namespace models;
+namespace App\Models;
 
 use AS2\MessageInterface;
 use AS2\PartnerInterface;
