@@ -77,7 +77,7 @@ class Partner extends DataObject implements PartnerInterface
      */
     public function getSignatureAlgorithm()
     {
-        return $this->getData('sign');
+        return $this->getData('signature_algorithm');
     }
 
     /**
@@ -85,7 +85,7 @@ class Partner extends DataObject implements PartnerInterface
      */
     public function getEncryptionAlgorithm()
     {
-        return $this->getData('encrypt');
+        return $this->getData('encryption_algorithm');
     }
 
     /**
