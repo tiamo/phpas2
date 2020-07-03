@@ -2,20 +2,36 @@
 
 namespace AS2\Tests\Unit;
 
-use AS2\Management;
 use AS2\Tests\TestCase;
 
 class ManagementTest extends TestCase
 {
-    private $management;
-
-    public function testProcessMessage()
+    public function testBuildMessage()
     {
-        // TODO
-        $this->assertTrue(true);
+        $senderId   = 'A';
+        $receiverId = 'B';
+
+        $sender   = $this->partnerRepository->findPartnerById($senderId);
+        $receiver = $this->partnerRepository->findPartnerById($receiverId);
+
+        // Initialize empty message
+        $message = $this->messageRepository->createMessage();
+        $message->setMessageId('test');
+        $message->setSender($sender);
+        $message->setReceiver($receiver);
+
+        $contents = $this->loadFixture('test.edi');
+
+        // generate message payload
+        $payload = $this->management->buildMessage($message, $contents);
+
+        $this->assertFalse($payload->isEncrypted());
+        $this->assertTrue($payload->isCompressed());
+        $this->assertEquals($senderId, $payload->getHeaderLine('as2-from'));
+        $this->assertEquals($receiverId, $payload->getHeaderLine('as2-to'));
     }
 
-    public function testBuildMessage()
+    public function testProcessMessage()
     {
         // TODO
         $this->assertTrue(true);
@@ -25,12 +41,5 @@ class ManagementTest extends TestCase
     {
         // TODO
         $this->assertTrue(true);
-    }
-
-    protected function setUp()
-    {
-        parent::setUp();
-
-        $this->management = new Management();
     }
 }
