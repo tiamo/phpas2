@@ -31,6 +31,14 @@ return function (App $app) {
         // return $server->execute($serverRequest);
 
         return $server->execute();
+
+        // foreach($result->getHeaders() as $name => $values) {
+        //     foreach ($values as $value) {
+        //         @header(sprintf('%s: %s', $name, $value), false);
+        //     }
+        // }
+        //
+        // return $response->withBody($response->getBody());
     });
 
 };
