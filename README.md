@@ -11,7 +11,7 @@ EDI-X12, EDIFACT, XML, or binary payloads between trading partners.
 
 ## Requirements
 
-* php >= 5.5
+* php >= 5.6
 * ext-openssl
 * ext-zlib
 
