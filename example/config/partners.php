@@ -2,9 +2,13 @@
 
 use AS2\PartnerInterface;
 
+$resources = __DIR__.'/../resources';
+
 // local certificates
-openssl_pkcs12_read(file_get_contents(__DIR__.'/data/phpas2.p12'), $local, null);
-openssl_pkcs12_read(file_get_contents(__DIR__.'/data/key3.pfx'), $key3, 'test');
+openssl_pkcs12_read(file_get_contents($resources.'/phpas2.p12'), $local, null);
+
+// mendelson key3
+openssl_pkcs12_read(file_get_contents($resources.'/key3.pfx'), $key3, 'test');
 
 return [
 

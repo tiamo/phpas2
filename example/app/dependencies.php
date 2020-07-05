@@ -10,23 +10,26 @@ return function ($container) {
 
     $container['MessageRepository'] = function ($c) {
         return new MessageRepository([
-            'path' => $c['settings']['storage']['path'],
+            'path' => $c['settings']['storage']['path'] . '/messages',
         ]);
     };
 
     $container['PartnerRepository'] = function ($c) {
         return new PartnerRepository(
-            require __DIR__.'/partners.php'
+            require __DIR__.'/../config/partners.php'
         );
     };
 
     $container['logger'] = function ($c) {
         $logger = new Logger('app');
-        $fileHandler = new StreamHandler(
-            sprintf('%s/logs/app.log', $c['settings']['storage']['path'])
-        );
-        $logger->pushHandler($fileHandler);
-
+        $logger->pushHandler(new StreamHandler('php://stdout'));
+        if (! empty($c['settings']['logger'])) {
+            $fileHandler = new StreamHandler(
+                $c['settings']['logger']['path'],
+                $c['settings']['logger']['level']
+            );
+            $logger->pushHandler($fileHandler);
+        }
         return $logger;
     };
 

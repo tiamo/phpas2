@@ -8,7 +8,6 @@ use App\Models\Message;
 
 class MessageRepository implements MessageRepositoryInterface
 {
-    protected $format = 'json';
     protected $path;
 
     public function __construct(array $options)
@@ -16,9 +15,8 @@ class MessageRepository implements MessageRepositoryInterface
         if (empty($options['path'])) {
             throw new \RuntimeException('`path` required');
         }
-        if (isset($options['format'])) {
-            $this->format = $options['format'];
-        }
+        
+        $this->path = $options['path'];
     }
 
     /**
@@ -27,10 +25,12 @@ class MessageRepository implements MessageRepositoryInterface
      */
     public function findMessageById($id)
     {
-        $data = file_get_contents(
-            sprintf('%s/messages/%s.%s', $this->path, $id, $this->format)
-        );
+        $path = sprintf('%s/%s.json', $this->path, $id);
+        if (! file_exists($path)) {
+            return null;
+        }
 
+        $data = file_get_contents($path);
         if (empty($data)) {
             return null;
         }
@@ -52,22 +52,20 @@ class MessageRepository implements MessageRepositoryInterface
         $data = $message->getData();
         unset($data['receiver'], $data['receiver']);
 
-        if ($headers = $message->getHeaders()) {
-            file_put_contents(str_replace('.json', '.headers', $this->path), $headers);
-        }
+        $path = sprintf('%s/%s', $this->path, $message->getMessageId());
 
-        if ($payload = $message->getPayload()) {
-            file_put_contents(str_replace('.json', '.payload', $this->path), $payload);
-        }
+        // if ($headers = $message->getHeaders()) {
+        //     file_put_contents($path.'.headers', $headers);
+        // }
+        //
+        // if ($payload = $message->getPayload()) {
+        //     file_put_contents($path.'.payload', $payload);
+        // }
+        //
+        // if ($mdn = $message->getMdnPayload()) {
+        //     file_put_contents($path.'.mdn', $mdn);
+        // }
 
-        if ($mdn = $message->getMdnPayload()) {
-            file_put_contents(str_replace('.json', '.mdn', $this->path), $mdn);
-        }
-
-        if ($headers = $message->getHeaders()) {
-            file_put_contents(str_replace('.json', '.txt', $this->path), $headers.PHP_EOL.$payload);
-        }
-
-        return file_put_contents($this->path, json_encode($data));
+        return (bool) file_put_contents($path.'.json', json_encode($data));
     }
 }
