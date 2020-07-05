@@ -1,6 +1,7 @@
 # DOCUMENTATION
 
-Please have a look at an example application based on Slim3 framework. 
+Please have a look at an example application based on Slim3 framework.
+
 You can also create your own classes.
 
 - Implement MessageRepository class based on \AS2\MessageRepositoryInterface
