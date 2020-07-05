@@ -24,23 +24,28 @@ composer require tiamo/phpas2
 ## Usage
 
 * [Documentation](./docs/index.md)
-* [Examples](./examples)
+* [Example](./example)
 
 Basic example
+
 ```bash
+cd example
+composer install
+chmod +x ./bin/console
+
 # start a server to receive messages in 8000 port
-php -S 127.0.0.1:8000 ./examples/server.php
+php -S 127.0.0.1:8000 ./public/index.php
+
+# send a test message
+./bin/console send-message --from mycompanyAS2 --to phpas2
+
+# send a file
+./bin/console send-message /path/to/the/file --from mycompanyAS2 --to phpas2
 ```
 
-```bash
-# init partners and storage
-php -f ./examples/init.php
-```
+## Changelog
 
-```bash
-# send message
-php -f ./examples/outbound.php
-```
+Please have a look in [CHANGELOG](CHANGELOG.md)
 
 ## License
 
