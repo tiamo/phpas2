@@ -14,8 +14,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SendCommand extends Command
 {
-    protected static $defaultName = 'send-message';
-
     /**
      * @var ContainerInterface
      */
@@ -24,7 +22,7 @@ class SendCommand extends Command
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
-        parent::__construct();
+        parent::__construct('send-message');
     }
 
     protected function configure()

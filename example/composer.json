@@ -7,10 +7,10 @@
     "require": {
         "php": ">=5.6",
         "ext-json": "*",
-        "tiamo/phpas2": "dev-master",
+        "tiamo/phpas2": "^1.4",
         "slim/slim": "^3",
-        "monolog/monolog": "^2.1",
-        "symfony/console": "^3.4"
+        "monolog/monolog": "^1.1",
+        "symfony/console": "^2"
     },
     "autoload": {
         "psr-4": {
@@ -19,8 +19,5 @@
         "files": [
             "app/helpers.php"
         ]
-    },
-    "scripts": {
-        "cli": "php public/index.php"
     }
 }
