@@ -8,7 +8,7 @@ use Symfony\Component\Console\Application;
 
 $console = new Application();
 
-$commands = require __DIR__.'/../app/commands.php';
+$commands = require __DIR__.'/../config/commands.php';
 
 foreach ($commands as $command) {
     $console->add(new $command($app->getContainer()));

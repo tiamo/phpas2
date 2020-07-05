@@ -10,7 +10,7 @@ return function ($container) {
 
     $container['MessageRepository'] = function ($c) {
         return new MessageRepository([
-            'path' => $c['settings']['storage']['path'] . '/messages',
+            'path' => $c['settings']['storage']['path'].'/messages',
         ]);
     };
 
@@ -23,6 +23,7 @@ return function ($container) {
     $container['logger'] = function ($c) {
         $logger = new Logger('app');
         $logger->pushHandler(new StreamHandler('php://stdout'));
+
         if (! empty($c['settings']['logger'])) {
             $fileHandler = new StreamHandler(
                 $c['settings']['logger']['path'],
@@ -30,6 +31,7 @@ return function ($container) {
             );
             $logger->pushHandler($fileHandler);
         }
+
         return $logger;
     };
 
