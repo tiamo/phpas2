@@ -67,36 +67,6 @@ ej7IBY7WKy9OvCErUoH0zXsdfkuJlJXf1jS+qtEbWRGnbxwfXgH0S1uw7QU0q8EECvEb+MNrCEtD
         'mdn_options' => 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha256',
     ],
 
-    [
-        'id' => 'RelishTest',
-        'target_url' => 'https://edi.relishops.com/public/index.php',
-        'certificate' => isset($local['cert']) ? $local['cert'] : null,
-        'private_key' => isset($local['pkey']) ? $local['pkey'] : null,
-        'content_type' => 'application/EDI-Consent',
-        'compression' => true,
-        'signature_algorithm' => 'sha1',
-        'encryption_algorithm' => '3des',
-        // 'content_transfer_encoding' => 'binary',
-        'mdn_mode' => PartnerInterface::MDN_MODE_SYNC,
-        'mdn_options' => 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1',
-    ],
-
-    [
-        'id' => 'SATTest',
-        'email' => 'sanjinhadzic@relishschoolfood.co.uk',
-        'target_url' => 'http://sat.relishops.com/as2new/public/index.php',
-        'certificate' => isset($key3['cert']) ? $key3['cert'] : null,
-        'private_key' => isset($key3['pkey']) ? $key3['pkey'] : null,
-        // 'private_key_pass_phrase' => 'password',
-        // 'content_type' => 'application/edi-x12',
-        'content_type' => 'application/EDI-Consent',
-        'compression' => true,
-        'signature_algorithm' => 'sha1',
-        'encryption_algorithm' => '3des',
-        'mdn_mode' => PartnerInterface::MDN_MODE_SYNC,
-        'mdn_options' => 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1',
-    ],
-
     // local station
 
     [
