@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.4.3
+
+* Support guzzle: ^7.0
+
 ## 1.4.0
 
 * Bugfixes
