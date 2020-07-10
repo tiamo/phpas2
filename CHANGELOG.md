@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.4.4
+
+* Fixed bug on Win OS (#15)
+
 ## 1.4.3
 
 * Support guzzle: ^7.0
