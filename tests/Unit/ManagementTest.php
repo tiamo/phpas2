@@ -11,10 +11,10 @@ class ManagementTest extends TestCase
 {
     public function testBuildMessage()
     {
-        $senderId = 'A';
+        $senderId   = 'A';
         $receiverId = 'B';
 
-        $sender = $this->partnerRepository->findPartnerById($senderId);
+        $sender   = $this->partnerRepository->findPartnerById($senderId);
         $receiver = $this->partnerRepository->findPartnerById($receiverId);
 
         // Initialize empty message
@@ -37,7 +37,7 @@ class ManagementTest extends TestCase
     {
         $payload = MimePart::fromString($this->loadFixture('phpas2.raw'));
 
-        $sender = $this->partnerRepository->findPartnerById('A');
+        $sender   = $this->partnerRepository->findPartnerById('A');
         $receiver = $this->partnerRepository->findPartnerById('B');
 
         $messageId = $payload->getHeaderLine('message-id');
@@ -61,10 +61,10 @@ class ManagementTest extends TestCase
 
     public function testSendMessage()
     {
-        $senderId = 'A';
+        $senderId   = 'A';
         $receiverId = 'B';
 
-        $sender = $this->partnerRepository->findPartnerById($senderId);
+        $sender   = $this->partnerRepository->findPartnerById($senderId);
         $receiver = $this->partnerRepository->findPartnerById($receiverId);
 
         $messageId = Utils::generateMessageID($sender);
