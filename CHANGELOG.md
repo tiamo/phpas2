@@ -2,11 +2,11 @@
 
 ## 1.4.4
 
-* Fixed bug on Win OS (#15)
+* Fixed bug on Win OS ([#15](https://github.com/tiamo/phpas2/issues/15))
 
 ## 1.4.3
 
-* Support guzzle: ^7.0
+* Support guzzle: ^7.0 ([#14](https://github.com/tiamo/phpas2/issues/14))
 
 ## 1.4.0
 
