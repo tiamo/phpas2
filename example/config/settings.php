@@ -2,6 +2,8 @@
 
 use Monolog\Logger;
 
+$storagePath = __DIR__.'/../storage';
+
 return [
     /**
      * @see http://www.slimframework.com/docs/v3/objects/application.html#application-configuration
@@ -10,7 +12,7 @@ return [
 
     'logger' => [
         'level' => Logger::DEBUG,
-        'path' => __DIR__ . '/../storage/logs/app.log',
+        'path' => $storagePath.'/logs/app.log',
         // ...
     ],
 
@@ -21,6 +23,6 @@ return [
     ],
 
     'storage' => [
-        'path' => __DIR__.'/../storage',
+        'path' => $storagePath,
     ],
 ];

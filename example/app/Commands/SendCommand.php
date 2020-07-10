@@ -29,8 +29,7 @@ class SendCommand extends Command
     {
         $this
             ->setDescription('Send message to the partner')
-            ->setHelp('This command allows you to send a message to the partner...');
-        $this
+            ->setHelp('This command allows you to send a message to the partner...')
             ->addOption('file', null, InputOption::VALUE_OPTIONAL, 'File to send')
             ->addOption('from', null, InputOption::VALUE_REQUIRED, 'Sender partner as2id')
             ->addOption('to', null, InputOption::VALUE_REQUIRED, 'Receiver partner as2id');
