@@ -55,8 +55,6 @@ class Management implements LoggerAwareInterface
      * @param string $encoding
      *
      * @return MimePart
-     *
-     * @noinspection PhpUnused
      */
     public function buildMessageFromFile(
         MessageInterface $message,
@@ -641,24 +639,29 @@ class Management implements LoggerAwareInterface
      * Sends the AS2 MDN to the partner.
      *
      * @return bool|mixed|ResponseInterface
+     * @noinspection PhpDocMissingThrowsInspection
      */
     public function sendMdn(MessageInterface $message)
     {
-        // TODO: cron, queue, new thread
         try {
             $partner = $message->getSender();
             $mdn     = MimePart::fromString($message->getMdnPayload());
+
             $options = [
                 'body'    => $mdn->getBody(),
                 'headers' => $mdn->getHeaders(),
             ];
+
             if ($partner->getAuthMethod()) {
                 $options['auth'] = [$partner->getAuthUser(), $partner->getAuthPassword(), $partner->getAuthMethod()];
             }
+
+            /** @noinspection PhpUnhandledExceptionInspection */
             $response = $this->getHttpClient()->post($partner->getTargetUrl(), $options);
             if ($response->getStatusCode() !== 200) {
                 throw new \RuntimeException('Message send failed with error');
             }
+
             $this->getLogger()->debug('AS2 MDN has been sent.');
             $message->setMdnStatus(MessageInterface::MDN_STATUS_SENT);
 
@@ -682,6 +685,16 @@ class Management implements LoggerAwareInterface
 
         return $this->httpClient;
     }
+
+    // /**
+    //  * @return $this
+    //  */
+    // public function setHttpClient(ClientInterface $client)
+    // {
+    //     $this->httpClient = $client;
+    //
+    //     return $this;
+    // }
 
     /**
      * @param string $name

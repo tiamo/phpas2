@@ -172,6 +172,8 @@ class Server
                                     $messageId
                                 )
                             );
+
+                            // TODO: async, event, queue, etc.
                             $this->manager->sendMdn($message);
                         }
                     }
