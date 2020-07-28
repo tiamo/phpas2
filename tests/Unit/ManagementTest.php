@@ -4,6 +4,7 @@ namespace AS2\Tests\Unit;
 
 use AS2\MessageInterface;
 use AS2\MimePart;
+use AS2\PartnerInterface;
 use AS2\Tests\TestCase;
 use AS2\Utils;
 
@@ -28,9 +29,9 @@ class ManagementTest extends TestCase
         // generate message payload
         $payload = $this->management->buildMessage($message, $contents);
 
-        $this->assertTrue($payload->isEncrypted());
-        $this->assertEquals($senderId, $payload->getHeaderLine('as2-from'));
-        $this->assertEquals($receiverId, $payload->getHeaderLine('as2-to'));
+        self::assertTrue($payload->isEncrypted());
+        self::assertEquals($senderId, $payload->getHeaderLine('as2-from'));
+        self::assertEquals($receiverId, $payload->getHeaderLine('as2-to'));
     }
 
     public function testProcessMessage()
@@ -52,11 +53,11 @@ class ManagementTest extends TestCase
 
         $processedPayload = $this->management->processMessage($message, $payload);
 
-        $this->assertTrue($message->getCompressed());
-        $this->assertTrue($message->getEncrypted());
-        $this->assertTrue($message->getSigned());
-        $this->assertSame($message->getMic(), 'oVDpnrSnpq+V99dXaarQ9HFyRUaFNsp9tdBBSmRhX4s=, sha256');
-        $this->assertSame((string) $processedPayload, Utils::canonicalize($this->loadFixture('test.edi')));
+        self::assertTrue($message->getCompressed());
+        self::assertTrue($message->getEncrypted());
+        self::assertTrue($message->getSigned());
+        self::assertSame($message->getMic(), 'oVDpnrSnpq+V99dXaarQ9HFyRUaFNsp9tdBBSmRhX4s=, sha256');
+        self::assertSame((string) $processedPayload, Utils::canonicalize($this->loadFixture('test.edi')));
     }
 
     public function testSendMessage()
@@ -75,15 +76,76 @@ class ManagementTest extends TestCase
         $message->setSender($sender);
         $message->setReceiver($receiver);
 
-        $this->assertEmpty($message->getStatus());
+        self::assertEmpty($message->getStatus());
 
         $payload = $this->management->buildMessage($message, $this->loadFixture('test.edi'));
 
-        $this->assertSame(MessageInterface::STATUS_PENDING, $message->getStatus());
+        self::assertSame(MessageInterface::STATUS_PENDING, $message->getStatus());
 
         $response = $this->management->sendMessage($message, $payload);
 
-        $this->assertFalse($response);
-        $this->assertSame(MessageInterface::STATUS_ERROR, $message->getStatus());
+        self::assertFalse($response);
+        self::assertSame(MessageInterface::STATUS_ERROR, $message->getStatus());
     }
+
+    public function testBuildMdn()
+    {
+        $sender   = $this->partnerRepository->findPartnerById('A');
+        $receiver = $this->partnerRepository->findPartnerById('B');
+
+        // Initialize empty message
+        $message = $this->messageRepository->createMessage();
+        $message->setMessageId('test');
+        $message->setSender($sender);
+        $message->setReceiver($receiver);
+
+        $report = $this->management->buildMdn($message);
+
+        self::assertNull($report);
+
+        $message->setHeaders('disposition-notification-to: test@example.com');
+
+        $report = $this->management->buildMdn($message, 'custom', 'error');
+
+        self::assertTrue($report->isReport());
+        self::assertEquals($report->getHeaderLine('as2-to'), $sender->getAs2Id());
+        self::assertEquals($report->getHeaderLine('as2-from'), $receiver->getAs2Id());
+        self::assertEquals('custom', trim($report->getPart(0)->getBody()));
+
+        $headers = MimePart::fromString($report->getPart(1)->getBody());
+
+        self::assertEquals($headers->getHeaderLine('Original-Message-ID'), '<test>');
+        self::assertEquals($headers->getHeaderLine('Original-Recipient'), 'rfc822; B');
+        self::assertEquals($headers->getHeaderLine('Final-Recipient'), 'rfc822; B');
+        self::assertEquals($headers->getHeaderLine('Disposition'), 'automatic-action/MDN-sent-automatically; processed/error: error');
+
+        self::assertEquals($message->getMdnStatus(), MessageInterface::MDN_STATUS_SENT);
+        self::assertEquals($message->getMdnMode(), PartnerInterface::MDN_MODE_SYNC);
+
+        // var_dump($message->getMdnPayload());
+    }
+
+    // public function testSendMdn()
+    // {
+    //     $sender   = $this->partnerRepository->findPartnerById('A');
+    //     $sender->setTargetUrl('http://localhost');
+    //
+    //     $receiver = $this->partnerRepository->findPartnerById('B');
+    //
+    //     $messageId = Utils::generateMessageID($sender);
+    //
+    //     // Initialize empty message
+    //     $message = $this->messageRepository->createMessage();
+    //     $message->setMessageId($messageId);
+    //     $message->setSender($sender);
+    //     $message->setReceiver($receiver);
+    //     $message->setMdnMode(PartnerInterface::MDN_MODE_ASYNC);
+    //     $message->setMdnPayload($this->loadFixture('si_signed.mdn'));
+    //
+    //     $response = $this->management->sendMdn($message);
+    //
+    //     self::assertTrue(true);
+    //
+    //     var_dump($response);
+    // }
 }
