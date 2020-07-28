@@ -1,5 +1,8 @@
 # Change Log
 
+## 1.4.5
+* Fixed bug when MDN sent to own host
+
 ## 1.4.4
 
 * Fixed bug on Win OS ([#15](https://github.com/tiamo/phpas2/issues/15))

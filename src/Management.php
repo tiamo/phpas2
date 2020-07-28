@@ -646,7 +646,7 @@ class Management implements LoggerAwareInterface
     {
         // TODO: cron, queue, new thread
         try {
-            $partner = $message->getReceiver();
+            $partner = $message->getSender();
             $mdn     = MimePart::fromString($message->getMdnPayload());
             $options = [
                 'body'    => $mdn->getBody(),
