@@ -1,7 +1,8 @@
 # Change Log
 
 ## 1.4.5
-* Fixed bug when MDN sent to own host
+* Fixed bug when MDN sent to own host ([#16](https://github.com/tiamo/phpas2/pull/16))
+* Improved tests
 
 ## 1.4.4
 
