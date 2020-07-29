@@ -39,9 +39,13 @@ php -S 127.0.0.1:8000 ./public/index.php
 
 # send a test message
 ./bin/console send-message --from mycompanyAS2 --to phpas2
+OR
+php bin/console send-message --from mycompanyAS2 --to phpas2
 
 # send a file
 ./bin/console send-message --from mycompanyAS2 --to phpas2 --file /path/to/the/file 
+OR
+php bin/console send-message --from mycompanyAS2 --to phpas2 --file /path/to/the/file 
 ```
 
 ## Changelog
