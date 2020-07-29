@@ -26,7 +26,7 @@ class Utils
     public static function normalizeMic($mic)
     {
         $parts    = explode(',', $mic, 2);
-        $parts[1] = strtolower(str_replace('-', '', $parts[1]));
+        $parts[1] = trim(strtolower(str_replace('-', '', $parts[1])));
 
         return implode(',', $parts);
     }
