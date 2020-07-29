@@ -14,10 +14,10 @@ You can also create your own classes.
 $manager = new \AS2\Management();
 
 /** @var /AS2/MessageRepositoryInterface $messageRepository */
-$messageRepository = new MessageRepository();
+$messageRepository = new App\Repositories\MessageRepository();
 
 /** @var /AS2/PartnerRepositoryInterface $partnerRepository */
-$partnerRepository = new PartnerRepository();
+$partnerRepository = new App\Repositories\PartnerRepository();
 
 $server = new \AS2\Server($manager, $partnerRepository, $messageRepository);
 
@@ -30,11 +30,14 @@ $response = $server->excecute();
 
 $manager = new \AS2\Management();
 
+//loading conf files
+$partners          = require __DIR__ . '/config/partners.php';
+
 /** @var /AS2/MessageRepositoryInterface $messageRepository */
-$messageRepository = new MessageRepository();
+$messageRepository = new App\Repositories\MessageRepository(['path' => $storagePath . DIRECTORY_SEPARATOR . 'sent']);
 
 /** @var /AS2/PartnerRepositoryInterface $partnerRepository */
-$partnerRepository = new PartnerRepository();
+$partnerRepository = new App\Repositories\PartnerRepository($partners);
 
 // Init partners
 $sender = $partnerRepository->findPartnerById('A');
@@ -56,7 +59,9 @@ $message->setSender($sender);
 $message->setReceiver($receiver);
 
 $payload = $manager->buildMessage($message, $rawMessage);
-$manager->sendMessage($message, $payload);
+if ($response = $manager->sendMessage($message, $payload)){
+    echo "OK \n";
+}
 
 $messageRepository->saveMessage($message);
 
