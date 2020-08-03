@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.4.6
+* Improved usage of sample ([#19](https://github.com/tiamo/phpas2/pull/19))
+* Fixed bad MIC compare ([#18](https://github.com/tiamo/phpas2/pull/18))
+* Readme improved
+
 ## 1.4.5
 * Fixed bug when MDN sent to own host ([#16](https://github.com/tiamo/phpas2/pull/16))
 * Improved tests
