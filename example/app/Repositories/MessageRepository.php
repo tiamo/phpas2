@@ -15,7 +15,7 @@ class MessageRepository implements MessageRepositoryInterface
         if (empty($options['path'])) {
             throw new \RuntimeException('`path` required');
         }
-        
+
         $this->path = $options['path'];
     }
 

@@ -1,6 +1,7 @@
 <?php
 
-use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+// use Monolog\Logger;
 
 $storagePath = __DIR__.'/../storage';
 
@@ -10,10 +11,10 @@ return [
      */
     'displayErrorDetails' => true,
 
-    'logger' => [
-        'level' => Logger::DEBUG,
-        'path' => $storagePath.'/logs/app.log',
-        // ...
+    'logHandlers' => [
+        // TODO: some hosting providers doesn't support 'php://stdout'
+        new StreamHandler('php://stdout'),
+        // new StreamHandler($storagePath.'/logs/app.log', Logger::DEBUG),
     ],
 
     'management' => [

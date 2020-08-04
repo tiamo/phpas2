@@ -3,7 +3,6 @@
 use App\Repositories\MessageRepository;
 use App\Repositories\PartnerRepository;
 use AS2\Management;
-use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
 return function ($container) {
@@ -22,14 +21,10 @@ return function ($container) {
 
     $container['logger'] = function ($c) {
         $logger = new Logger('app');
-        $logger->pushHandler(new StreamHandler('php://stdout'));
-
-        if (! empty($c['settings']['logger'])) {
-            $fileHandler = new StreamHandler(
-                $c['settings']['logger']['path'],
-                $c['settings']['logger']['level']
-            );
-            $logger->pushHandler($fileHandler);
+        if (! empty($c['settings']['logHandlers'])) {
+            foreach ($c['settings']['logHandlers'] as $handler) {
+                $logger->pushHandler($handler);
+            }
         }
 
         return $logger;
