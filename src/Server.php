@@ -153,7 +153,7 @@ class Server
 
                     if (($mdnMode = $receiver->getMdnMode()) && ($mdn = $this->manager->buildMdn($message))) {
                         $mdnMessageId = trim($mdn->getHeaderLine('message-id'), '<>');
-                        $message->setMdnPayload($mdn);
+                        $message->setMdnPayload($mdn->toString());
                         if ($mdnMode === PartnerInterface::MDN_MODE_SYNC) {
                             $this->getLogger()->debug(
                                 sprintf(
