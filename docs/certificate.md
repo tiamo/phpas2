@@ -2,7 +2,7 @@
 Generate a couple private and public key: 
 
 ```bash
-openssl req -newkey rsa:2048 -sha1 -nodes -keyout private.pem -x509 -days 1095 -out server.pub -subj "/C=US/ST=MyDept/L=m=MyCity/O=myCompany/OU=IT/CN=mydomain.com"
+openssl req -newkey rsa:2048 -sha256 -nodes -keyout private.pem -x509 -days 1095 -out server.pub -subj "/C=US/ST=MyDept/L=m=MyCity/O=myCompany/OU=IT/CN=mydomain.com"
 ```
 
 Extract a pkcs7 cert file:
