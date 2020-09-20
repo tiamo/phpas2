@@ -270,9 +270,9 @@ class Management implements LoggerAwareInterface
         }
 
         // Check if message from this partner are expected to be signed
-        // if (!$payload->isSigned() && $message->getSender()->getSignatureAlgorithm()) {
-        //     throw new \RuntimeException(sprintf('Incoming message from AS2 partner `%s` are defined to be signed.', $message->getSender()->getAs2Id()));
-        // }
+        if ($message->getSender()->getSignatureAlgorithmRequired() && !$payload->isSigned() && $message->getSender()->getSignatureAlgorithm()) {
+            throw new \RuntimeException(sprintf('Incoming message from AS2 partner `%s` are defined to be signed.', $message->getSender()->getAs2Id()));
+        }
 
         // Check if message is signed and if so verify it
         if ($payload->isSigned()) {
