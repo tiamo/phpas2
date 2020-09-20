@@ -91,6 +91,14 @@ class Partner extends DataObject implements PartnerInterface
     /**
      * @return string|null
      */
+    public function getSignatureAlgorithmRequired()
+    {
+        return $this->getData('signature_algorithm_required');
+    }
+
+    /**
+     * @return string|null
+     */
     public function getEncryptionAlgorithm()
     {
         return $this->getData('encryption_algorithm');
