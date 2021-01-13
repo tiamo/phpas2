@@ -1,5 +1,8 @@
 # Change Log
 
+## 1.4.7
+* Updated base64 decode on processMessage to fix problem on bigger mess… ([#23](https://github.com/tiamo/phpas2/pull/23))
+
 ## 1.4.6
 * Improved usage of sample ([#19](https://github.com/tiamo/phpas2/pull/19))
 * Fixed bad MIC compare ([#18](https://github.com/tiamo/phpas2/pull/18))
