@@ -230,11 +230,15 @@ class Management implements LoggerAwareInterface
             ]
         );
 
+        $body = Utils::normalizeBase64($payload->getBody());
+
         // Force encode binary data to base64, `openssl_pkcs7_` doesn't work with binary data
-        $body = $payload->getBody();
-        $body = Utils::normalizeBase64($body);
-        $body = Utils::encodeBase64($body);
-        $payload->setBody($body);
+        if (!Utils::decodeBase64($body)) {
+            $body = Utils::encodeBase64($body);
+            $payload->setBody($body);
+        }
+
+        unset($body);
 
         // Check if message from this partner are expected to be encrypted
         if (!$payload->isEncrypted() && $message->getSender()->getEncryptionAlgorithm()) {

@@ -32,17 +32,29 @@ class Utils
     }
 
     /**
+     * Return decoded base64, if it is not a base64 string, returns false
+     *
+     * @param string $data
+     *
+     * @return bool|string
+     */
+    public static function decodeBase64($data)
+    {
+        return base64_decode($data, true);
+    }
+
+    /**
+     * Decode string if it is base64 encoded, if not, return the original string
+     *
      * @param string $data
      *
      * @return bool|string
      */
     public static function normalizeBase64($data)
     {
-        if (preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $data)) {
-            $decoded = base64_decode($data, true);
-            if (base64_encode($decoded) === str_replace(["\r", "\n"], '', $data)) {
-                return $decoded;
-            }
+        $decoded = self::decodeBase64($data);
+        if ($decoded && base64_encode($decoded) === str_replace(["\r", "\n"], '', $data)) {
+            return $decoded;
         }
 
         return $data;

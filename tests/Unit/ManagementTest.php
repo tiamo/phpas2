@@ -60,6 +60,31 @@ class ManagementTest extends TestCase
         self::assertSame((string) $processedPayload, Utils::canonicalize($this->loadFixture('test.edi')));
     }
 
+    public function testProcessMessageBiggerMessage()
+    {
+        $payload = MimePart::fromString($this->loadFixture('phpas2_new.raw'));
+
+        $sender   = $this->partnerRepository->findPartnerById('A');
+        $receiver = $this->partnerRepository->findPartnerById('B');
+
+        $messageId = $payload->getHeaderLine('message-id');
+
+        $message = $this->messageRepository->createMessage();
+        $message->setMessageId($messageId);
+        $message->setDirection(MessageInterface::DIR_INBOUND);
+        $message->setStatus(MessageInterface::STATUS_IN_PROCESS);
+        $message->setSender($sender);
+        $message->setReceiver($receiver);
+        $message->setHeaders($payload->getHeaderLines());
+
+        $processedPayload = $this->management->processMessage($message, $payload);
+
+        self::assertTrue($message->getEncrypted());
+        self::assertTrue($message->getSigned());
+        self::assertSame($message->getMic(), 'W/TUromzbAbSkSTwprjpnCWfT1Z3y96jikZyYKPzKXM=, sha256');
+        self::assertSame((string) $processedPayload, Utils::canonicalize($this->loadFixture('test.xml')));
+    }
+
     public function testSendMessage()
     {
         $senderId   = 'A';

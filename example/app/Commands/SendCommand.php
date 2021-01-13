@@ -45,7 +45,6 @@ class SendCommand extends Command
                     sprintf('File `%s` not found, please enter the correct file path.', $file)
                 );
             }
-            $rawMessage = file_get_contents($file);
         } else {
 
             // Default test message
@@ -81,7 +80,11 @@ MSG;
         $manager = $this->container->get('manager');
 
         // Generate Message Payload
-        $payload = $manager->buildMessage($message, $rawMessage);
+        if (isset($rawMessage)) {
+            $payload = $manager->buildMessage($message, $rawMessage);
+        } else {
+            $payload = $manager->buildMessageFromFile($message, $file);
+        }
 
         // $output->writeln('The message was built successfully...');
 

@@ -1,0 +1,241 @@
+Content-Type: application/EDI-Consent
+Content-Disposition: attachment; filename="test1.xml"
+Content-Transfer-Encoding: binary
+
+<?xml version="1.0" encoding="UTF-8"?><ns0:invoiceMessage xmlns:ns0="urn:gs1:ecom:invoice:xsd:3" xmlns:ns1="http://www.w3.org/2000/09/xmldsig#" xmlns:ecom_common="urn:gs1:ecom:ecom_common:xsd:3" xmlns:sh="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" xmlns:gs1_xmldsig="urn:gs1:ext:xmldsig:xsd:3" xmlns:shared_common="urn:gs1:shared:shared_common:xsd:3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <sh:StandardBusinessDocumentHeader>
+    <sh:HeaderVersion>1.0</sh:HeaderVersion>
+    <sh:Sender>
+      <sh:Identifier Authority="GS1">999888777666</sh:Identifier>
+    </sh:Sender>
+    <sh:Receiver>
+      <sh:Identifier Authority="GS1">1234567890123</sh:Identifier>
+    </sh:Receiver>
+    <sh:DocumentIdentification>
+      <sh:Standard>GS1</sh:Standard>
+      <sh:TypeVersion>3.2</sh:TypeVersion>
+      <sh:InstanceIdentifier>6a8709ad-d0c0-454f-aab7-20a6f4395eaf</sh:InstanceIdentifier>
+      <sh:Type>Invoice</sh:Type>
+      <sh:CreationDateAndTime>2017-12-22T10:13:02</sh:CreationDateAndTime>
+    </sh:DocumentIdentification>
+  </sh:StandardBusinessDocumentHeader>
+  <invoice>
+    <creationDateTime>2017-12-22T10:13:02</creationDateTime>
+    <documentStatusCode>ORIGINAL</documentStatusCode>
+    <invoiceIdentification xsi:type="shared_common:EntityIdentificationType">
+      <entityIdentification>99339718</entityIdentification>
+      <contentOwner xsi:type="shared_common:PartyIdentificationType">
+        <gln>999888777666</gln>
+      </contentOwner>
+    </invoiceIdentification>
+    <invoiceType>CREDIT_NOTE</invoiceType>
+    <invoiceCurrencyCode>GBP</invoiceCurrencyCode>
+    <note languageCode="EN">XCAW00000101554</note>
+    <buyer xsi:type="ecom_common:TransactionalPartyType">
+      <gln>1234567890123</gln>
+      <additionalPartyIdentification additionalPartyIdentificationTypeCode="SELLER_ASSIGNED_IDENTIFIER_FOR_A_PARTY">38711469</additionalPartyIdentification>
+      <additionalPartyIdentification additionalPartyIdentificationTypeCode="BUYER_ASSIGNED_IDENTIFIER_FOR_A_PARTY">12005008</additionalPartyIdentification>
+    </buyer>
+    <seller xsi:type="ecom_common:TransactionalPartyType">
+      <gln>999888777666</gln>
+    </seller>
+    <invoiceTotals>
+      <totalInvoiceAmount currencyCode="GBP">285.58</totalInvoiceAmount>
+      <totalInvoiceAmountPayable currencyCode="GBP">285.58</totalInvoiceAmountPayable>
+      <totalLineAmountExclusiveAllowancesCharges currencyCode="GBP">285.58</totalLineAmountExclusiveAllowancesCharges>
+      <totalLineAmountInclusiveAllowancesCharges currencyCode="GBP">285.58</totalLineAmountInclusiveAllowancesCharges>
+      <totalPaymentDiscountBasisAmount currencyCode="GBP">0.00</totalPaymentDiscountBasisAmount>
+      <totalVATAmount currencyCode="GBP">0</totalVATAmount>
+      <taxSubtotal>
+        <dutyFeeTaxAmount currencyCode="GBP">0.00</dutyFeeTaxAmount>
+        <dutyFeeTaxBasisAmount currencyCode="GBP">285.58</dutyFeeTaxBasisAmount>
+        <dutyFeeTaxCategoryCode>OEX</dutyFeeTaxCategoryCode>
+        <dutyFeeTaxPercentage>0.00</dutyFeeTaxPercentage>
+        <dutyFeeTaxTypeCode>VAT</dutyFeeTaxTypeCode>
+      </taxSubtotal>
+    </invoiceTotals>
+    <purchaseOrder xsi:type="shared_common:DocumentReferenceType">
+      <entityIdentification>ORDER12345</entityIdentification>
+      <creationDateTime>2017-12-18T00:00:00</creationDateTime>
+    </purchaseOrder>
+    <invoice xsi:type="shared_common:DocumentReferenceType">
+      <entityIdentification>78024801</entityIdentification>
+      <creationDateTime>2017-12-19T00:00:00</creationDateTime>
+    </invoice>
+    <invoiceLineItem>
+      <lineItemNumber>1</lineItemNumber>
+      <invoicedQuantity measurementUnitCode="CA">1</invoicedQuantity>
+      <amountExclusiveAllowancesCharges currencyCode="GBP">33.63</amountExclusiveAllowancesCharges>
+      <amountInclusiveAllowancesCharges currencyCode="GBP">33.63</amountInclusiveAllowancesCharges>
+      <creditLineIndicator>Credit</creditLineIndicator>
+      <creditReason>SHORT_DELIVERY</creditReason>
+      <itemPriceInclusiveAllowancesCharges currencyCode="GBP">33.6300</itemPriceInclusiveAllowancesCharges>
+      <transactionalTradeItem>
+        <gtin>99999999999999</gtin>
+        <tradeItemDescription languageCode="EN">PHASE SPREAD DAWN$</tradeItemDescription>
+        <productVariantIdentifier>05389</productVariantIdentifier>
+        <size>
+          <descriptiveSize languageCode="EN">1 x 12.5Kg</descriptiveSize>
+        </size>
+      </transactionalTradeItem>
+      <invoiceLineTaxInformation>
+        <dutyFeeTaxAmount currencyCode="GBP">0</dutyFeeTaxAmount>
+        <dutyFeeTaxBasisAmount currencyCode="GBP">33.63</dutyFeeTaxBasisAmount>
+        <dutyFeeTaxCategoryCode>OEX</dutyFeeTaxCategoryCode>
+        <dutyFeeTaxPercentage>0</dutyFeeTaxPercentage>
+        <dutyFeeTaxTypeCode>VAT</dutyFeeTaxTypeCode>
+      </invoiceLineTaxInformation>
+      <purchaseOrder xsi:type="shared_common:DocumentReferenceType">
+        <entityIdentification>ORDER12345</entityIdentification>
+        <contentOwner xsi:type="ecom_common:PartyReferenceType">
+          <gln>1234567890123</gln>
+        </contentOwner>
+      </purchaseOrder>
+      <invoice xsi:type="shared_common:DocumentReferenceType">
+        <entityIdentification>78024801</entityIdentification>
+        <creationDateTime>2017-12-19T00:00:00</creationDateTime>
+        <lineItemNumber>1</lineItemNumber>
+      </invoice>
+    </invoiceLineItem>
+    <invoiceLineItem>
+      <lineItemNumber>2</lineItemNumber>
+      <invoicedQuantity measurementUnitCode="CA">3</invoicedQuantity>
+      <amountExclusiveAllowancesCharges currencyCode="GBP">75.29</amountExclusiveAllowancesCharges>
+      <amountInclusiveAllowancesCharges currencyCode="GBP">75.29</amountInclusiveAllowancesCharges>
+      <creditLineIndicator>Credit</creditLineIndicator>
+      <creditReason>AGREED_SETTLEMENT</creditReason>
+      <itemPriceInclusiveAllowancesCharges currencyCode="GBP">25.0967</itemPriceInclusiveAllowancesCharges>
+      <transactionalTradeItem>
+        <gtin>99999999999999</gtin>
+        <tradeItemDescription languageCode="EN">PREP PREMIUM SUNFLOWER OIL PET</tradeItemDescription>
+        <productVariantIdentifier>86162</productVariantIdentifier>
+        <size>
+          <descriptiveSize languageCode="EN">6 x 2Ltr</descriptiveSize>
+        </size>
+      </transactionalTradeItem>
+      <invoiceLineTaxInformation>
+        <dutyFeeTaxAmount currencyCode="GBP">0</dutyFeeTaxAmount>
+        <dutyFeeTaxBasisAmount currencyCode="GBP">75.29</dutyFeeTaxBasisAmount>
+        <dutyFeeTaxCategoryCode>OEX</dutyFeeTaxCategoryCode>
+        <dutyFeeTaxPercentage>0</dutyFeeTaxPercentage>
+        <dutyFeeTaxTypeCode>VAT</dutyFeeTaxTypeCode>
+      </invoiceLineTaxInformation>
+      <purchaseOrder xsi:type="shared_common:DocumentReferenceType">
+        <entityIdentification>ORDER12345</entityIdentification>
+        <contentOwner xsi:type="ecom_common:PartyReferenceType">
+          <gln>1234567890123</gln>
+        </contentOwner>
+      </purchaseOrder>
+      <invoice xsi:type="shared_common:DocumentReferenceType">
+        <entityIdentification>78024801</entityIdentification>
+        <creationDateTime>2017-12-19T00:00:00</creationDateTime>
+        <lineItemNumber>2</lineItemNumber>
+      </invoice>
+    </invoiceLineItem>
+    <invoiceLineItem>
+      <lineItemNumber>3</lineItemNumber>
+      <invoicedQuantity measurementUnitCode="EA">2</invoicedQuantity>
+      <amountExclusiveAllowancesCharges currencyCode="GBP">8.36</amountExclusiveAllowancesCharges>
+      <amountInclusiveAllowancesCharges currencyCode="GBP">8.36</amountInclusiveAllowancesCharges>
+      <creditLineIndicator>Credit</creditLineIndicator>
+      <creditReason>AGREED_SETTLEMENT</creditReason>
+      <itemPriceInclusiveAllowancesCharges currencyCode="GBP">4.1800</itemPriceInclusiveAllowancesCharges>
+      <transactionalTradeItem>
+        <gtin>99999999999999</gtin>
+        <tradeItemDescription languageCode="EN">PREP PREMIUM SUNFLOWER OIL PET</tradeItemDescription>
+        <productVariantIdentifier>86162S</productVariantIdentifier>
+        <size>
+          <descriptiveSize languageCode="EN">1 x 2Ltr</descriptiveSize>
+        </size>
+      </transactionalTradeItem>
+      <invoiceLineTaxInformation>
+        <dutyFeeTaxAmount currencyCode="GBP">0</dutyFeeTaxAmount>
+        <dutyFeeTaxBasisAmount currencyCode="GBP">8.36</dutyFeeTaxBasisAmount>
+        <dutyFeeTaxCategoryCode>OEX</dutyFeeTaxCategoryCode>
+        <dutyFeeTaxPercentage>0</dutyFeeTaxPercentage>
+        <dutyFeeTaxTypeCode>VAT</dutyFeeTaxTypeCode>
+      </invoiceLineTaxInformation>
+      <purchaseOrder xsi:type="shared_common:DocumentReferenceType">
+        <entityIdentification>ORDER12345</entityIdentification>
+        <contentOwner xsi:type="ecom_common:PartyReferenceType">
+          <gln>1234567890123</gln>
+        </contentOwner>
+      </purchaseOrder>
+      <invoice xsi:type="shared_common:DocumentReferenceType">
+        <entityIdentification>78024801</entityIdentification>
+        <creationDateTime>2017-12-19T00:00:00</creationDateTime>
+        <lineItemNumber>3</lineItemNumber>
+      </invoice>
+    </invoiceLineItem>
+    <invoiceLineItem>
+      <lineItemNumber>4</lineItemNumber>
+      <invoicedQuantity measurementUnitCode="CA">3</invoicedQuantity>
+      <amountExclusiveAllowancesCharges currencyCode="GBP">151.47</amountExclusiveAllowancesCharges>
+      <amountInclusiveAllowancesCharges currencyCode="GBP">151.47</amountInclusiveAllowancesCharges>
+      <creditLineIndicator>Credit</creditLineIndicator>
+      <creditReason>AGREED_SETTLEMENT</creditReason>
+      <itemPriceInclusiveAllowancesCharges currencyCode="GBP">50.4900</itemPriceInclusiveAllowancesCharges>
+      <transactionalTradeItem>
+        <gtin>99999999999999</gtin>
+        <tradeItemDescription languageCode="EN">LA ESPANOLA XTRA VRG OLIVE OIL</tradeItemDescription>
+        <productVariantIdentifier>00068</productVariantIdentifier>
+        <size>
+          <descriptiveSize languageCode="EN">3 x 5Ltr</descriptiveSize>
+        </size>
+      </transactionalTradeItem>
+      <invoiceLineTaxInformation>
+        <dutyFeeTaxAmount currencyCode="GBP">0</dutyFeeTaxAmount>
+        <dutyFeeTaxBasisAmount currencyCode="GBP">151.47</dutyFeeTaxBasisAmount>
+        <dutyFeeTaxCategoryCode>OEX</dutyFeeTaxCategoryCode>
+        <dutyFeeTaxPercentage>0</dutyFeeTaxPercentage>
+        <dutyFeeTaxTypeCode>VAT</dutyFeeTaxTypeCode>
+      </invoiceLineTaxInformation>
+      <purchaseOrder xsi:type="shared_common:DocumentReferenceType">
+        <entityIdentification>ORDER12345</entityIdentification>
+        <contentOwner xsi:type="ecom_common:PartyReferenceType">
+          <gln>1234567890123</gln>
+        </contentOwner>
+      </purchaseOrder>
+      <invoice xsi:type="shared_common:DocumentReferenceType">
+        <entityIdentification>78024801</entityIdentification>
+        <creationDateTime>2017-12-19T00:00:00</creationDateTime>
+        <lineItemNumber>4</lineItemNumber>
+      </invoice>
+    </invoiceLineItem>
+    <invoiceLineItem>
+      <lineItemNumber>5</lineItemNumber>
+      <invoicedQuantity measurementUnitCode="EA">1</invoicedQuantity>
+      <amountExclusiveAllowancesCharges currencyCode="GBP">16.83</amountExclusiveAllowancesCharges>
+      <amountInclusiveAllowancesCharges currencyCode="GBP">16.83</amountInclusiveAllowancesCharges>
+      <creditLineIndicator>Credit</creditLineIndicator>
+      <creditReason>AGREED_SETTLEMENT</creditReason>
+      <itemPriceInclusiveAllowancesCharges currencyCode="GBP">16.8300</itemPriceInclusiveAllowancesCharges>
+      <transactionalTradeItem>
+        <gtin>99999999999999</gtin>
+        <tradeItemDescription languageCode="EN">LA ESPANOLA XTRA VRG OLIVE OIL</tradeItemDescription>
+        <productVariantIdentifier>00068S</productVariantIdentifier>
+        <size>
+          <descriptiveSize languageCode="EN">1 x 5Ltr</descriptiveSize>
+        </size>
+      </transactionalTradeItem>
+      <invoiceLineTaxInformation>
+        <dutyFeeTaxAmount currencyCode="GBP">0</dutyFeeTaxAmount>
+        <dutyFeeTaxBasisAmount currencyCode="GBP">16.83</dutyFeeTaxBasisAmount>
+        <dutyFeeTaxCategoryCode>OEX</dutyFeeTaxCategoryCode>
+        <dutyFeeTaxPercentage>0</dutyFeeTaxPercentage>
+        <dutyFeeTaxTypeCode>VAT</dutyFeeTaxTypeCode>
+      </invoiceLineTaxInformation>
+      <purchaseOrder xsi:type="shared_common:DocumentReferenceType">
+        <entityIdentification>ORDER12345</entityIdentification>
+        <contentOwner xsi:type="ecom_common:PartyReferenceType">
+          <gln>1234567890123</gln>
+        </contentOwner>
+      </purchaseOrder>
+      <invoice xsi:type="shared_common:DocumentReferenceType">
+        <entityIdentification>78024801</entityIdentification>
+        <creationDateTime>2017-12-19T00:00:00</creationDateTime>
+        <lineItemNumber>5</lineItemNumber>
+      </invoice>
+    </invoiceLineItem>
+  </invoice>
+</ns0:invoiceMessage>
