@@ -110,9 +110,7 @@ class CryptoHelper
         $flags |= PKCS7_NOVERIFY;
         // }
 
-        $outFile = stripos(PHP_OS, 'WIN') === 0 ?
-            self::getTempFilename() :
-            '/dev/null';
+        $outFile = self::getTempFilename();
 
         return openssl_pkcs7_verify($data, $flags, $outFile, $rootCerts) === true;
     }
