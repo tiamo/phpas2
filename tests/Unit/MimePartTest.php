@@ -89,6 +89,18 @@ class MimePartTest extends TestCase
 
         $this->assertTrue($mimePart->isMultiPart());
         $this->assertEquals($boundary, $mimePart->getParsedHeader('content-type', 0, 'boundary'));
+
+        $mimePart = new MimePart(
+            [
+                'Content-Type' => 'multipart/mixed;
+boundary="' . $boundary . '"',
+            ]
+        );
+        $mimePart->addPart('1');
+        $mimePart->addPart('2');
+
+        $this->assertTrue($mimePart->isMultiPart());
+        $this->assertEquals($boundary, $mimePart->getParsedHeader('content-type', 0, 'boundary'));
     }
 
     public function testBody()
