@@ -32,7 +32,7 @@ class Utils
     }
 
     /**
-     * Return decoded base64, if it is not a base64 string, returns false
+     * Return decoded base64, if it is not a base64 string, returns false.
      *
      * @param string $data
      *
@@ -44,7 +44,7 @@ class Utils
     }
 
     /**
-     * Decode string if it is base64 encoded, if not, return the original string
+     * Decode string if it is base64 encoded, if not, return the original string.
      *
      * @param string $data
      *
@@ -95,6 +95,17 @@ class Utils
                 $key                       = trim($parts[0]);
                 $value                     = isset($parts[1]) ? trim($parts[1]) : '';
                 $result['headers'][$key][] = $value;
+            } else {
+                // In case the boundary is on next line, after Content-Type
+                // https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
+                if (strpos($line, 'boundary=') !== false) {
+                    foreach ($result['headers'] as $k => &$v) {
+                        if (strtolower($k) == 'content-type') {
+                            $v[0] .= $line;
+                            break;
+                        }
+                    }
+                }
             }
         }
 

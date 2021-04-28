@@ -315,13 +315,14 @@ class MimePart implements PsrMessageInterface
         } else {
             $boundary = $this->getParsedHeader('content-type', 0, 'boundary');
             if ($boundary) {
-                $separator = '--' . preg_quote($boundary, '/');
-                // Get multi-part content
-                if (preg_match('/' . $separator . '\r?\n(.+?)\r?\n' . $separator . '--/s', $body, $matches)) {
-                    $parts = preg_split('/\r?\n' . $separator . '\r?\n/', $matches[1]);
-                    foreach ($parts as $part) {
-                        $this->addPart($part);
-                    }
+                $parts = explode('--' . $boundary, $body);
+                array_shift($parts); // remove unecessary first element
+                array_pop($parts); // remove unecessary last element
+
+                foreach ($parts as $part) {
+                    $part = preg_replace('/^\r?\n|\r?\n$/','',$part);
+
+                    $this->addPart($part);
                 }
             } else {
                 $this->body = $body;
