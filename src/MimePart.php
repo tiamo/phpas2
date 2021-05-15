@@ -320,7 +320,21 @@ class MimePart implements PsrMessageInterface
                 array_pop($parts); // remove unecessary last element
 
                 foreach ($parts as $part) {
-                    $part = preg_replace('/^\r?\n|\r?\n$/','',$part);
+                    // $part = preg_replace('/^\r?\n|\r?\n$/','',$part);
+                    // Using substr instead of preg_replace as that option is removing multiple break lines instead of only one
+
+                    // /^\r?\n/
+                    if (substr($part, 0, 2) === "\r\n") {
+                        $part = substr($part, 2);
+                    } elseif (substr($part, 0, 1) === "\n") {
+                        $part = substr($part, 1);
+                    }
+                    // /\r?\n$/
+                    if (substr($part, -2) === "\r\n") {
+                        $part = substr($part, 0, -2);
+                    } elseif (substr($part, -1) === "\n") {
+                        $part = substr($part, 0, -1);
+                    }
 
                     $this->addPart($part);
                 }
