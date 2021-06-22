@@ -689,6 +689,17 @@ class Management implements LoggerAwareInterface
 
         return $this->httpClient;
     }
+	
+	/**
+	 * Set Config values for the HTTP Client
+	 *
+	 * @param array $config
+	 * @return void
+	**/
+	public function setHttpClientConfig( array $client_config )
+	{
+		$this->options["client_config"] = $client_config;
+	}
 
     // /**
     //  * @return $this
