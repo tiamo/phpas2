@@ -2,8 +2,6 @@
 
 namespace AS2;
 
-use phpseclib3\File\ASN1;
-
 /**
  * TODO: Implement pure methods without "openssl_pkcs7"
  * check openssl_pkcs7 doesn't work with binary data.
@@ -94,7 +92,7 @@ class CryptoHelper
      *
      * @return bool
      */
-    public static function verify($data, $caInfo = null, $rootCerts = null)
+    public static function verify($data, $caInfo = null, $rootCerts = [])
     {
         if ($data instanceof MimePart) {
             $data = self::getTempFilename((string) $data);

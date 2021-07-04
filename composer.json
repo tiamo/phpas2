@@ -48,7 +48,7 @@
         "preferred-install": "dist"
     },
     "scripts": {
-        "lint": "php-cs-fixer fix -v",
+        "lint": "./vendor/bin/php-cs-fixer fix -v",
         "test": "./vendor/bin/phpunit --no-coverage",
         "test-cover": "./vendor/bin/phpunit --coverage-text"
     }
