@@ -2,7 +2,7 @@
     "name": "tiamo/phpas2",
     "description": "PHPAS2 is a php-based implementation of the EDIINT AS2 standard",
     "type": "library",
-    "version": "1.4.7",
+    "version": "1.4.8",
     "authors": [
         {
             "name": "Vladyslav K",
@@ -22,11 +22,11 @@
         "ext-openssl": "*",
         "ext-zlib": "*",
         "guzzlehttp/guzzle": "^6.5 || ^7.0",
-        "phpseclib/phpseclib": "^2.0",
+        "phpseclib/phpseclib": "^3.0.8",
         "psr/log": "^1.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.4 || ^7.0"
+        "phpunit/phpunit": "^5.7 || ^6.4 || ^7.0"
     },
     "suggest": {
         "friendsofphp/php-cs-fixer": "to use `composer lint` command."
@@ -49,7 +49,7 @@
     },
     "scripts": {
         "lint": "php-cs-fixer fix -v",
-        "test": "phpunit --no-coverage",
-        "test-cover": "phpunit --coverage-text"
+        "test": "./vendor/bin/phpunit --no-coverage",
+        "test-cover": "./vendor/bin/phpunit --coverage-text"
     }
 }

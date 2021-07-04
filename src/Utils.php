@@ -48,7 +48,7 @@ class Utils
      *
      * @param string $data
      *
-     * @return bool|string
+     * @return string
      */
     public static function normalizeBase64($data)
     {
