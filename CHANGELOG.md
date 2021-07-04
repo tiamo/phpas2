@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.4.8
+* Fixed 3 bugs ([#28](https://github.com/tiamo/phpas2/pull/28))
+* phpspeclib v3
+* Improved tests
+
 ## 1.4.7
 * Updated base64 decode on processMessage to fix problem on bigger mess… ([#23](https://github.com/tiamo/phpas2/pull/23))
 
