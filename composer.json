@@ -28,9 +28,6 @@
     "require-dev": {
         "phpunit/phpunit": "^5.7 || ^6.4 || ^7.0"
     },
-    "suggest": {
-        "friendsofphp/php-cs-fixer": "to use `composer lint` command."
-    },
     "autoload": {
         "psr-4": {
             "AS2\\": "src/"
