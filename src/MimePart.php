@@ -314,6 +314,7 @@ class MimePart implements PsrMessageInterface
             }
         } else {
             $boundary = $this->getParsedHeader('content-type', 0, 'boundary');
+
             if ($boundary) {
                 $parts = explode('--' . $boundary, $body);
                 array_shift($parts); // remove unecessary first element

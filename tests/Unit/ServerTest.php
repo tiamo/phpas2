@@ -15,43 +15,56 @@ class ServerTest extends TestCase
      */
     private $server;
 
-    public function testExecute()
+    public function testGet()
     {
         $response = $this->server->execute(new ServerRequest('GET', 'http:://localhost'));
-        self::assertContains('To submit an AS2 message', $response->getBody()->getContents());
-
-        $message = $this->loadFixture('phpas2.raw');
-        $payload = Utils::parseMessage($message);
-        $response = $this->server->execute(new ServerRequest(
-            'POST',
-            'http:://localhost',
-            $payload['headers'],
-            $payload['body'],
-            '1.1',
-            [
-                'REMOTE_ADDR' => '127.0.0.1',
-            ]
-        ));
-
-        $mime = MimePart::fromString($response->getBody()->getContents());
-
-        self::assertContains('multipart/report; report-type=disposition-notification',
-            $mime->getHeaderLine('Content-Type'));
-        self::assertEquals(2, $mime->getCountParts());
-
-        $part0 = $mime->getPart(0);
-        self::assertEquals("Your message was successfully received and processed.\r\n", $part0->getBody());
-        self::assertEquals('7bit', $part0->getHeaderLine('Content-Transfer-Encoding'));
-
-        $part1 = $mime->getPart(1);
-        self::assertContains('Original-Recipient: rfc822; B', $part1->getBody());
-        self::assertContains('Final-Recipient: rfc822; B', $part1->getBody());
-        self::assertContains('Original-Message-ID: <test>', $part1->getBody());
-        self::assertContains('Disposition: automatic-action/MDN-sent-automatically; processed', $part1->getBody());
-        self::assertContains('oVDpnrSnpq+V99dXaarQ9HFyRUaFNsp9tdBBSmRhX4s=, sha256', $part1->getBody());
+        self::assertStringContainsString('To submit an AS2 message', $response->getBody()->getContents());
     }
 
-    protected function setUp()
+    public function testSignedMdn()
+    {
+        $message = $this->loadFixture('phpas2.raw');
+        $payload = Utils::parseMessage($message);
+
+        $response = $this->server->execute(
+            new ServerRequest(
+                'POST',
+                'http:://localhost',
+                $payload['headers'],
+                $payload['body'],
+                '1.1',
+                [
+                    'REMOTE_ADDR' => '127.0.0.1',
+                ]
+            )
+        );
+
+        $headers = $response->getHeaders();
+        $body = $response->getBody()->getContents();
+
+        $mime = new MimePart($headers, $body);
+
+        self::assertTrue($mime->isSigned());
+        self::assertEquals(2, $mime->getCountParts());
+
+        $report = $mime->getPart(0);
+        self::assertTrue($report->isReport());
+
+        $content = $report->getPart(0);
+        self::assertEquals("Your message was successfully received and processed.\r\n", $content->getBody());
+        self::assertEquals('7bit', $content->getHeaderLine('Content-Transfer-Encoding'));
+
+        $disposition = $report->getPart(1);
+        self::assertStringContainsString('Original-Recipient: rfc822; B', $disposition->getBody());
+        self::assertStringContainsString('Original-Recipient: rfc822; B', $disposition->getBody());
+        self::assertStringContainsString('Final-Recipient: rfc822; B', $disposition->getBody());
+        self::assertStringContainsString('Original-Message-ID: <test>', $disposition->getBody());
+        self::assertStringContainsString('Disposition: automatic-action/MDN-sent-automatically; processed',
+            $disposition->getBody());
+        self::assertStringContainsString('oVDpnrSnpq+V99dXaarQ9HFyRUaFNsp9tdBBSmRhX4s=, sha256', $disposition->getBody());
+    }
+
+    protected function setUp(): void
     {
         parent::setUp();
 

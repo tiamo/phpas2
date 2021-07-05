@@ -9,7 +9,7 @@ namespace AS2;
 class Utils
 {
     /**
-     * @param string $content
+     * @param  string  $content
      *
      * @return string
      */
@@ -19,13 +19,13 @@ class Utils
     }
 
     /**
-     * @param string $mic
+     * @param  string  $mic
      *
      * @return string
      */
     public static function normalizeMic($mic)
     {
-        $parts    = explode(',', $mic, 2);
+        $parts = explode(',', $mic, 2);
         $parts[1] = trim(strtolower(str_replace('-', '', $parts[1])));
 
         return implode(',', $parts);
@@ -34,7 +34,7 @@ class Utils
     /**
      * Return decoded base64, if it is not a base64 string, returns false.
      *
-     * @param string $data
+     * @param  string  $data
      *
      * @return bool|string
      */
@@ -46,7 +46,7 @@ class Utils
     /**
      * Decode string if it is base64 encoded, if not, return the original string.
      *
-     * @param string $data
+     * @param  string  $data
      *
      * @return string
      */
@@ -66,50 +66,78 @@ class Utils
      * The array contains the "headers" key containing an associative array of header
      * array values, and a "body" key containing the body of the message.
      *
-     * @param string $message HTTP request or response to parse
+     * @param  string  $message  HTTP request or response to parse
+     * @param  string  $EOL  End of line
      *
      * @return array
      */
-    public static function parseMessage($message)
+    public static function parseMessage($message, $EOL = "\n")
     {
-        if (!$message) {
+        if (empty($message)) {
             throw new \InvalidArgumentException('Invalid message');
         }
 
-        // TODO: refactory (RFC2231)
-        $message = preg_replace("/; \r?\n\s/i", '; ', $message);
-        // Iterate over each line in the message, accounting for line endings
-        $lines  = preg_split('/(\\r?\\n)/', $message, -1, PREG_SPLIT_DELIM_CAPTURE);
-        $result = ['headers' => [], 'body' => ''];
-        for ($i = 0, $totalLines = count($lines); $i < $totalLines; $i += 2) {
-            $line = $lines[$i];
-            // If two line breaks were encountered, then this is the end of body
-            if (empty($line)) {
-                if ($i < $totalLines - 1) {
-                    $result['body'] = implode('', array_slice($lines, $i + 2));
-                }
-                break;
-            }
+        $firstLinePos = strpos($message, "\n");
+        $firstLine = $firstLinePos === false ? $message : substr($message, 0, $firstLinePos);
+
+        /** @noinspection NotOptimalRegularExpressionsInspection */
+        if (! preg_match('%^[^\s]+[^:]*:%', $firstLine)) {
+            $headers = [];
+            $body = $message;
+
+            return compact('headers', 'body');
+        }
+
+        // messages as returned by many mail servers
+        $headersEOL = $EOL;
+
+        // find an empty line between headers and body
+        // default is set new line
+        if (strpos($message, $EOL.$EOL)) {
+            [$headers, $body] = explode($EOL.$EOL, $message, 2);
+            // next is the standard new line
+        } elseif ($EOL !== "\r\n" && strpos($message, "\r\n\r\n")) {
+            [$headers, $body] = explode("\r\n\r\n", $message, 2);
+            $headersEOL = "\r\n"; // Headers::fromString will fail with incorrect EOL
+            // next is the other "standard" new line
+        } elseif ($EOL !== "\n" && strpos($message, "\n\n")) {
+            [$headers, $body] = explode("\n\n", $message, 2);
+            $headersEOL = "\n";
+            // at last resort find anything that looks like a new line
+        } else {
+            // [$headers, $body] = preg_split("%([\r\n]+)\\1%U", $message, 2);
+            $headers = '';
+            $body = $message;
+        }
+
+        $headers = self::parseHeaders($headers, $headersEOL);
+
+        return compact('headers', 'body');
+    }
+
+    public static function parseHeaders($headers, $oel = "\n")
+    {
+        $lines = preg_split('/(\\r?\\n)/', $headers, -1, PREG_SPLIT_DELIM_CAPTURE);
+        // $lines = explode($oel, $headers);
+        $headers = [];
+
+        foreach ($lines as $line) {
             if (strpos($line, ':')) {
-                $parts                     = explode(':', $line, 2);
-                $key                       = trim($parts[0]);
-                $value                     = isset($parts[1]) ? trim($parts[1]) : '';
-                $result['headers'][$key][] = $value;
-            } else {
-                // In case the boundary is on next line, after Content-Type
-                // https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
-                if (strpos($line, 'boundary=') !== false) {
-                    foreach ($result['headers'] as $k => &$v) {
-                        if (strtolower($k) == 'content-type') {
-                            $v[0] .= $line;
-                            break;
-                        }
+                $parts = explode(':', $line, 2);
+                $key = trim($parts[0]);
+                $value = isset($parts[1]) ? trim($parts[1]) : '';
+                $headers[$key][] = $value;
+            } elseif (strpos($line, 'boundary=') !== false) {
+                foreach ($headers as $k => &$v) {
+                    if (strtolower($k) === 'content-type') {
+                        $v[0] .= $line;
+                        break;
                     }
                 }
             }
         }
 
-        return $result;
+        return $headers;
     }
 
     /**
@@ -118,14 +146,14 @@ class Utils
      * data of the header. When a parameter does not contain a value, but just
      * contains a key, this function will inject a key with a '' string value.
      *
-     * @param string|array $header header to parse into components
+     * @param  string|array  $header  header to parse into components
      *
      * @return array returns the parsed header values
      */
     public static function parseHeader($header)
     {
         static $trimmed = "'\" \t\n\r\0\x0B";
-        $params         = [];
+        $params = [];
         foreach (self::normalizeHeader($header) as $val) {
             $part = [];
             foreach (preg_split('/;(?=([^"]*"[^"]*")*[^"]*$)/', $val) as $kvp) {
@@ -148,13 +176,13 @@ class Utils
      * Converts an array of header values that may contain comma separated
      * headers into an array of headers with no comma separated values.
      *
-     * @param string|array $header header to normalize
+     * @param  string|array  $header  header to normalize
      *
      * @return array returns the normalized header field values
      */
     public static function normalizeHeader($header)
     {
-        if (!is_array($header)) {
+        if (! is_array($header)) {
             return array_map('trim', explode(',', $header));
         }
         $result = [];
@@ -177,8 +205,8 @@ class Utils
      * Converts an array of header values that may contain comma separated
      * headers into a string representation.
      *
-     * @param string[] $headers
-     * @param string   $eol
+     * @param  string[]  $headers
+     * @param  string  $eol
      *
      * @return string
      */
@@ -191,7 +219,7 @@ class Utils
                 // some servers don't support "x-"
                 $values = str_replace('x-pkcs7-', 'pkcs7-', $values);
             }
-            $result .= $name . ': ' . $values . $eol;
+            $result .= $name.': '.$values.$eol;
         }
 
         return $result;
@@ -201,9 +229,9 @@ class Utils
      * Encode a given string in base64 encoding and break lines
      * according to the maximum line length.
      *
-     * @param string $str
-     * @param int    $lineLength
-     * @param string $lineEnd
+     * @param  string  $str
+     * @param  int  $lineLength
+     * @param  string  $lineEnd
      *
      * @return string
      */
@@ -218,7 +246,7 @@ class Utils
      * Generate Unique Message Id
      * TODO: uuid4.
      *
-     * @param mixed $partner
+     * @param  mixed  $partner
      *
      * @return string
      */
@@ -229,10 +257,10 @@ class Utils
         }
 
         return date('Y-m-d')
-            . '-' .
+            .'-'.
             uniqid('', true)
-            . '@' .
-            ($partner ? strtolower($partner) . '.' : '')
+            .'@'.
+            ($partner ? strtolower($partner).'.' : '')
             .
             str_replace(' ', '', php_uname('n'));
     }
@@ -240,8 +268,8 @@ class Utils
     /**
      * Generate random string.
      *
-     * @param int    $length
-     * @param string $charList
+     * @param  int  $length
+     * @param  string  $charList
      *
      * @return string
      */
@@ -279,7 +307,7 @@ class Utils
     /**
      * Checks if the string is valid for UTF-8 encoding.
      *
-     * @param string $s
+     * @param  string  $s
      *
      * @return bool
      */
@@ -291,7 +319,7 @@ class Utils
     /**
      * Removes invalid code unit sequences from UTF-8 string.
      *
-     * @param string $s
+     * @param  string  $s
      *
      * @return bool
      */

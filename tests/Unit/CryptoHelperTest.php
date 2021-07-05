@@ -72,7 +72,7 @@ class CryptoHelperTest extends TestCase
         $payload = CryptoHelper::encrypt($payload, $certs['cert']);
         $payload = CryptoHelper::decrypt($payload, $certs['cert'], $certs['pkey']);
 
-        self::assertEquals($payload->getHeaderLine('content-type'), 'application/EDI-Consent');
+        self::assertEquals('application/EDI-Consent', $payload->getHeaderLine('content-type'));
     }
 
     public function testCompress()
@@ -107,6 +107,6 @@ class CryptoHelperTest extends TestCase
         $payload = CryptoHelper::decompress($payload);
 
         self::assertEquals('Application/EDI-X12', $payload->getHeaderLine('content-type'));
-        self::assertEquals(strlen($payload->getBody()), 2247);
+        self::assertEquals(2247, strlen($payload->getBody()));
     }
 }

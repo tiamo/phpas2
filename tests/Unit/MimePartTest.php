@@ -23,8 +23,8 @@ class MimePartTest extends TestCase
                     'Content-Type' => $cType,
                 ]
             );
-            $this->assertTrue($mimePart->isPkc7Mime());
-            $this->assertTrue($mimePart->isEncrypted());
+            self::assertTrue($mimePart->isPkc7Mime());
+            self::assertTrue($mimePart->isEncrypted());
         }
     }
 
@@ -41,7 +41,7 @@ class MimePartTest extends TestCase
                     'Content-Type' => $cType,
                 ]
             );
-            $this->assertTrue($mimePart->isCompressed());
+            self::assertTrue($mimePart->isCompressed());
         }
     }
 
@@ -52,7 +52,7 @@ class MimePartTest extends TestCase
                 'Content-Type' => 'multipart/signed;protocol="application/pkcs7-signature";micalg=sha1;boundary="_=A=_"',
             ]
         );
-        $this->assertTrue($mimePart->isSigned());
+        self::assertTrue($mimePart->isSigned());
     }
 
     public function testIsPkc7Signature()
@@ -62,7 +62,7 @@ class MimePartTest extends TestCase
                 'Content-Type' => 'Application/pkcs7-signature;name=EDIINTSIG.p7s',
             ]
         );
-        $this->assertTrue($mimePart->isPkc7Signature());
+        self::assertTrue($mimePart->isPkc7Signature());
     }
 
     public function testIsReport()
@@ -72,7 +72,7 @@ class MimePartTest extends TestCase
                 'Content-Type' => 'multipart/report;Report-Type=disposition-notification;',
             ]
         );
-        $this->assertTrue($mimePart->isReport());
+        self::assertTrue($mimePart->isReport());
     }
 
     public function testIsMultipart()
@@ -81,43 +81,64 @@ class MimePartTest extends TestCase
 
         $mimePart = new MimePart(
             [
-                'Content-Type' => 'multipart/mixed; boundary="' . $boundary . '"',
+                'Content-Type' => 'multipart/mixed; boundary="'.$boundary.'"',
             ]
         );
         $mimePart->addPart('1');
         $mimePart->addPart('2');
 
-        $this->assertTrue($mimePart->isMultiPart());
-        $this->assertEquals($boundary, $mimePart->getParsedHeader('content-type', 0, 'boundary'));
+        self::assertTrue($mimePart->isMultiPart());
+        self::assertEquals($boundary, $mimePart->getParsedHeader('content-type', 0, 'boundary'));
 
         $mimePart = new MimePart(
             [
                 'Content-Type' => 'multipart/mixed;
-boundary="' . $boundary . '"',
+boundary="'.$boundary.'"',
             ]
         );
         $mimePart->addPart('1');
         $mimePart->addPart('2');
 
-        $this->assertTrue($mimePart->isMultiPart());
-        $this->assertEquals($boundary, $mimePart->getParsedHeader('content-type', 0, 'boundary'));
+        self::assertTrue($mimePart->isMultiPart());
+        self::assertEquals($boundary, $mimePart->getParsedHeader('content-type', 0, 'boundary'));
     }
 
-    public function testBody()
+    public function testBody(): void
     {
         $mimePart = MimePart::fromString("content-type:text/plain;\n\ntest");
-        $this->assertEquals('test', $mimePart->getBody());
+        self::assertEquals('test', $mimePart->getBody());
 
         $mimePart->setBody('test2');
-        $this->assertEquals('test2', $mimePart->getBody());
+        self::assertEquals('test2', $mimePart->getBody());
 
         $mimePart = MimePart::fromString("content-type:multipart/mixed;\r\n\r\ntest");
-        $this->assertEquals('test', $mimePart->getBody());
+        self::assertEquals('test', $mimePart->getBody());
 
         $mimePart->setBody(new MimePart([], '1'));
-        $this->assertEquals($mimePart->getCountParts(), 1);
+        self::assertEquals(1, $mimePart->getCountParts());
 
         $mimePart->setBody(['2', '3']);
-        $this->assertEquals($mimePart->getCountParts(), 3);
+        self::assertEquals(3, $mimePart->getCountParts());
+    }
+
+    public function testMultipart(): void
+    {
+        $mime = MimePart::fromString($this->loadFixture('signed-msg.txt'));
+
+        self::assertStringStartsWith('multipart/signed', $mime->getHeaderLine('content-type'));
+        self::assertEquals(2, $mime->getCountParts());
+
+        self::assertStringStartsWith('application/pkcs7-signature', $mime->getPart(1)->getHeaderLine('content-type'));
+        self::assertEquals('application/EDI-Consent', $mime->getPart(0)->getHeaderLine('content-type'));
+        self::assertEquals('binary', $mime->getPart(0)->getHeaderLine('Content-Transfer-Encoding'));
+        self::assertStringStartsWith('UNB+UNOA', $mime->getPart(0)->getBody());
+    }
+
+    public function testBodyWithoutHeaders(): void
+    {
+        $res = MimePart::fromString($this->loadFixture('test.edi'));
+
+        self::assertEmpty($res->getHeaders());
+        self::assertStringStartsWith('UNB+UNOA', $res->getBody());
     }
 }

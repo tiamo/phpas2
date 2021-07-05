@@ -53,10 +53,12 @@ class CryptoHelper
      */
     public static function sign($data, $cert, $privateKey = null, $headers = [], $micAlgo = null)
     {
-        $data = self::getTempFilename((string) $data);
+        $data = self::getTempFilename($data."\r\n");
         $temp = self::getTempFilename();
 
-        if (! openssl_pkcs7_sign($data, $temp, $cert, $privateKey, $headers)) {
+        $flags = PKCS7_DETACHED;
+
+        if (! openssl_pkcs7_sign($data, $temp, $cert, $privateKey, $headers, $flags)) {
             throw new \RuntimeException(sprintf('Failed to sign S/Mime message. Error: "%s".', openssl_error_string()));
         }
 
@@ -124,9 +126,7 @@ class CryptoHelper
      */
     public static function encrypt($data, $cert, $cipher = OPENSSL_CIPHER_AES_128_CBC)
     {
-        if ($data instanceof MimePart) {
-            $data = self::getTempFilename((string) $data);
-        }
+        $data = self::getTempFilename((string) $data);
 
         if (is_string($cipher)) {
             $cipher = strtoupper($cipher);
@@ -137,7 +137,7 @@ class CryptoHelper
         }
 
         $temp = self::getTempFilename();
-        if (! openssl_pkcs7_encrypt($data, $temp, (array) $cert, [], PKCS7_BINARY, $cipher)) {
+        if (! openssl_pkcs7_encrypt($data, $temp, $cert, [], PKCS7_BINARY, $cipher)) {
             throw new \RuntimeException(sprintf('Failed to encrypt S/Mime message. Error: "%s".',
                 openssl_error_string()));
         }
