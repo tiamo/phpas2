@@ -10,36 +10,35 @@ on:
 
 jobs:
   build:
-    name: Build - PHP ${{ matrix.php-versions }} ${{ matrix.operating-system }}
+    name: Build - PHP ${{ matrix.php-versions }} ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        operating-system: [ 'ubuntu-latest' ]
-        php-versions: [ '5.6', '7.2', '7.3' '7.4' ]
-
-    runs-on: ${{ matrix.operating-system }}
+        os: [ ubuntu-latest ]
+        php-versions: [ '5.6' ]
 
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Validate composer.json and composer.lock
-        run: composer validate
+    - name: Validate composer.json and composer.lock
+      run: composer validate
 
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-versions }}
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-versions }}
 
-      - name: Cache Composer dependencies
-        uses: actions/cache@v2
-        with:
-          path: /tmp/composer-cache
-          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+    - name: Cache Composer dependencies
+      uses: actions/cache@v2
+      with:
+        path: /tmp/composer-cache
+        key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
 
-      - name: Install dependencies
-        uses: php-actions/composer@v6
-        with:
-          # php_version: 8.0
-          args: --ignore-platform-reqs --quiet
+    - name: Install dependencies
+      uses: php-actions/composer@v6
+      with:
+        # php_version: 8.0
+        args: --ignore-platform-reqs --quiet
 
-      - name: Run tests
-        run: composer test
+    - name: Run tests
+      run: composer test
