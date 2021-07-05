@@ -10,7 +10,7 @@ between trading partners.
 
 ## Requirements
 
-* php >= 5.6
+* php >= 7.1
 * ext-openssl
 * ext-zlib
 
