@@ -14,31 +14,39 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: true
       matrix:
         os: [ ubuntu-latest ]
         php-versions: [ '5.6' ]
 
     steps:
     - uses: actions/checkout@v2
+#
+#    - name: Validate composer.json and composer.lock
+#      run: composer validate
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate
-
+    - name: Setup PHP
     - uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php-versions }}
 
-    - name: Cache Composer dependencies
-      uses: actions/cache@v2
-      with:
-        path: /tmp/composer-cache
-        key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
-
     - name: Install dependencies
-      uses: php-actions/composer@v6
-      with:
-        php_version: ${{ matrix.php-versions }}
-        args: --ignore-platform-reqs --quiet
+      run: composer install --optimize-autoloader --prefer-dist
 
     - name: Run tests
-      run: composer test
+      run: composer run-script test
+
+#    - name: Cache Composer dependencies
+#      uses: actions/cache@v2
+#      with:
+#        path: /tmp/composer-cache
+#        key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+#
+#    - name: Install dependencies
+#      uses: php-actions/composer@v6
+#      with:
+##        php_version: ${{ matrix.php-versions }}
+#        args: --ignore-platform-reqs --quiet
+#
+#    - name: Run tests
+#      run: composer test
