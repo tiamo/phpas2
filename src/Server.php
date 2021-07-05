@@ -150,8 +150,9 @@ class Server
 
                     // If MDN enabled than send notification
                     // Create MDN if it requested by partner
+                    $mdnMode = $sender->getMdnMode();
 
-                    if (($mdnMode = $receiver->getMdnMode()) && ($mdn = $this->manager->buildMdn($message))) {
+                    if ($mdnMode && ($mdn = $this->manager->buildMdn($message))) {
                         $mdnMessageId = trim($mdn->getHeaderLine('message-id'), '<>');
                         $message->setMdnPayload($mdn->toString());
                         if ($mdnMode === PartnerInterface::MDN_MODE_SYNC) {
