@@ -25,7 +25,13 @@ class CryptoHelperTest extends TestCase
         $payload = $this->initMessage();
         $certs = $this->getCerts();
 
-        $payload = CryptoHelper::sign($payload, $certs['cert'], $certs['pkey']);
+        $payload = CryptoHelper::signPure($payload, $certs['cert'], $certs['pkey']);
+
+        file_put_contents(__DIR__.'/../fixtures/signed1.txt', $payload);
+
+        // $res = CryptoHelper::verify($payload, $certs['cert']);
+        //
+        // dd($res);
 
         self::assertTrue($payload->isSigned());
 
@@ -45,7 +51,8 @@ class CryptoHelperTest extends TestCase
     public function testVerify()
     {
         // $contents = $this->loadFixture('si_signed.mdn');
-        $contents = $this->loadFixture('signed-msg.txt');
+        $contents = $this->loadFixture('signed1.txt');
+        // $contents = $this->loadFixture('signed-msg.txt');
         $payload = MimePart::fromString($contents);
 
         $certs = $this->getCerts();

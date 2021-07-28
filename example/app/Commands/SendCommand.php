@@ -11,6 +11,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\VarDumper\VarDumper;
 
 class SendCommand extends Command
 {
@@ -93,6 +94,8 @@ MSG;
 
         // $output->writeln('Status: ' . $message->getStatus());
         // $output->writeln('Status Message: ' . $message->getStatusMsg());
+
+        dd($message);
 
         $messageRepository->saveMessage($message);
     }

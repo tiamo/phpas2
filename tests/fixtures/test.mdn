@@ -1,0 +1,71 @@
+Server: nginx
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Vary: Accept-Encoding
+Message-Id: <2021-07-23-60faae80cf63b1.85861604@as2eteco.eteco-group.com>
+Date: Fri, 23 Jul 2021 11:56:48 +0000
+As2-From: as2eteco
+As2-To: as2polini
+As2-Version: 1.2
+User-Agent: PHPAS2
+Ediint-Features: CEM
+Mime-Version: 1.0
+
+------AEE2C100D7804E037C619C123BA3D8ED
+Content-Type: multipart/report; report-type=disposition-notification; boundary="----=_0f177cb3dbdfcfaf3bd6fb813325ecc5380995a5"
+
+------=_0f177cb3dbdfcfaf3bd6fb813325ecc5380995a5
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+Your message was successfully received and processed.
+
+------=_0f177cb3dbdfcfaf3bd6fb813325ecc5380995a5
+Content-Type: message/disposition-notification
+Content-Transfer-Encoding: 7bit
+
+Reporting-UA: PHPAS2
+Original-Recipient: rfc822; as2eteco
+Final-Recipient: rfc822; as2eteco
+Original-Message-ID: <2021-07-23-60faae80cc5de2.70892947@as2polini.eteco-group.com>
+Disposition: automatic-action/MDN-sent-automatically; processed
+Received-Content-MIC: IyhQhOsx+1suwiEjkJjlaskVWHyQW4kxmQP3rsq16sM=, sha256
+
+------=_0f177cb3dbdfcfaf3bd6fb813325ecc5380995a5--
+------AEE2C100D7804E037C619C123BA3D8ED
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Type: application/pkcs7-signature; name=smime.p7s; smime-type=signed-data
+
+MIIFbQYJKoZIhvcNAQcCoIIFXjCCBVoCAQExDzANBglghkgBZQMEAgEFADALBgkq
+hkiG9w0BBwGgggL1MIIC8TCCAdmgAwIBAgIJAI+A9000plXZMA0GCSqGSIb3DQEB
+CwUAMB0xGzAZBgNVBAMMEmFzMi5ldGVjby1ncm91cC5kZTAeFw0xOTAxMTQwOTA1
+NThaFw0yOTAxMTEwOTA1NThaMB0xGzAZBgNVBAMMEmFzMi5ldGVjby1ncm91cC5k
+ZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJZ/xA4MJPPA66Ils84D
+wklSBxim788LzFOsi99RgO1ktfbbKFrdXIrEUYWvDmSMbiY7ALz9UsMKPA7T0/t0
+l1XkGuCh+/TqAQgbMkjzNkCpjedufC9ghMSUhndSGIMdsQf70styWiZVSSNnZ4cG
+26H+mVJXKVcr5BRZufv3fR+wMuADuGSE5xR5R+jhOLxgJEfvpZeuGKhGix6sdagE
+3MfjOH8vbtOmrbltu8H9mbXPkiz9aSvEV3ocbesVIOxjhiWzUYvbYRhABebtNDKl
+vb7j3aBjoSHzaEhZOP4O+uSsoHOh0if0ukP3ksmHixEOVFzV8bPc92q3ONTH4ZNX
+FOkCAwEAAaM0MDIwMAYDVR0RBCkwJ4ISYXMyLmV0ZWNvLWdyb3VwLmRlggtleGFt
+cGxlLm5ldIcECgAAATANBgkqhkiG9w0BAQsFAAOCAQEAOFHlT5n6IdH2xv6bi50O
+CwSPajVPz8hCAo6XTdRwE5InaLVgziuRfQD1s/GUjLeM89u42CgA2FNkeKc4/iGv
+hCueFGMRjBlhHOEoDwdcFpkLNJgtfaEmFDOHHjXgIP+MHbEQ7uu9Yspf+hdTDMT1
+CbCwRIWMfdt1VhGOZXoAg2Jgzwyqszf+H6EXilqZtzYdSDV4r2XoX+n2Oe6V3oot
+Ndtsbh2QrtiTMS328brydAbXFsOzr2B/ygQkLPmEITgjyDqn2oXI8YR6Mfw0MImk
+GByapr7g+/eLHnuP4ULqoQh54EkiTfodzbdRkhvT1cA9U+hH8BdPDB+jDsP5BWCc
+wjGCAjwwggI4AgEBMCowHTEbMBkGA1UEAwwSYXMyLmV0ZWNvLWdyb3VwLmRlAgkA
+j4D3TTSmVdkwDQYJYIZIAWUDBAIBBQCggeQwGAYJKoZIhvcNAQkDMQsGCSqGSIb3
+DQEHATAcBgkqhkiG9w0BCQUxDxcNMjEwNzIzMTE1NjQ4WjAvBgkqhkiG9w0BCQQx
+IgQgTdC7qREPIZnRru+xhWwxB5KzWu1LPxibitb49WDxrUwweQYJKoZIhvcNAQkP
+MWwwajALBglghkgBZQMEASowCwYJYIZIAWUDBAEWMAsGCWCGSAFlAwQBAjAKBggq
+hkiG9w0DBzAOBggqhkiG9w0DAgICAIAwDQYIKoZIhvcNAwICAUAwBwYFKw4DAgcw
+DQYIKoZIhvcNAwICASgwDQYJKoZIhvcNAQEBBQAEggEAEVf41yjJkd7BiMw3gdqK
+0WK5z081rZTF8Z9RaMtgEfF/xHGZmrXXs8qBYdO6m9rgvj47m4lC0mQfgFe86Qqm
+js+aIqNjbRwN8dX8SSC8Y+5pN3v6XgiQD/NAfWZsQjnRr1NwjqEIkp+1zzyLXA9S
+Aozo+Z+dsjI9XKMeczf1RYXMThHjBFCVO7ECrzcmYt6vM7mgViafLBsf+jIF5DQR
+V2HDSGGmRlXscaM3vFsH/TTM557vkYOnLmoF5daqftzAEEkQ5wiHrzjG8ZS28ZOE
+BIzQCvo6FgDPzCbOxsLzNguOvOMV1h6GAnvfwW095P3X0g+AD4Ux9CGnoEI1Nlhu
+RA==
+------AEE2C100D7804E037C619C123BA3D8ED--

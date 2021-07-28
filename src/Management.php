@@ -13,9 +13,9 @@ use Psr\Log\NullLogger;
  */
 class Management implements LoggerAwareInterface
 {
-    const AS2_VERSION = '1.2';
-    const EDIINT_FEATURES = 'CEM'; // multiple-attachments,
-    const USER_AGENT = 'PHPAS2';
+    public const AS2_VERSION = '1.2';
+    public const EDIINT_FEATURES = 'CEM, multiple-attachments, AS2-Reliability';
+    public const USER_AGENT = 'PHPAS2';
 
     /**
      * @var LoggerInterface
@@ -144,7 +144,11 @@ class Management implements LoggerAwareInterface
             //                $micAlgo = trim($micAlgo);
             //            }
 
-            $message->setMic(CryptoHelper::calculateMIC($micContent, $signAlgo));
+            $mic = CryptoHelper::calculateMIC($micContent, $signAlgo, false);
+
+            // dd($mic);
+
+            $message->setMic($mic);
 
             $this->getLogger()->debug(
                 'Calculate MIC',
@@ -160,6 +164,8 @@ class Management implements LoggerAwareInterface
                 [],
                 $signAlgo
             );
+
+            // dd($payload);
 
             $message->setSigned();
         }

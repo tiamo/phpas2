@@ -149,6 +149,14 @@ class ManagementTest extends TestCase
 
         self::assertEquals(MessageInterface::MDN_STATUS_SENT, $message->getMdnStatus());
         self::assertEquals(PartnerInterface::MDN_MODE_SYNC, $message->getMdnMode());
+
+        // test signed
+
+        $message->setHeaders("disposition-notification-to: test@example.com\ndisposition-notification-options: signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha256");
+
+        $report = $this->management->buildMdn($message, 'custom', 'error');
+
+        self::assertTrue($report->isSigned());
     }
 
     // public function testSendMdn()

@@ -2,6 +2,10 @@
 
 namespace AS2;
 
+use phpseclib3\Crypt\PublicKeyLoader;
+use phpseclib3\Crypt\RSA;
+use phpseclib3\File\X509;
+
 /**
  * TODO: Implement pure methods without "openssl_pkcs7"
  * check openssl_pkcs7 doesn't work with binary data.
@@ -44,8 +48,174 @@ class CryptoHelper
      * Sign data which contains mime headers.
      *
      * @param  string|MimePart  $data
+     * @param  string  $publicKey
+     * @param  string|array  $privateKey
+     * @param  array  $headers
+     * @param  array  $micAlgo
+     *
+     * @return MimePart
+     */
+    public static function signPure($data, $publicKey, $privateKey = null, $headers = [], $micAlgo = null)
+    {
+        if (! is_array($privateKey)) {
+            $privateKey = [$privateKey, false];
+        }
+
+        $singAlg = 'sha256';
+
+        /** @var RSA\PrivateKey $private */
+        $private = RSA::load($privateKey[0], $privateKey[1])
+            ->withPadding(RSA::SIGNATURE_PKCS1)
+            ->withHash($singAlg)
+            ->withMGFHash($singAlg);
+
+        $signature = $private->sign($data);
+
+        $certInfo = self::loadX509($publicKey);
+
+        $digestAlgorithm = ASN1Helper::OID_SHA256;
+
+        $payload = ASN1Helper::encode(
+            [
+                'contentType' => ASN1Helper::OID_SIGNED_DATA,
+                'content' => [
+                    'version' => 1,
+                    'digestAlgorithms' => [
+                        [
+                            'algorithm' => $digestAlgorithm,
+                        ],
+                    ],
+                    'contentInfo' => [
+                        'contentType' => ASN1Helper::OID_DATA,
+                    ],
+                    'certificates' => [
+                        $certInfo,
+                    ],
+                    // 'crls' => [],
+                    'signers' => [
+                        [
+                            'version' => '1',
+                            'sid' => [
+                                'issuerAndSerialNumber' => [
+                                    'issuer' => $certInfo['tbsCertificate']['issuer'],
+                                    'serialNumber' => $certInfo['tbsCertificate']['serialNumber'],
+                                ],
+                            ],
+                            'digestAlgorithm' => [
+                                'algorithm' => $digestAlgorithm,
+                            ],
+                            'signedAttrs' => [
+                                [
+                                    'type' => ASN1Helper::OID_PKCS9_CONTENT_TYPE,
+                                    'value' => [
+                                        [
+                                            'objectIdentifier' => ASN1Helper::OID_DATA,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'type' => ASN1Helper::OID_PKCS9_SIGNING_TIME,
+                                    'value' => [
+                                        [
+                                            // TODO: Fri, 26 Jun 2020 14:47:26 +0000
+                                            'utcTime' => date('c'),
+                                        ],
+                                    ],
+                                ],
+                                // [
+                                //     'type' => ASN1Helper::OID_PKCS9_MESSAGE_DIGEST,
+                                //     'value' => [
+                                //         [
+                                //             'octetString' => "",
+                                //         ],
+                                //     ],
+                                // ],
+                            ],
+                            'signatureAlgorithm' => [
+                                'algorithm' => ASN1Helper::OID_RSA_ENCRYPTION,
+                            ],
+                            'signature' => $signature,
+                            // 'unsignedAttrs' => []
+                        ],
+                    ],
+                ],
+            ],
+            ASN1Helper::getSignedDataMap()
+        );
+
+        $payload = Utils::encodeBase64($payload);
+
+        $signatureMime = new MimePart([
+            'Content-Transfer-Encoding' => 'base64',
+            'Content-Disposition' => 'attachment; filename="smime.p7s"',
+            'Content-Type' => 'application/pkcs7-signature; name=smime.p7s; smime-type=signed-data',
+        ], $payload);
+
+        $boundary = '=_'.sha1(uniqid('', true));
+
+        $result = new MimePart([
+                'MIME-Version' => '1.0',
+                'Content-type' => 'multipart/signed; protocol="application/pkcs7-signature"; micalg='.$singAlg.'; boundary="----'.$boundary.'"',
+            ] + $headers);
+        $result->addPart($data);
+        $result->addPart($signatureMime);
+
+        // echo $result;
+        // exit;
+
+        return $result;
+    }
+
+    /**
+     * TODO: extra certs
+     *
+     * @param  string|MimePart  $payload
+     * @param  array|null  $caInfo  Information about the trusted CA certificates to use in the verification process
+     * @param  array  $rootCerts
+     *
+     * @return bool
+     */
+    public static function verifyPure($payload, $publicKey, $extraCerts = []): bool
+    {
+        if (is_string($payload)) {
+            $payload = MimePart::fromString($payload);
+        }
+
+        $data = "";
+        $signature = false;
+
+        foreach ($payload->getParts() as $part) {
+            if ($part->isPkc7Signature()) {
+                $signature = $part->getBody();
+            } else {
+                $data = $part->toString();
+            }
+        }
+
+        if (! $signature) {
+            return false;
+        }
+
+        $verified = true;
+
+        $signedData = ASN1Helper::decode(Utils::normalizeBase64($signature), ASN1Helper::getSignedDataMap());
+        if ($signedData['contentType'] === ASN1Helper::OID_SIGNED_DATA) {
+            /** @var RSA\PublicKey $public */
+            $public = PublicKeyLoader::load($publicKey)->withPadding(RSA::SIGNATURE_PKCS1);
+            foreach ($signedData['content']['signers'] as $signer) {
+                $verified &= $public->verify($data, $signer['signature']);
+            }
+        }
+
+        return (bool) $verified;
+    }
+
+    /**
+     * Sign data which contains mime headers.
+     *
+     * @param  string|MimePart  $data
      * @param  string|resource  $cert
-     * @param  string|resource  $privateKey
+     * @param  string|array  $privateKey
      * @param  array  $headers
      * @param  array  $micAlgo
      *
@@ -114,7 +284,14 @@ class CryptoHelper
 
         $outFile = self::getTempFilename();
 
-        return openssl_pkcs7_verify($data, $flags, $outFile, $rootCerts) === true;
+        $res = openssl_pkcs7_verify($data, $flags, $outFile, $rootCerts) === true;
+
+        dd([
+            $res,
+            openssl_error_string(),
+        ]);
+
+        return $res;
     }
 
     /**
@@ -196,14 +373,14 @@ class CryptoHelper
 
         $content = ASN1Helper::encode(
             [
-                'contentType' => ASN1Helper::COMPRESSED_DATA_OID,
+                'contentType' => ASN1Helper::OID_COMPRESSED_DATA,
                 'content' => [
                     'version' => 0,
                     'compression' => [
-                        'algorithm' => ASN1Helper::ALG_ZLIB_OID,
+                        'algorithm' => ASN1Helper::OID_ALG_ZLIB,
                     ],
                     'payload' => [
-                        'contentType' => ASN1Helper::DATA_OID,
+                        'contentType' => ASN1Helper::OID_DATA,
                         'content' => base64_encode(gzcompress($content)),
                     ],
                 ],
@@ -239,13 +416,13 @@ class CryptoHelper
 
         $payload = ASN1Helper::decode($data, ASN1Helper::getContentInfoMap());
 
-        if ($payload['contentType'] === ASN1Helper::COMPRESSED_DATA_OID) {
+        if ($payload['contentType'] === ASN1Helper::OID_COMPRESSED_DATA) {
             $compressed = ASN1Helper::decode($payload['content'], ASN1Helper::getCompressedDataMap());
             if (empty($compressed['compression']) || empty($compressed['payload'])) {
                 throw new \RuntimeException('Invalid compressed data.');
             }
             $algorithm = $compressed['compression']['algorithm'];
-            if ($algorithm === ASN1Helper::ALG_ZLIB_OID) {
+            if ($algorithm === ASN1Helper::OID_ALG_ZLIB) {
                 $data = (string) Utils::normalizeBase64($compressed['payload']['content']);
                 $data = gzuncompress($data);
             }
@@ -270,5 +447,18 @@ class CryptoHelper
         }
 
         return $filename;
+    }
+
+    private static function loadX509($cert)
+    {
+        $certInfo = (new X509())->loadX509($cert);
+
+        // TODO: phpspeclib bug ?
+        if (! empty($certInfo['tbsCertificate']['extensions'])) {
+            $certInfo['tbsCertificate']['extensions'][0]['extnValue'] =
+                implode(',', $certInfo['tbsCertificate']['extensions'][0]['extnValue']);
+        }
+
+        return $certInfo;
     }
 }
