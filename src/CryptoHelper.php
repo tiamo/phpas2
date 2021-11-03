@@ -97,6 +97,11 @@ class CryptoHelper
     public static function verify($data, $caInfo = null, $rootCerts = [])
     {
         if ($data instanceof MimePart) {
+            $temp = MimePart::createIfBinaryPart($data);
+            if ($temp !== null) {
+                $data = $temp;
+            }
+
             $data = self::getTempFilename((string) $data);
         }
 

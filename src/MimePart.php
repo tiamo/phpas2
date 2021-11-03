@@ -104,6 +104,31 @@ class MimePart implements PsrMessageInterface
     }
 
     /**
+     * Recreate message with base64 if part is binary
+     *
+     * @param self $message
+     *
+     * @return null|self
+     */
+    public static function createIfBinaryPart(self $message): ?self
+    {
+        $hasBinary = false;
+
+        $temp = new self($message->getHeaders());
+        foreach ($message->getParts() as $part) {
+            if (Utils::isBinary($part->getBody())) {
+                $hasBinary = true;
+                $recreatedPart = new self($part->getHeaders(), Utils::encodeBase64($part->getBody()));
+                $temp->addPart($recreatedPart);
+            } else {
+                $temp->addPart($part);
+            }
+        }
+
+        return $hasBinary ? $temp : null;
+    }
+
+    /**
      * @return bool
      */
     public function isPkc7Mime()
