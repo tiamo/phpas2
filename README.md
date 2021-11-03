@@ -1,16 +1,16 @@
 # PHPAS2 is a php-based implementation of the EDIINT AS2 standard
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/tiamo/phpas2.svg?style=flat-square)](https://packagist.org/packages/tiamo/phpas2)
-[![Build Status](https://travis-ci.org/tiamo/phpas2.svg?branch=master)](https://travis-ci.org/tiamo/phpas2)
+[![Build Status](https://github.com/tiamo/phpas2/actions/workflows/ci.yml/badge.svg)](https://github.com/tiamo/phpas2)
 [![Total Downloads](https://img.shields.io/packagist/dt/tiamo/phpas2.svg?style=flat-square)](https://packagist.org/packages/tiamo/phpas2)
 [![License](https://poser.pugx.org/tiamo/phpas2/license)](https://packagist.org/packages/tiamo/phpas2)
 
-The PHPAS2 application enables you to transmit and receive AS2 messages with 
-EDI-X12, EDIFACT, XML, or binary payloads between trading partners.
+The PHPAS2 application enables you to transmit and receive AS2 messages with EDI-X12, EDIFACT, XML, or binary payloads
+between trading partners.
 
 ## Requirements
 
-* php >= 5.6
+* php >= 7.1
 * ext-openssl
 * ext-zlib
 

@@ -14,7 +14,7 @@ class CryptoHelperTest extends TestCase
     public function testMicCalculation()
     {
         $contents = $this->loadFixture('mic-calculation');
-        $this->assertEquals(
+        self::assertEquals(
             '9IVZAN9QhjQINLzl/tdUvTMhMOSQ+96TjK7brHXQFys=, sha256',
             CryptoHelper::calculateMIC($contents, 'sha256')
         );
@@ -23,11 +23,11 @@ class CryptoHelperTest extends TestCase
     public function testSign()
     {
         $payload = $this->initMessage();
-        $certs   = $this->getCerts();
+        $certs = $this->getCerts();
 
         $payload = CryptoHelper::sign($payload, $certs['cert'], $certs['pkey']);
 
-        $this->assertTrue($payload->isSigned());
+        self::assertTrue($payload->isSigned());
 
         $hasSignature = false;
         foreach ($payload->getParts() as $part) {
@@ -36,7 +36,7 @@ class CryptoHelperTest extends TestCase
                 break;
             }
         }
-        $this->assertTrue($hasSignature);
+        self::assertTrue($hasSignature);
     }
 
     /**
@@ -46,34 +46,33 @@ class CryptoHelperTest extends TestCase
     {
         // $contents = $this->loadFixture('si_signed.mdn');
         $contents = $this->loadFixture('signed-msg.txt');
-        $payload  = MimePart::fromString($contents);
-        $certs    = $this->getCerts();
+        $payload = MimePart::fromString($contents);
 
-        $this->assertTrue($payload->isSigned());
-        $this->assertTrue(
-            CryptoHelper::verify($payload, $certs['cert'])
-        );
+        $certs = $this->getCerts();
+
+        self::assertTrue($payload->isSigned());
+        self::assertTrue(CryptoHelper::verify($payload, $certs['cert']));
     }
 
     public function testEncrypt()
     {
         $payload = $this->initMessage();
-        $certs   = $this->getCerts();
+        $certs = $this->getCerts();
 
         $payload = CryptoHelper::encrypt($payload, $certs['cert']);
 
-        $this->assertTrue($payload->isEncrypted());
+        self::assertTrue($payload->isEncrypted());
     }
 
     public function testDecrypt()
     {
         $payload = $this->initMessage();
-        $certs   = $this->getCerts();
+        $certs = $this->getCerts();
 
         $payload = CryptoHelper::encrypt($payload, $certs['cert']);
         $payload = CryptoHelper::decrypt($payload, $certs['cert'], $certs['pkey']);
 
-        $this->assertEquals($payload->getHeaderLine('content-type'), 'application/EDI-Consent');
+        self::assertEquals('application/EDI-Consent', $payload->getHeaderLine('content-type'));
     }
 
     public function testCompress()
@@ -81,33 +80,33 @@ class CryptoHelperTest extends TestCase
         $payload = $this->initMessage();
         $payload = CryptoHelper::compress($payload);
 
-        $this->assertEquals(
+        self::assertEquals(
             'compressed-data',
             $payload->getParsedHeader('content-type', 0, 'smime-type')
         );
         $body = base64_decode($payload->getBody());
-        $this->assertEquals(0x30, ord($body[0]));
-        $this->assertEquals(0x82, ord($body[1]));
-        $this->assertEquals(0x02, ord($body[2]));
+        self::assertEquals(0x30, ord($body[0]));
+        self::assertEquals(0x82, ord($body[1]));
+        self::assertEquals(0x02, ord($body[2]));
     }
 
     public function testDecompress()
     {
         $payload = MimePart::fromString($this->loadFixture('si_signed_cmp.msg'));
 
-        $this->assertTrue($payload->isSigned());
+        self::assertTrue($payload->isSigned());
 
         foreach ($payload->getParts() as $part) {
-            if (!$part->isPkc7Signature()) {
+            if (! $part->isPkc7Signature()) {
                 $payload = $part;
             }
         }
 
-        $this->assertTrue($payload->isCompressed());
+        self::assertTrue($payload->isCompressed());
 
         $payload = CryptoHelper::decompress($payload);
 
-        $this->assertEquals('Application/EDI-X12', $payload->getHeaderLine('content-type'));
-        $this->assertEquals(strlen($payload->getBody()), 2247);
+        self::assertEquals('Application/EDI-X12', $payload->getHeaderLine('content-type'));
+        self::assertEquals(2247, strlen($payload->getBody()));
     }
 }

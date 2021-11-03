@@ -12,10 +12,10 @@ class ManagementTest extends TestCase
 {
     public function testBuildMessage()
     {
-        $senderId   = 'A';
+        $senderId = 'A';
         $receiverId = 'B';
 
-        $sender   = $this->partnerRepository->findPartnerById($senderId);
+        $sender = $this->partnerRepository->findPartnerById($senderId);
         $receiver = $this->partnerRepository->findPartnerById($receiverId);
 
         // Initialize empty message
@@ -38,7 +38,7 @@ class ManagementTest extends TestCase
     {
         $payload = MimePart::fromString($this->loadFixture('phpas2.raw'));
 
-        $sender   = $this->partnerRepository->findPartnerById('A');
+        $sender = $this->partnerRepository->findPartnerById('A');
         $receiver = $this->partnerRepository->findPartnerById('B');
 
         $messageId = $payload->getHeaderLine('message-id');
@@ -64,7 +64,7 @@ class ManagementTest extends TestCase
     {
         $payload = MimePart::fromString($this->loadFixture('phpas2_new.raw'));
 
-        $sender   = $this->partnerRepository->findPartnerById('A');
+        $sender = $this->partnerRepository->findPartnerById('A');
         $receiver = $this->partnerRepository->findPartnerById('B');
 
         $messageId = $payload->getHeaderLine('message-id');
@@ -87,10 +87,10 @@ class ManagementTest extends TestCase
 
     public function testSendMessage()
     {
-        $senderId   = 'A';
+        $senderId = 'A';
         $receiverId = 'B';
 
-        $sender   = $this->partnerRepository->findPartnerById($senderId);
+        $sender = $this->partnerRepository->findPartnerById($senderId);
         $receiver = $this->partnerRepository->findPartnerById($receiverId);
 
         $messageId = Utils::generateMessageID($sender);
@@ -115,7 +115,7 @@ class ManagementTest extends TestCase
 
     public function testBuildMdn()
     {
-        $sender   = $this->partnerRepository->findPartnerById('A');
+        $sender = $this->partnerRepository->findPartnerById('A');
         $receiver = $this->partnerRepository->findPartnerById('B');
 
         // Initialize empty message
@@ -126,7 +126,7 @@ class ManagementTest extends TestCase
 
         $report = $this->management->buildMdn($message);
 
-        self::assertNull($report);
+        self::assertNull($report->getBody());
 
         $message->setHeaders('disposition-notification-to: test@example.com');
 
@@ -137,22 +137,23 @@ class ManagementTest extends TestCase
         self::assertEquals($report->getHeaderLine('as2-from'), $receiver->getAs2Id());
         self::assertEquals('custom', trim($report->getPart(0)->getBody()));
 
-        $headers = MimePart::fromString($report->getPart(1)->getBody());
+        $headers = new MimePart(
+            Utils::parseHeaders($report->getPart(1)->getBody())
+        );
 
-        self::assertEquals($headers->getHeaderLine('Original-Message-ID'), '<test>');
-        self::assertEquals($headers->getHeaderLine('Original-Recipient'), 'rfc822; B');
-        self::assertEquals($headers->getHeaderLine('Final-Recipient'), 'rfc822; B');
-        self::assertEquals($headers->getHeaderLine('Disposition'), 'automatic-action/MDN-sent-automatically; processed/error: error');
+        self::assertEquals('<test>', $headers->getHeaderLine('Original-Message-ID'));
+        self::assertEquals('rfc822; B', $headers->getHeaderLine('Original-Recipient'));
+        self::assertEquals('rfc822; B', $headers->getHeaderLine('Final-Recipient'));
+        self::assertEquals('automatic-action/MDN-sent-automatically; processed/error: error',
+            $headers->getHeaderLine('Disposition'));
 
-        self::assertEquals($message->getMdnStatus(), MessageInterface::MDN_STATUS_SENT);
-        self::assertEquals($message->getMdnMode(), PartnerInterface::MDN_MODE_SYNC);
-
-        // var_dump($message->getMdnPayload());
+        self::assertEquals(MessageInterface::MDN_STATUS_SENT, $message->getMdnStatus());
+        self::assertEquals(PartnerInterface::MDN_MODE_SYNC, $message->getMdnMode());
     }
 
     // public function testSendMdn()
     // {
-    //     $sender   = $this->partnerRepository->findPartnerById('A');
+    //     $sender = $this->partnerRepository->findPartnerById('A');
     //     $sender->setTargetUrl('http://localhost');
     //
     //     $receiver = $this->partnerRepository->findPartnerById('B');
@@ -170,7 +171,5 @@ class ManagementTest extends TestCase
     //     $response = $this->management->sendMdn($message);
     //
     //     self::assertTrue(true);
-    //
-    //     var_dump($response);
     // }
 }

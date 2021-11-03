@@ -1,5 +1,19 @@
 # Change Log
 
+## 2.0.0
+* Minimum php version is 7.1
+* Added support php 8.0
+* Fixed bugs with mdn sign
+* Added new message parser
+* Improved tests
+* Added v1 branch for 5.6 support
+* Added github actions
+
+## 1.4.8
+* Fixed 3 bugs ([#28](https://github.com/tiamo/phpas2/pull/28))
+* phpspeclib v3
+* Improved tests
+
 ## 1.4.7
 * Updated base64 decode on processMessage to fix problem on bigger mess… ([#23](https://github.com/tiamo/phpas2/pull/23))
 
