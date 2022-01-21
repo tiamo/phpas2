@@ -57,7 +57,7 @@ class ManagementTest extends TestCase
         self::assertTrue($message->getEncrypted());
         self::assertTrue($message->getSigned());
         self::assertSame($message->getMic(), 'oVDpnrSnpq+V99dXaarQ9HFyRUaFNsp9tdBBSmRhX4s=, sha256');
-        self::assertSame((string) $processedPayload, Utils::canonicalize($this->loadFixture('test.edi')));
+        self::assertSame(trim((string) $processedPayload), Utils::canonicalize($this->loadFixture('test.edi')));
     }
 
     public function testProcessMessageBiggerMessage()

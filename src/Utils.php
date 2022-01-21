@@ -328,4 +328,18 @@ class Utils
         // removes xD800-xDFFF, x110000 and higher
         return htmlspecialchars_decode(htmlspecialchars($s, ENT_NOQUOTES | ENT_IGNORE, 'UTF-8'), ENT_NOQUOTES);
     }
+
+    /**
+     * Verify if the content is binary
+     *
+     * @param mixed $str
+     *
+     * @return bool
+     */
+    public static function isBinary($str): bool
+    {
+        $str = str_ireplace(["\t","\n","\r"], ["","",""], $str);
+
+        return is_string($str) && ctype_print($str) === false;
+    }
 }

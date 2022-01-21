@@ -6,7 +6,7 @@
 * Fixed bugs with mdn sign
 * Added new message parser
 * Improved tests
-* Added v1 branch for oho 5.6 support
+* Added v1 branch for 5.6 support
 * Added github actions
 
 ## 1.4.8
