@@ -5,8 +5,10 @@
 namespace AS2;
 
 use GuzzleHttp\Psr7\MessageTrait;
-use Psr\Http\Message\MessageInterface as PsrMessageInterface;
+use Psr\Http\Message\StreamInterface;
+use GuzzleHttp\Psr7\Utils as PsrUtils;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 
 class MimePart implements PsrMessageInterface
 {
@@ -116,9 +118,9 @@ class MimePart implements PsrMessageInterface
 
         $temp = new self($message->getHeaders());
         foreach ($message->getParts() as $part) {
-            if (Utils::isBinary($part->getBody())) {
+            if (Utils::isBinary($part->getBodyString())) {
                 $hasBinary = true;
-                $recreatedPart = new self($part->getHeaders(), Utils::encodeBase64($part->getBody()));
+                $recreatedPart = new self($part->getHeaders(), Utils::encodeBase64($part->getBodyString()));
                 $temp->addPart($recreatedPart);
             } else {
                 $temp->addPart($part);
@@ -303,9 +305,9 @@ class MimePart implements PsrMessageInterface
     /**
      * Return the currently set message body.
      *
-     * @return string
+     * @return StreamInterface Returns the body as a stream.
      */
-    public function getBody()
+    public function getBody(): StreamInterface
     {
         $body = $this->body;
         if (count($this->parts) > 0) {
@@ -321,7 +323,16 @@ class MimePart implements PsrMessageInterface
             }
         }
 
-        return $body;
+        return PsrUtils::streamFor($body);
+    }
+
+    /**
+     * Return the currently set message body as a string.
+     *
+     * @return string Returns the body as a string.
+     */
+    public function getBodyString(): string {
+        return PsrUtils::copyToString($this->getBody());
     }
 
     /**
@@ -393,7 +404,7 @@ class MimePart implements PsrMessageInterface
             return $this->rawMessage;
         }
 
-        return $this->getHeaderLines() . self::EOL . $this->getBody();
+        return $this->getHeaderLines() . self::EOL . $this->getBodyString();
     }
 
     /**

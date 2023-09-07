@@ -18,7 +18,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.1 || ^7.2 || ^7.3 || ^7.4 || ^8.0",
+        "php": "^7.1 || ^7.2 || ^7.3 || ^7.4 || ^8.0 || ^8.1",
         "ext-openssl": "*",
         "ext-zlib": "*",
         "ext-ctype": "*",
@@ -27,7 +27,7 @@
         "psr/log": "^1.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "^7.5",
+        "phpunit/phpunit": "^10.3",
         "symfony/var-dumper": "^4.0"
     },
     "autoload": {

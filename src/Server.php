@@ -106,7 +106,7 @@ class Server
                 $origMessageId = null;
                 foreach ($payload->getParts() as $part) {
                     if ($part->getParsedHeader('content-type', 0, 0) === 'message/disposition-notification') {
-                        $bodyPayload = MimePart::fromString($part->getBody());
+                        $bodyPayload = MimePart::fromString($part->getBodyString());
                         $origMessageId = trim($bodyPayload->getParsedHeader('original-message-id', 0, 0), '<>');
                     }
                 }
@@ -164,7 +164,7 @@ class Server
                                 )
                             );
                             $responseHeaders = $mdn->getHeaders();
-                            $responseBody = $mdn->getBody();
+                            $responseBody = $mdn->getBodyString();
                         } else {
                             $this->getLogger()->debug(
                                 sprintf(
@@ -195,7 +195,7 @@ class Server
                 // Build the mdn for the message based on processing status
                 $mdn = $this->manager->buildMdn($message, null, $e->getMessage());
                 $responseHeaders = $mdn->getHeaders();
-                $responseBody = $mdn->getBody();
+                $responseBody = $mdn->getBodyString();
             } else {
                 $responseStatus = 500;
                 $responseBody = $e->getMessage();

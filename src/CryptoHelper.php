@@ -32,7 +32,7 @@ class CryptoHelper
         $digest = base64_encode(
             hash(
                 $digestAlgorithm,
-                $includeHeaders ? $payload : $payload->getBody(),
+                $includeHeaders ? $payload : $payload->getBodyString(),
                 true
             )
         );
@@ -236,7 +236,7 @@ class CryptoHelper
     public static function decompress($data)
     {
         if ($data instanceof MimePart) {
-            $data = $data->getBody();
+            $data = $data->getBodyString();
         }
 
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
