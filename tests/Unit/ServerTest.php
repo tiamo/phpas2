@@ -51,17 +51,17 @@ class ServerTest extends TestCase
         self::assertTrue($report->isReport());
 
         $content = $report->getPart(0);
-        self::assertEquals("Your message was successfully received and processed.\r\n", $content->getBody());
+        self::assertEquals("Your message was successfully received and processed.\r\n", $content->getBodyString());
         self::assertEquals('7bit', $content->getHeaderLine('Content-Transfer-Encoding'));
 
         $disposition = $report->getPart(1);
-        self::assertStringContainsString('Original-Recipient: rfc822; B', $disposition->getBody());
-        self::assertStringContainsString('Original-Recipient: rfc822; B', $disposition->getBody());
-        self::assertStringContainsString('Final-Recipient: rfc822; B', $disposition->getBody());
-        self::assertStringContainsString('Original-Message-ID: <test>', $disposition->getBody());
+        self::assertStringContainsString('Original-Recipient: rfc822; B', $disposition->getBodyString());
+        self::assertStringContainsString('Original-Recipient: rfc822; B', $disposition->getBodyString());
+        self::assertStringContainsString('Final-Recipient: rfc822; B', $disposition->getBodyString());
+        self::assertStringContainsString('Original-Message-ID: <test>', $disposition->getBodyString());
         self::assertStringContainsString('Disposition: automatic-action/MDN-sent-automatically; processed',
-            $disposition->getBody());
-        self::assertStringContainsString('oVDpnrSnpq+V99dXaarQ9HFyRUaFNsp9tdBBSmRhX4s=, sha256', $disposition->getBody());
+            $disposition->getBodyString());
+        self::assertStringContainsString('oVDpnrSnpq+V99dXaarQ9HFyRUaFNsp9tdBBSmRhX4s=, sha256', $disposition->getBodyString());
     }
 
     protected function setUp(): void

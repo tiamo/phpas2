@@ -126,7 +126,7 @@ class ManagementTest extends TestCase
 
         $report = $this->management->buildMdn($message);
 
-        self::assertNull($report->getBody());
+        self::assertEmpty($report->getBodyString());
 
         $message->setHeaders('disposition-notification-to: test@example.com');
 
@@ -135,10 +135,10 @@ class ManagementTest extends TestCase
         self::assertTrue($report->isReport());
         self::assertEquals($report->getHeaderLine('as2-to'), $sender->getAs2Id());
         self::assertEquals($report->getHeaderLine('as2-from'), $receiver->getAs2Id());
-        self::assertEquals('custom', trim($report->getPart(0)->getBody()));
+        self::assertEquals('custom', trim($report->getPart(0)->getBodyString()));
 
         $headers = new MimePart(
-            Utils::parseHeaders($report->getPart(1)->getBody())
+            Utils::parseHeaders($report->getPart(1)->getBodyString())
         );
 
         self::assertEquals('<test>', $headers->getHeaderLine('Original-Message-ID'));

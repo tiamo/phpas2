@@ -91,7 +91,7 @@ class CryptoHelperTest extends TestCase
             'compressed-data',
             $payload->getParsedHeader('content-type', 0, 'smime-type')
         );
-        $body = base64_decode($payload->getBody());
+        $body = base64_decode($payload->getBodyString());
         self::assertEquals(0x30, ord($body[0]));
         self::assertEquals(0x82, ord($body[1]));
         self::assertEquals(0x02, ord($body[2]));
@@ -114,6 +114,6 @@ class CryptoHelperTest extends TestCase
         $payload = CryptoHelper::decompress($payload);
 
         self::assertEquals('Application/EDI-X12', $payload->getHeaderLine('content-type'));
-        self::assertEquals(2247, strlen($payload->getBody()));
+        self::assertEquals(2247, strlen($payload->getBodyString()));
     }
 }
