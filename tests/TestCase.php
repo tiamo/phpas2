@@ -36,16 +36,24 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     protected function loadFixture($name)
     {
-        return file_get_contents(__DIR__.\DIRECTORY_SEPARATOR.'fixtures'.\DIRECTORY_SEPARATOR.$name);
+        $res = file_get_contents(__DIR__.\DIRECTORY_SEPARATOR.'fixtures'.\DIRECTORY_SEPARATOR.$name);
+
+        if ($res === false) {
+            throw new \RuntimeException("Failed to load fixture $name");
+        }
+
+        return $res;
     }
 
-    protected function getCerts($file = 'phpas2.p12')
+    protected function getCerts($name = 'server')
     {
-        $certs = [];
-        $pkcs12 = $this->loadFixture($file);
-        openssl_pkcs12_read($pkcs12, $certs, '');
+        $cert = $this->loadFixture($name.'.crt');
+        $pkey = $this->loadFixture($name.'.pem');
 
-        return $certs;
+        return [
+            "cert" => $cert,
+            "pkey" => $pkey,
+        ];
     }
 
     protected function initMessage($file = 'test.edi')

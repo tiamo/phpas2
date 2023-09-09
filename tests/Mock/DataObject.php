@@ -32,8 +32,8 @@ class DataObject
     /**
      * Set/Get attribute wrapper.
      *
-     * @param string $method
-     * @param array  $args
+     * @param  string  $method
+     * @param  array  $args
      *
      * @throws \Exception
      */
@@ -41,14 +41,14 @@ class DataObject
     {
         switch (substr($method, 0, 3)) {
             case 'get':
-                $key   = $this->_underscore(substr($method, 3));
-                $index = $args[0] ?? null;
+                $key = $this->_underscore(substr($method, 3));
+                $index = $args[0] ?: null;
 
                 return $this->getData($key, $index);
 
             case 'set':
-                $key   = $this->_underscore(substr($method, 3));
-                $value = $args[0] ?? null;
+                $key = $this->_underscore(substr($method, 3));
+                $value = $args[0] ?: null;
 
                 return $this->setData($key, $value);
 
@@ -90,7 +90,7 @@ class DataObject
      *
      * If $key is an array, it will overwrite all the data in the object.
      *
-     * @param array|string $key
+     * @param  array|string  $key
      *
      * @return $this
      */
@@ -108,7 +108,7 @@ class DataObject
     /**
      * Unset data from the object.
      *
-     * @param array|string|null $key
+     * @param  array|string|null  $key
      *
      * @return $this
      */
@@ -140,8 +140,8 @@ class DataObject
      * and retrieve corresponding member. If data is the string - it will be explode
      * by new line character and converted to array.
      *
-     * @param string     $key
-     * @param int|string $index
+     * @param  string  $key
+     * @param  int|string  $index
      */
     public function getData($key = '', $index = null)
     {
@@ -156,10 +156,10 @@ class DataObject
         }
         if (null !== $index) {
             if ($data === (array) $data) {
-                $data = $data[$index] ?? null;
+                $data = $data[$index] ?: null;
             } elseif (\is_string($data)) {
                 $data = explode(PHP_EOL, $data);
-                $data = $data[$index] ?? null;
+                $data = $data[$index] ?: null;
             } elseif ($data instanceof static) {
                 $data = $data->getData($index);
             } else {
@@ -175,7 +175,7 @@ class DataObject
      *
      * Method consider the path as chain of keys: a/b/c => ['a']['b']['c']
      *
-     * @param string $path
+     * @param  string  $path
      */
     public function getDataByPath($path)
     {
@@ -197,7 +197,7 @@ class DataObject
     /**
      * Get object data by particular key.
      *
-     * @param string $key
+     * @param  string  $key
      */
     public function getDataByKey($key)
     {
@@ -207,11 +207,11 @@ class DataObject
     /**
      * Get object data by key with calling getter method.
      *
-     * @param string $key
+     * @param  string  $key
      */
     public function getDataUsingMethod($key, $args = null)
     {
-        $method = 'get' . str_replace(' ', '', ucwords(str_replace('_', ' ', $key)));
+        $method = 'get'.str_replace(' ', '', ucwords(str_replace('_', ' ', $key)));
 
         return $this->{$method}($args);
     }
@@ -220,14 +220,14 @@ class DataObject
      * If $key is empty, checks whether there's any data in the object
      * Otherwise checks if the specified attribute is set.
      *
-     * @param string $key
+     * @param  string  $key
      *
      * @return bool
      */
     public function hasData($key = '')
     {
-        if (empty($key) || !\is_string($key)) {
-            return !empty($this->_data);
+        if (empty($key) || ! \is_string($key)) {
+            return ! empty($this->_data);
         }
 
         return \array_key_exists($key, $this->_data);
@@ -236,7 +236,7 @@ class DataObject
     /**
      * Implementation of \ArrayAccess::offsetSet().
      *
-     * @param string $offset
+     * @param  string  $offset
      *
      * @see http://www.php.net/manual/en/arrayaccess.offsetset.php
      */
@@ -248,7 +248,7 @@ class DataObject
     /**
      * Implementation of \ArrayAccess::offsetExists().
      *
-     * @param string $offset
+     * @param  string  $offset
      *
      * @return bool
      *
@@ -262,7 +262,7 @@ class DataObject
     /**
      * Implementation of \ArrayAccess::offsetUnset().
      *
-     * @param string $offset
+     * @param  string  $offset
      *
      * @see http://www.php.net/manual/en/arrayaccess.offsetunset.php
      */
@@ -274,7 +274,7 @@ class DataObject
     /**
      * Implementation of \ArrayAccess::offsetGet().
      *
-     * @param string $offset
+     * @param  string  $offset
      *
      * @see http://www.php.net/manual/en/arrayaccess.offsetget.php
      */
@@ -290,7 +290,7 @@ class DataObject
     /**
      * Get value from _data array without parse key.
      *
-     * @param string $key
+     * @param  string  $key
      */
     protected function _getData($key)
     {
@@ -307,7 +307,7 @@ class DataObject
      * $this->setMyField($value) === $this->setData('my_field', $value)
      * Uses cache to eliminate unnecessary preg_replace
      *
-     * @param string $name
+     * @param  string  $name
      *
      * @return string
      */
@@ -316,7 +316,7 @@ class DataObject
         if (isset(self::$_underscoreCache[$name])) {
             return self::$_underscoreCache[$name];
         }
-        $result                        = strtolower(trim(preg_replace('/([A-Z]|[0-9]+)/', '_$1', $name), '_'));
+        $result = strtolower(trim(preg_replace('/([A-Z]|[0-9]+)/', '_$1', $name), '_'));
         self::$_underscoreCache[$name] = $result;
 
         return $result;

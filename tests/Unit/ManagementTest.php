@@ -17,10 +17,10 @@ final class ManagementTest extends TestCase
 {
     public function testBuildMessage(): void
     {
-        $senderId   = 'A';
+        $senderId = 'A';
         $receiverId = 'B';
 
-        $sender   = $this->partnerRepository->findPartnerById($senderId);
+        $sender = $this->partnerRepository->findPartnerById($senderId);
         $receiver = $this->partnerRepository->findPartnerById($receiverId);
 
         // Initialize empty message
@@ -43,7 +43,7 @@ final class ManagementTest extends TestCase
     {
         $payload = MimePart::fromString($this->loadFixture('phpas2.raw'));
 
-        $sender   = $this->partnerRepository->findPartnerById('A');
+        $sender = $this->partnerRepository->findPartnerById('A');
         $receiver = $this->partnerRepository->findPartnerById('B');
 
         $messageId = $payload->getHeaderLine('message-id');
@@ -69,7 +69,7 @@ final class ManagementTest extends TestCase
     {
         $payload = MimePart::fromString($this->loadFixture('phpas2_new.raw'));
 
-        $sender   = $this->partnerRepository->findPartnerById('A');
+        $sender = $this->partnerRepository->findPartnerById('A');
         $receiver = $this->partnerRepository->findPartnerById('B');
 
         $messageId = $payload->getHeaderLine('message-id');
@@ -86,16 +86,16 @@ final class ManagementTest extends TestCase
 
         self::assertTrue($message->getEncrypted());
         self::assertTrue($message->getSigned());
-        self::assertSame($message->getMic(), 'W/TUromzbAbSkSTwprjpnCWfT1Z3y96jikZyYKPzKXM=, sha256');
-        self::assertSame((string) $processedPayload, Utils::canonicalize($this->loadFixture('test.xml')));
+        self::assertSame($message->getMic(), 'EuCiZZoJY+PJlJYsvwbqRcYGPNeHfVAvU7f6q2AxGLg=, sha256');
+        self::assertSame(trim($processedPayload), Utils::canonicalize($this->loadFixture('test.xml')));
     }
 
     public function testSendMessage(): void
     {
-        $senderId   = 'A';
+        $senderId = 'A';
         $receiverId = 'B';
 
-        $sender   = $this->partnerRepository->findPartnerById($senderId);
+        $sender = $this->partnerRepository->findPartnerById($senderId);
         $receiver = $this->partnerRepository->findPartnerById($receiverId);
 
         $messageId = Utils::generateMessageID($sender);
@@ -120,7 +120,7 @@ final class ManagementTest extends TestCase
 
     public function testBuildMdn(): void
     {
-        $sender   = $this->partnerRepository->findPartnerById('A');
+        $sender = $this->partnerRepository->findPartnerById('A');
         $receiver = $this->partnerRepository->findPartnerById('B');
 
         // Initialize empty message

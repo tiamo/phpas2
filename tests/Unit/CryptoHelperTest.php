@@ -27,7 +27,7 @@ final class CryptoHelperTest extends TestCase
     public function testSign(): void
     {
         $payload = $this->initMessage();
-        $certs   = $this->getCerts();
+        $certs = $this->getCerts();
 
         $payload = CryptoHelper::sign($payload, $certs['cert'], $certs['pkey']);
 
@@ -47,7 +47,7 @@ final class CryptoHelperTest extends TestCase
     public function testVerifyBase64(): void
     {
         $contents = $this->loadFixture('signed-msg.txt');
-        $payload  = MimePart::fromString($contents);
+        $payload = MimePart::fromString($contents);
 
         $certs = $this->getCerts();
 
@@ -58,7 +58,7 @@ final class CryptoHelperTest extends TestCase
     public function testVerifyBinary(): void
     {
         $contents = $this->loadFixture('si_signed.mdn');
-        $payload  = MimePart::fromString($contents);
+        $payload = MimePart::fromString($contents);
 
         $certs = $this->getCerts();
 
@@ -69,7 +69,7 @@ final class CryptoHelperTest extends TestCase
     public function testEncrypt(): void
     {
         $payload = $this->initMessage();
-        $certs   = $this->getCerts();
+        $certs = $this->getCerts();
 
         $payload = CryptoHelper::encrypt($payload, $certs['cert']);
 
@@ -79,7 +79,7 @@ final class CryptoHelperTest extends TestCase
     public function testDecrypt(): void
     {
         $payload = $this->initMessage();
-        $certs   = $this->getCerts();
+        $certs = $this->getCerts();
 
         $payload = CryptoHelper::encrypt($payload, $certs['cert']);
         $payload = CryptoHelper::decrypt($payload, $certs['cert'], $certs['pkey']);
@@ -109,7 +109,7 @@ final class CryptoHelperTest extends TestCase
         self::assertTrue($payload->isSigned());
 
         foreach ($payload->getParts() as $part) {
-            if (!$part->isPkc7Signature()) {
+            if (! $part->isPkc7Signature()) {
                 $payload = $part;
             }
         }
