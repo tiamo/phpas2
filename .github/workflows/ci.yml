@@ -42,7 +42,7 @@ jobs:
       - name: Install Composer Dependencies
         uses: php-actions/composer@v6
         with:
-          args: --prefer-dist --ignore-platform-reqs
+          #          args: --prefer-dist --ignore-platform-reqs
           php_version: ${{ matrix.php }}
 
       - name: Run tests
