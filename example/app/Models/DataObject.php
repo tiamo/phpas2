@@ -45,13 +45,13 @@ class DataObject
         switch (substr($method, 0, 3)) {
             case 'get':
                 $key = $this->_underscore(substr($method, 3));
-                $index = $args[0] ?? null;
+                $index = $args[0] ?: null;
 
                 return $this->getData($key, $index);
 
             case 'set':
                 $key = $this->_underscore(substr($method, 3));
-                $value = $args[0] ?? null;
+                $value = $args[0] ?: null;
 
                 return $this->setData($key, $value);
 

@@ -7,8 +7,18 @@ $resources = __DIR__.'/../resources';
 // local certificates
 openssl_pkcs12_read(file_get_contents($resources.'/phpas2.p12'), $local, null);
 
+// $local = [
+//     'cert' => file_get_contents($resources.'/phpas2.crt'),
+//     'pkey' => file_get_contents($resources.'/phpas2.pem'),
+// ];
+
 // mendelson key3
 openssl_pkcs12_read(file_get_contents($resources.'/key3.pfx'), $key3, 'test');
+
+$local = [
+    'cert' => file_get_contents($resources.'/phpas2.crt'),
+    'pkey' => file_get_contents($resources.'/phpas2.pem'),
+];
 
 return [
     [
@@ -126,8 +136,8 @@ ej7IBY7WKy9OvCErUoH0zXsdfkuJlJXf1jS+qtEbWRGnbxwfXgH0S1uw7QU0q8EECvEb+MNrCEtD
         'id' => 'mycompanyAS2',
         // 'target_url' => 'http://127.0.0.1:8000',
         'target_url' => 'http://127.0.0.1:8080/as2/HttpReceiver',
-        'private_key' => $key3['pkey'] ?? null,
-        'certificate' => $key3['cert'] ?? null,
+        'private_key' => $key3['pkey'] ?: null,
+        'certificate' => $key3['cert'] ?: null,
         'content_type' => 'application/EDI-Consent',
         'compression' => true,
         'signature_algorithm' => 'sha256',
@@ -261,8 +271,8 @@ okbKQXNdhalu6KK2joUYMg==
         'id' => 'phpas2',
         'email' => 'phpas2@example.com',
         'target_url' => 'http://127.0.0.1:8000',
-        'certificate' => $local['cert'] ?? null,
-        'private_key' => $local['pkey'] ?? null,
+        'certificate' => $local['cert'] ?: null,
+        'private_key' => $local['pkey'] ?: null,
         // 'private_key_pass_phrase' => 'password',
         // 'content_type' => 'application/edi-x12',
         'content_type' => 'application/EDI-Consent',
