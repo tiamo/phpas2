@@ -1,45 +1,3 @@
-MIME-Version: 1.0
-Content-type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha256; boundary="----=_54e86d8581e0cd7678fd65ee1a7d60d046487f53"
-
-------=_54e86d8581e0cd7678fd65ee1a7d60d046487f53
-Content-type: application/EDI-Consent
-Content-Transfer-Encoding: binary
-Content-Disposition: attachment; filename=payload.txt
-
-UNB+UNOA:2+<Sender GLN>:14+<Receiver GLN>:14+140407:0910+5++++1+EANCOM'
-UNH+1+ORDERS:D:96A:UN:EAN008'
-BGM+220+1AA1TEST+9'
-DTM+137:20140407:102'
-DTM+63:20140421:102'
-DTM+64:20140414:102'
-RFF+ADE:1234'
-RFF+PD:1704'
-NAD+BY+5450534000024::9'
-NAD+SU+<Supplier GLN>::9'
-NAD+DP+5450534000109::9+++++++GB'
-NAD+IV+5450534000055::9++AMAZON EU SARL:5 RUE PLAETIS LUXEMBOURG+CO PO BOX 4558+SLOUGH++SL1 0TX+GB'
-RFF+VA:GB727255821'
-CUX+2:EUR:9'
-LIN+1++9783898307529:EN'
-QTY+21:5'
-PRI+AAA:27.5'
-LIN+2++390787706322:UP'
-QTY+21:1'
-PRI+AAA:10.87'
-LIN+3'
-PIA+5+3899408268X-39:SA'
-QTY+21:3'
-PRI+AAA:3.85'
-UNS+S'
-CNT+2:3'
-UNT+26+1'
-UNZ+1+5'
-
-------=_54e86d8581e0cd7678fd65ee1a7d60d046487f53
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Type: application/pkcs7-signature; name=smime.p7s; smime-type=signed-data
-
 MIIFfgYJKoZIhvcNAQcCoIIFbzCCBWsCAQExDzANBglghkgBZQMEAgEFADALBgkq
 hkiG9w0BBwGgggN3MIIDczCCA1+gAwIBAgIEXXmKiDALBglghkgBZQMEAgEwgZYx
 ITAfBgkqhkiG9w0BCQEWEnZrLnRpYW1vQGdtYWlsLmNvbTELMAkGA1UEBhMCdWsx
@@ -70,4 +28,3 @@ muSU7t7Y17TSdTfnWytqHRx9SDLFGngM2EfWiA5fXE6hm6qUi+JfRoi0C+47zEvE
 4JN/1gkDUbvMxwFHoOKt917BA4FTVtdeZexLPrePz4t39m7m+/6CLo6GC60vi6Xt
 +p2xoeVeqMbXDNUzTJhm8CU41UupfgcbebdfPTqQjPjBisYeJzp2zNIOudc4MfIM
 db9RhvFFC+Mlbsu/yutDvBEQ
-------=_54e86d8581e0cd7678fd65ee1a7d60d046487f53--

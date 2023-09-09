@@ -153,9 +153,7 @@ class ASN1Helper
                     'type' => ASN1::TYPE_SEQUENCE,
                     'children' => [
                         'issuer' => ASN1\Maps\Name::MAP,
-                        'serialNumber' => [
-                            'type' => ASN1::TYPE_INTEGER,
-                        ],
+                        'serialNumber' => ASN1\Maps\CertificateSerialNumber::MAP,
                     ],
                 ],
                 'subjectKeyIdentifier' => [
@@ -184,14 +182,12 @@ class ASN1Helper
                         'implicit' => true,
                     ],
                 'signatureAlgorithm' => ASN1\Maps\AlgorithmIdentifier::MAP,
-                'signature' => [
-                    'type' => ASN1::TYPE_OCTET_STRING,
-                ],
-                'unsignedAttrs' => ASN1\Maps\Attributes::MAP + [
-                        'constant' => 1,
-                        'optional' => true,
-                        'implicit' => true,
-                    ],
+                'signature' => ['type' => ASN1::TYPE_OCTET_STRING],
+                // 'unsignedAttrs' => ASN1\Maps\Attributes::MAP + [
+                //         'constant' => 1,
+                //         'optional' => true,
+                //         'implicit' => true,
+                //     ],
             ],
         ];
     }
@@ -239,6 +235,7 @@ class ASN1Helper
                             'max' => -1,
                             'children' => ASN1\Maps\CertificateList::MAP,
                         ],
+                        // 'a' => ['type' => ASN1::TYPE_ANY, 'optional' => true],
                         'signers' => [
                             'type' => ASN1::TYPE_SET,
                             'min' => 1,

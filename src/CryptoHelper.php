@@ -4,6 +4,7 @@ namespace AS2;
 
 use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Crypt\RSA;
+use phpseclib3\File\ASN1;
 use phpseclib3\File\X509;
 
 /**
@@ -69,9 +70,14 @@ class CryptoHelper
             ->withHash($singAlg)
             ->withMGFHash($singAlg);
 
+
         $signature = $private->sign($data);
 
         $certInfo = self::loadX509($publicKey);
+
+        // dd(
+        //     array_keys($certInfo['tbsCertificate'])
+        // );
 
         $digestAlgorithm = ASN1Helper::OID_SHA256;
 
@@ -83,6 +89,7 @@ class CryptoHelper
                     'digestAlgorithms' => [
                         [
                             'algorithm' => $digestAlgorithm,
+                            'parameters' => null,
                         ],
                     ],
                     'contentInfo' => [
@@ -103,36 +110,70 @@ class CryptoHelper
                             ],
                             'digestAlgorithm' => [
                                 'algorithm' => $digestAlgorithm,
+                                'parameters' => null,
                             ],
-                            'signedAttrs' => [
-                                [
-                                    'type' => ASN1Helper::OID_PKCS9_CONTENT_TYPE,
-                                    'value' => [
-                                        [
-                                            'objectIdentifier' => ASN1Helper::OID_DATA,
-                                        ],
-                                    ],
-                                ],
-                                [
-                                    'type' => ASN1Helper::OID_PKCS9_SIGNING_TIME,
-                                    'value' => [
-                                        [
-                                            // TODO: Fri, 26 Jun 2020 14:47:26 +0000
-                                            'utcTime' => date('c'),
-                                        ],
-                                    ],
-                                ],
-                                // [
-                                //     'type' => ASN1Helper::OID_PKCS9_MESSAGE_DIGEST,
-                                //     'value' => [
-                                //         [
-                                //             'octetString' => "",
-                                //         ],
-                                //     ],
-                                // ],
-                            ],
+                            // 'signedAttrs' => [
+                            //     [
+                            //         'type' => ASN1Helper::OID_PKCS9_CONTENT_TYPE,
+                            //         'value' => [
+                            //             [
+                            //                 'objectIdentifier' => ASN1Helper::OID_DATA,
+                            //             ],
+                            //         ],
+                            //     ],
+                            //     [
+                            //         'type' => ASN1Helper::OID_PKCS9_SIGNING_TIME,
+                            //         'value' => [
+                            //             [
+                            //                 // RFC 2822
+                            //                 'utcTime' => date('r'),
+                            //             ],
+                            //         ],
+                            //     ],
+                            //     [
+                            //         'type' => ASN1Helper::OID_PKCS9_MESSAGE_DIGEST,
+                            //         'value' => [
+                            //             [
+                            //                 'octetString' => hex2bin('C87DBCDCBD05AF3F07738633AA1A5CADFED3A7674F3626F9407770ECE490D56A'),
+                            //             ],
+                            //         ],
+                            //     ],
+                            //     // [
+                            //     //     'type' => ASN1Helper::OID_PKCS9_SMIME_CAPABILITIES,
+                            //     //     'value' => [
+                            //     //         // [
+                            //     //         //     "objectIdentifier" => ASN1Helper::OID_AES_256_CBC,
+                            //     //         // ],
+                            //     //         // [
+                            //     //         //     "objectIdentifier" => ASN1Helper::OID_AES_192_CBC,
+                            //     //         // ],
+                            //     //         // [
+                            //     //         //     "objectIdentifier" => ASN1Helper::OID_AES_128_CBC,
+                            //     //         // ],
+                            //     //         // [
+                            //     //         //     "objectIdentifier" => ASN1Helper::OID_DES_EDE3_CBC,
+                            //     //         // ],
+                            //     //         // [
+                            //     //         //     "objectIdentifier" => ASN1Helper::OID_DES_CBC,
+                            //     //         // ],
+                            //     //         // [
+                            //     //         //     "objectIdentifier" => ASN1Helper::OID_RC2_CBC,
+                            //     //         //     // "integer" => 80,
+                            //     //         // ],
+                            //     //         // [
+                            //     //         //     "objectIdentifier" => ASN1Helper::OID_RC2_CBC,
+                            //     //         //     "integer" => 40,
+                            //     //         // ],
+                            //     //         // [
+                            //     //         //     "objectIdentifier" => ASN1Helper::OID_RC2_CBC,
+                            //     //         //     "integer" => 28,
+                            //     //         // ],
+                            //     //     ],
+                            //     // ],
+                            // ],
                             'signatureAlgorithm' => [
                                 'algorithm' => ASN1Helper::OID_RSA_ENCRYPTION,
+                                'parameters' => null,
                             ],
                             'signature' => $signature,
                             // 'unsignedAttrs' => []
@@ -200,6 +241,11 @@ class CryptoHelper
 
         $signedData = ASN1Helper::decode(Utils::normalizeBase64($signature), ASN1Helper::getSignedDataMap());
         if ($signedData['contentType'] === ASN1Helper::OID_SIGNED_DATA) {
+
+            // dd($signedData['content']['signers'][0]);
+
+            // file_put_contents(__DIR__ . '/1.txt', $signedData['content']['signers'][0]['signature']);
+
             /** @var RSA\PublicKey $public */
             $public = PublicKeyLoader::load($publicKey)->withPadding(RSA::SIGNATURE_PKCS1);
             foreach ($signedData['content']['signers'] as $signer) {
@@ -289,14 +335,7 @@ class CryptoHelper
 
         $outFile = self::getTempFilename();
 
-        $res = openssl_pkcs7_verify($data, $flags, $outFile, $rootCerts) === true;
-
-        dd([
-            $res,
-            openssl_error_string(),
-        ]);
-
-        return $res;
+        return openssl_pkcs7_verify($data, $flags, $outFile, $rootCerts) === true;
     }
 
     /**
@@ -456,13 +495,48 @@ class CryptoHelper
 
     private static function loadX509($cert)
     {
-        $certInfo = (new X509())->loadX509($cert);
+        $x509 = new X509();
+        $certInfo = $x509->loadX509($cert);
 
-        // TODO: phpspeclib bug ?
-        if (! empty($certInfo['tbsCertificate']['extensions'])) {
-            $certInfo['tbsCertificate']['extensions'][0]['extnValue'] =
-                implode(',', $certInfo['tbsCertificate']['extensions'][0]['extnValue']);
+        foreach ($certInfo['tbsCertificate']['extensions'] as &$extension) {
+            if ($extension['extnId'] === 'id-ce-keyUsage') {
+                $extension['extnValue'] = ASN1::encodeDER($extension['extnValue'], ASN1\Maps\KeyUsage::MAP);
+            }
         }
+        unset($extension);
+
+        $certInfo['tbsCertificate']['signature'] = [
+            'algorithm' => ASN1Helper::OID_SHA256,
+        ];
+
+        $certInfo['signatureAlgorithm'] = [
+            'algorithm' => ASN1Helper::OID_SHA256_WITH_RSA_ENCRYPTION
+        ];
+        $certInfo['signature'] = 'a';
+
+        // $certInfo['tbsCertificate']['subjectPublicKeyInfo'] = [
+        //     'algorithm' => [
+        //         'algorithm' => ASN1Helper::OID_RSA_ENCRYPTION,
+        //     ],
+        //     'subjectPublicKey' => 'tsasdasdsadadasdasdt',
+        // ];
+
+        // $certInfo['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey'] = "test";
+
+        // $certInfo['signatureAlgorithm']['parameters'] = null;
+
+        // dd($certInfo['tbsCertificate']['subjectPublicKeyInfo']);
+
+        // $certInfo = $x509->getCurrentCert();
+
+        // $certInfo['tbsCertificate']['signature']['parameters'] = null;
+        // $certInfo['tbsCertificate']['subjectPublicKeyInfo']['algorithm']['parameters'] = null;
+        // // // TODO: phpspeclib bug ?
+        // $certInfo['tbsCertificate']['extensions'][0]['extnValue'] = hex2bin('030205A0');
+        // $certInfo['signatureAlgorithm']['parameters'] = null;
+        // $certInfo['signature'] = null;
+
+        // dd($certInfo['signature']);
 
         return $certInfo;
     }
