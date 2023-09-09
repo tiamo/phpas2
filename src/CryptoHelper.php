@@ -258,7 +258,7 @@ class CryptoHelper
      * @param  resource|string  $cert
      * @param  array|string  $privateKey
      * @param  array  $headers
-     * @param  array  $micAlgo
+     * @param  string  $micAlgo
      *
      * @return MimePart
      */
@@ -367,14 +367,14 @@ class CryptoHelper
      *
      * @return MimePart
      */
-    public static function decrypt($data, $cert, $key = null)
+    public static function decrypt($data, $cert, $privateKey = null)
     {
         if ($data instanceof MimePart) {
             $data = self::getTempFilename((string) $data);
         }
 
         $temp = self::getTempFilename();
-        if (! openssl_pkcs7_decrypt($data, $temp, $cert, $key)) {
+        if (! openssl_pkcs7_decrypt($data, $temp, $cert, $privateKey)) {
             throw new \RuntimeException(sprintf('Failed to decrypt S/Mime message. Error: "%s".',
                 openssl_error_string()));
         }

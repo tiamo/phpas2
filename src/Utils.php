@@ -205,7 +205,7 @@ class Utils
      * Converts an array of header values that may contain comma separated
      * headers into a string representation.
      *
-     * @param  string[]  $headers
+     * @param  string[][]  $headers
      * @param  string  $eol
      *
      * @return string
