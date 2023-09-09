@@ -45,6 +45,7 @@
     "prefer-stable": true,
     "config": {
         "sort-packages": true,
+        "platform-check": false,
         "preferred-install": "dist"
     },
     "scripts": {
