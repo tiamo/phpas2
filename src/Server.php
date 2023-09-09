@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUnused */
-
 namespace AS2;
 
 use GuzzleHttp\Psr7\Response;
@@ -86,7 +84,7 @@ class Server
             $senderId = $request->getHeaderLine('as2-from');
             $receiverId = $request->getHeaderLine('as2-to');
 
-            $this->getLogger()->debug(sprintf('Check payload to see if its an AS2 Message or ASYNC MDN.'));
+            $this->getLogger()->debug('Check payload to see if its an AS2 Message or ASYNC MDN.');
 
             // Load the request header and body as a MIME Email Message
             $payload = MimePart::fromPsrMessage($request);
@@ -183,6 +181,7 @@ class Server
                 } catch (\Exception $e) {
                     $message->setStatus(MessageInterface::STATUS_ERROR);
                     $message->setStatusMsg($e->getMessage());
+
                     throw $e;
                 } finally {
                     $this->messageRepository->saveMessage($message);

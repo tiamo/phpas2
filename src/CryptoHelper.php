@@ -26,11 +26,11 @@ class CryptoHelper
     {
         $digestAlgorithm = str_replace('-', '', strtolower($algo));
 
-        if (! in_array($digestAlgorithm, hash_algos(), true)) {
+        if (! \in_array($digestAlgorithm, hash_algos(), true)) {
             throw new \InvalidArgumentException(sprintf('(MIC) Invalid hash algorithm `%s`.', $digestAlgorithm));
         }
 
-        if (! ($payload instanceof MimePart)) {
+        if (! $payload instanceof MimePart) {
             $payload = MimePart::fromString($payload);
         }
 
@@ -48,9 +48,9 @@ class CryptoHelper
     /**
      * Sign data which contains mime headers.
      *
-     * @param  string|MimePart  $data
+     * @param  MimePart|string  $data
      * @param  string  $publicKey
-     * @param  string|array  $privateKey
+     * @param  array|string  $privateKey
      * @param  array  $headers
      * @param  array  $micAlgo
      *
@@ -58,7 +58,7 @@ class CryptoHelper
      */
     public static function signPure($data, $publicKey, $privateKey = null, $headers = [], $micAlgo = null)
     {
-        if (! is_array($privateKey)) {
+        if (! \is_array($privateKey)) {
             $privateKey = [$privateKey, false];
         }
 
@@ -69,7 +69,6 @@ class CryptoHelper
             ->withPadding(RSA::SIGNATURE_PKCS1)
             ->withHash($singAlg)
             ->withMGFHash($singAlg);
-
 
         $signature = $private->sign($data);
 
@@ -208,21 +207,17 @@ class CryptoHelper
     }
 
     /**
-     * TODO: extra certs
+     * TODO: extra certs.
      *
-     * @param  string|MimePart  $payload
-     * @param  array|null  $caInfo  Information about the trusted CA certificates to use in the verification process
-     * @param  array  $rootCerts
-     *
-     * @return bool
+     * @param  MimePart|string  $payload
      */
     public static function verifyPure($payload, $publicKey, $extraCerts = []): bool
     {
-        if (is_string($payload)) {
+        if (\is_string($payload)) {
             $payload = MimePart::fromString($payload);
         }
 
-        $data = "";
+        $data = '';
         $signature = false;
 
         foreach ($payload->getParts() as $part) {
@@ -259,9 +254,9 @@ class CryptoHelper
     /**
      * Sign data which contains mime headers.
      *
-     * @param  string|MimePart  $data
-     * @param  string|resource  $cert
-     * @param  string|array  $privateKey
+     * @param  MimePart|string  $data
+     * @param  resource|string  $cert
+     * @param  array|string  $privateKey
      * @param  array  $headers
      * @param  array  $micAlgo
      *
@@ -283,6 +278,7 @@ class CryptoHelper
         if ($micAlgo) {
             $contentType = $payload->getHeaderLine('content-type');
             $contentType = preg_replace('/micalg=(.+);/i', 'micalg="'.$micAlgo.'";', $contentType);
+
             /** @var MimePart $payload */
             $payload = $payload->withHeader('Content-Type', $contentType);
         }
@@ -304,7 +300,7 @@ class CryptoHelper
     }
 
     /**
-     * @param  string|MimePart  $data
+     * @param  MimePart|string  $data
      * @param  array|null  $caInfo  Information about the trusted CA certificates to use in the verification process
      * @param  array  $rootCerts
      *
@@ -339,8 +335,8 @@ class CryptoHelper
     }
 
     /**
-     * @param  string|MimePart  $data
-     * @param  string|array  $cert
+     * @param  MimePart|string  $data
+     * @param  array|string  $cert
      * @param  int|string  $cipher
      *
      * @return MimePart
@@ -349,11 +345,11 @@ class CryptoHelper
     {
         $data = self::getTempFilename((string) $data);
 
-        if (is_string($cipher)) {
+        if (\is_string($cipher)) {
             $cipher = strtoupper($cipher);
-            $cipher = \str_replace('-', '_', $cipher);
-            if (defined('OPENSSL_CIPHER_'.$cipher)) {
-                $cipher = constant('OPENSSL_CIPHER_'.$cipher);
+            $cipher = str_replace('-', '_', $cipher);
+            if (\defined('OPENSSL_CIPHER_'.$cipher)) {
+                $cipher = \constant('OPENSSL_CIPHER_'.$cipher);
             }
         }
 
@@ -367,9 +363,7 @@ class CryptoHelper
     }
 
     /**
-     * @param  string|MimePart  $data
-     * @param  mixed  $cert
-     * @param  mixed  $key
+     * @param  MimePart|string  $data
      *
      * @return MimePart
      */
@@ -391,7 +385,7 @@ class CryptoHelper
     /**
      * Compress data.
      *
-     * @param  string|MimePart  $data
+     * @param  MimePart|string  $data
      * @param  string  $encoding
      *
      * @return MimePart
@@ -445,7 +439,7 @@ class CryptoHelper
     /**
      * Decompress data.
      *
-     * @param  string|MimePart  $data
+     * @param  MimePart|string  $data
      *
      * @return MimePart
      */
@@ -510,7 +504,7 @@ class CryptoHelper
         ];
 
         $certInfo['signatureAlgorithm'] = [
-            'algorithm' => ASN1Helper::OID_SHA256_WITH_RSA_ENCRYPTION
+            'algorithm' => ASN1Helper::OID_SHA256_WITH_RSA_ENCRYPTION,
         ];
         $certInfo['signature'] = 'a';
 

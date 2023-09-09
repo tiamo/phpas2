@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUnused */
-
 /** @noinspection PhpFullyQualifiedNameUsageInspection */
 
 namespace AS2;
@@ -26,7 +24,7 @@ class Utils
     public static function normalizeMic($mic)
     {
         $parts = explode(',', $mic, 2);
-        $parts[1] = trim(strtolower(str_replace('-', '', $parts[1])));
+        $parts[1] = strtolower(trim(str_replace('-', '', $parts[1])));
 
         return implode(',', $parts);
     }
@@ -127,10 +125,11 @@ class Utils
                 $key = trim($parts[0]);
                 $value = isset($parts[1]) ? trim($parts[1]) : '';
                 $headers[$key][] = $value;
-            } elseif (strpos($line, 'boundary=') !== false) {
+            } elseif (str_contains($line, 'boundary=')) {
                 foreach ($headers as $k => &$v) {
                     if (strtolower($k) === 'content-type') {
                         $v[0] .= $line;
+
                         break;
                     }
                 }
@@ -146,7 +145,7 @@ class Utils
      * data of the header. When a parameter does not contain a value, but just
      * contains a key, this function will inject a key with a '' string value.
      *
-     * @param  string|array  $header  header to parse into components
+     * @param  array|string  $header  header to parse into components
      *
      * @return array returns the parsed header values
      */
@@ -176,20 +175,21 @@ class Utils
      * Converts an array of header values that may contain comma separated
      * headers into an array of headers with no comma separated values.
      *
-     * @param  string|array  $header  header to normalize
+     * @param  array|string  $header  header to normalize
      *
      * @return array returns the normalized header field values
      */
     public static function normalizeHeader($header)
     {
-        if (! is_array($header)) {
+        if (! \is_array($header)) {
             return array_map('trim', explode(',', $header));
         }
         $result = [];
         foreach ($header as $value) {
             foreach ((array) $value as $v) {
-                if (strpos($v, ',') === false) {
+                if (! str_contains($v, ',')) {
                     $result[] = $v;
+
                     continue;
                 }
                 foreach (preg_split('/,(?=([^"]*"[^"]*")*[^"]*$)/', $v) as $vv) {
@@ -246,8 +246,6 @@ class Utils
      * Generate Unique Message Id
      * TODO: uuid4.
      *
-     * @param  mixed  $partner
-     *
      * @return string
      */
     public static function generateMessageID($partner = null)
@@ -272,6 +270,7 @@ class Utils
      * @param  string  $charList
      *
      * @return string
+     * @throws \Exception
      */
     public static function random($length = 10, $charList = '0-9a-z')
     {
@@ -286,7 +285,7 @@ class Utils
             ),
             3
         );
-        $chLen = strlen($charList);
+        $chLen = \strlen($charList);
 
         if ($length < 1) {
             throw new \InvalidArgumentException('Length must be greater than zero.');
@@ -298,7 +297,7 @@ class Utils
 
         $res = '';
         for ($i = 0; $i < $length; $i++) {
-            $res .= $charList[mt_rand(0, $chLen - 1)];
+            $res .= $charList[random_int(0, $chLen - 1)];
         }
 
         return $res;
@@ -330,16 +329,12 @@ class Utils
     }
 
     /**
-     * Verify if the content is binary
-     *
-     * @param mixed $str
-     *
-     * @return bool
+     * Verify if the content is binary.
      */
     public static function isBinary($str): bool
     {
-        $str = str_ireplace(["\t","\n","\r"], ["","",""], $str);
+        $str = str_ireplace(["\t", "\n", "\r"], ['', '', ''], $str);
 
-        return is_string($str) && ctype_print($str) === false;
+        return \is_string($str) && ctype_print($str) === false;
     }
 }

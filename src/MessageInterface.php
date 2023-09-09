@@ -4,20 +4,20 @@ namespace AS2;
 
 interface MessageInterface
 {
-    const STATUS_PENDING    = 'pending';
-    const STATUS_SUCCESS    = 'success';
-    const STATUS_ERROR      = 'error';
-    const STATUS_WARNING    = 'warning';
-    const STATUS_RETRY      = 'retry';
-    const STATUS_IN_PROCESS = 'in_process';
+    public const STATUS_PENDING    = 'pending';
+    public const STATUS_SUCCESS    = 'success';
+    public const STATUS_ERROR      = 'error';
+    public const STATUS_WARNING    = 'warning';
+    public const STATUS_RETRY      = 'retry';
+    public const STATUS_IN_PROCESS = 'in_process';
 
-    const MDN_STATUS_PENDING  = 'pending';
-    const MDN_STATUS_RECEIVED = 'received';
-    const MDN_STATUS_SENT     = 'sent';
-    const MDN_STATUS_ERROR    = 'error';
+    public const MDN_STATUS_PENDING  = 'pending';
+    public const MDN_STATUS_RECEIVED = 'received';
+    public const MDN_STATUS_SENT     = 'sent';
+    public const MDN_STATUS_ERROR    = 'error';
 
-    const DIR_INBOUND  = 1;
-    const DIR_OUTBOUND = 0;
+    public const DIR_INBOUND  = 1;
+    public const DIR_OUTBOUND = 0;
 
     /**
      * Unique Message Id.
@@ -131,8 +131,6 @@ interface MessageInterface
     public function getMdnPayload();
 
     /**
-     * @param mixed $mdn
-     *
      * @return $this
      */
     public function setMdnPayload($mdn);

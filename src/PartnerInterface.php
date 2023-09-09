@@ -4,8 +4,8 @@ namespace AS2;
 
 interface PartnerInterface
 {
-    const MDN_MODE_SYNC  = 'sync';
-    const MDN_MODE_ASYNC = 'async';
+    public const MDN_MODE_SYNC  = 'sync';
+    public const MDN_MODE_ASYNC = 'async';
 
     /**
      * Partner Unique Identifier.

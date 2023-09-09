@@ -70,7 +70,8 @@ class Management implements LoggerAwareInterface
                 'Content-Type' => $contentType ?: 'text/plain',
                 'Content-Disposition' => 'attachment; filename="'.basename($filePath).'"',
                 'Content-Transfer-Encoding' => $encoding,
-            ], file_get_contents($filePath)
+            ],
+            file_get_contents($filePath)
         );
 
         return $this->buildMessage($message, $payload);
@@ -116,7 +117,7 @@ class Management implements LoggerAwareInterface
             'Ediint-Features' => self::EDIINT_FEATURES,
         ];
 
-        if (! ($payload instanceof MimePart)) {
+        if (! $payload instanceof MimePart) {
             $payload = MimePart::fromString($payload);
         }
 
@@ -358,14 +359,15 @@ class Management implements LoggerAwareInterface
      *
      * @param  MimePart|string  $payload
      *
-     * @return ResponseInterface|false
+     * @return false|ResponseInterface
+     *
      * @noinspection PhpDocMissingThrowsInspection
      */
     public function sendMessage(MessageInterface $message, $payload)
     {
         $partner = $message->getReceiver();
 
-        if (! ($payload instanceof MimePart)) {
+        if (! $payload instanceof MimePart) {
             $payload = MimePart::fromString($payload);
         }
 
@@ -431,7 +433,7 @@ class Management implements LoggerAwareInterface
      */
     public function processMdn(MessageInterface $message, $payload)
     {
-        if (! ($payload instanceof MimePart)) {
+        if (! $payload instanceof MimePart) {
             $payload = MimePart::fromString($payload);
         }
 
@@ -457,6 +459,7 @@ class Management implements LoggerAwareInterface
         foreach ($payload->getParts() as $part) {
             if ($part->getParsedHeader('content-type', 0, 0) === 'message/disposition-notification') {
                 $this->getLogger()->debug('Found MDN report for message', [$messageId]);
+
                 try {
                     $bodyPayload = MimePart::fromString($part->getBodyString());
                     if ($bodyPayload->hasHeader('disposition')) {
@@ -468,9 +471,9 @@ class Management implements LoggerAwareInterface
 
                             // Compare the MIC of the received message
                             $receivedMic = $bodyPayload->getHeaderLine('Received-Content-MIC');
-                            if ($receivedMic &&
-                                $message->getMic() &&
-                                Utils::normalizeMic($message->getMic()) !== Utils::normalizeMic($receivedMic)
+                            if ($receivedMic
+                                && $message->getMic()
+                                && Utils::normalizeMic($message->getMic()) !== Utils::normalizeMic($receivedMic)
                             ) {
                                 throw new \RuntimeException(sprintf('The Message Integrity Code (MIC) does not match the sent AS2 message (required: %s, returned: %s)',
                                     $message->getMic(), $receivedMic));
@@ -568,7 +571,6 @@ class Management implements LoggerAwareInterface
         // TODO: refactory
         if (! $isSigned) {
             $reportHeaders['Mime-Version'] = '1.0';
-            /* @noinspection AdditionOperationOnArraysInspection */
             $reportHeaders += $mdnHeaders;
         }
 
@@ -580,7 +582,8 @@ class Management implements LoggerAwareInterface
                 [
                     'Content-Type' => 'text/plain',
                     'Content-Transfer-Encoding' => '7bit', // TODO: check 8bit
-                ], $confirmationText."\n"
+                ],
+                $confirmationText."\n"
             )
         );
 
@@ -602,7 +605,8 @@ class Management implements LoggerAwareInterface
                 [
                     'Content-Type' => 'message/disposition-notification',
                     'Content-Transfer-Encoding' => '7bit',
-                ], Utils::normalizeHeaders($mdnData)
+                ],
+                Utils::normalizeHeaders($mdnData)
             )
         );
 
@@ -648,6 +652,7 @@ class Management implements LoggerAwareInterface
      * Sends the AS2 MDN to the partner.
      *
      * @return bool|mixed|ResponseInterface
+     *
      * @noinspection PhpDocMissingThrowsInspection
      */
     public function sendMdn(MessageInterface $message)
