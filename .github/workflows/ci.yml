@@ -45,10 +45,10 @@ jobs:
           args: --prefer-dist --ignore-platform-reqs
           php_version: ${{ matrix.php }}
 
-      - name: Run tests
-        run: composer test
+      #      - name: Run tests
+      #        run: composer test
 
-#    - name: Run tests
-#      uses: php-actions/phpunit@v2
-#      with:
-#        php_version: ${{ matrix.php }}
+      - name: Run tests
+        uses: php-actions/phpunit@v2
+        with:
+          php_version: ${{ matrix.php }}
