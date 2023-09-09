@@ -23,7 +23,7 @@ class MessageRepository implements MessageRepositoryInterface
     }
 
     /**
-     * @param MessageInterface|Message $message
+     * @param Message|MessageInterface $message
      *
      * @return bool
      */

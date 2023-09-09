@@ -8,14 +8,19 @@ use AS2\PartnerInterface;
 use AS2\Tests\TestCase;
 use AS2\Utils;
 
-class ManagementTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
+final class ManagementTest extends TestCase
 {
-    public function testBuildMessage()
+    public function testBuildMessage(): void
     {
-        $senderId = 'A';
+        $senderId   = 'A';
         $receiverId = 'B';
 
-        $sender = $this->partnerRepository->findPartnerById($senderId);
+        $sender   = $this->partnerRepository->findPartnerById($senderId);
         $receiver = $this->partnerRepository->findPartnerById($receiverId);
 
         // Initialize empty message
@@ -30,15 +35,15 @@ class ManagementTest extends TestCase
         $payload = $this->management->buildMessage($message, $contents);
 
         self::assertTrue($payload->isEncrypted());
-        self::assertEquals($senderId, $payload->getHeaderLine('as2-from'));
-        self::assertEquals($receiverId, $payload->getHeaderLine('as2-to'));
+        self::assertSame($senderId, $payload->getHeaderLine('as2-from'));
+        self::assertSame($receiverId, $payload->getHeaderLine('as2-to'));
     }
 
-    public function testProcessMessage()
+    public function testProcessMessage(): void
     {
         $payload = MimePart::fromString($this->loadFixture('phpas2.raw'));
 
-        $sender = $this->partnerRepository->findPartnerById('A');
+        $sender   = $this->partnerRepository->findPartnerById('A');
         $receiver = $this->partnerRepository->findPartnerById('B');
 
         $messageId = $payload->getHeaderLine('message-id');
@@ -60,11 +65,11 @@ class ManagementTest extends TestCase
         self::assertSame(trim((string) $processedPayload), Utils::canonicalize($this->loadFixture('test.edi')));
     }
 
-    public function testProcessMessageBiggerMessage()
+    public function testProcessMessageBiggerMessage(): void
     {
         $payload = MimePart::fromString($this->loadFixture('phpas2_new.raw'));
 
-        $sender = $this->partnerRepository->findPartnerById('A');
+        $sender   = $this->partnerRepository->findPartnerById('A');
         $receiver = $this->partnerRepository->findPartnerById('B');
 
         $messageId = $payload->getHeaderLine('message-id');
@@ -85,12 +90,12 @@ class ManagementTest extends TestCase
         self::assertSame((string) $processedPayload, Utils::canonicalize($this->loadFixture('test.xml')));
     }
 
-    public function testSendMessage()
+    public function testSendMessage(): void
     {
-        $senderId = 'A';
+        $senderId   = 'A';
         $receiverId = 'B';
 
-        $sender = $this->partnerRepository->findPartnerById($senderId);
+        $sender   = $this->partnerRepository->findPartnerById($senderId);
         $receiver = $this->partnerRepository->findPartnerById($receiverId);
 
         $messageId = Utils::generateMessageID($sender);
@@ -113,9 +118,9 @@ class ManagementTest extends TestCase
         self::assertSame(MessageInterface::STATUS_ERROR, $message->getStatus());
     }
 
-    public function testBuildMdn()
+    public function testBuildMdn(): void
     {
-        $sender = $this->partnerRepository->findPartnerById('A');
+        $sender   = $this->partnerRepository->findPartnerById('A');
         $receiver = $this->partnerRepository->findPartnerById('B');
 
         // Initialize empty message
@@ -133,22 +138,24 @@ class ManagementTest extends TestCase
         $report = $this->management->buildMdn($message, 'custom', 'error');
 
         self::assertTrue($report->isReport());
-        self::assertEquals($report->getHeaderLine('as2-to'), $sender->getAs2Id());
-        self::assertEquals($report->getHeaderLine('as2-from'), $receiver->getAs2Id());
-        self::assertEquals('custom', trim($report->getPart(0)->getBodyString()));
+        self::assertSame($report->getHeaderLine('as2-to'), $sender->getAs2Id());
+        self::assertSame($report->getHeaderLine('as2-from'), $receiver->getAs2Id());
+        self::assertSame('custom', trim($report->getPart(0)->getBodyString()));
 
         $headers = new MimePart(
             Utils::parseHeaders($report->getPart(1)->getBodyString())
         );
 
-        self::assertEquals('<test>', $headers->getHeaderLine('Original-Message-ID'));
-        self::assertEquals('rfc822; B', $headers->getHeaderLine('Original-Recipient'));
-        self::assertEquals('rfc822; B', $headers->getHeaderLine('Final-Recipient'));
-        self::assertEquals('automatic-action/MDN-sent-automatically; processed/error: error',
-            $headers->getHeaderLine('Disposition'));
+        self::assertSame('<test>', $headers->getHeaderLine('Original-Message-ID'));
+        self::assertSame('rfc822; B', $headers->getHeaderLine('Original-Recipient'));
+        self::assertSame('rfc822; B', $headers->getHeaderLine('Final-Recipient'));
+        self::assertSame(
+            'automatic-action/MDN-sent-automatically; processed/error: error',
+            $headers->getHeaderLine('Disposition')
+        );
 
-        self::assertEquals(MessageInterface::MDN_STATUS_SENT, $message->getMdnStatus());
-        self::assertEquals(PartnerInterface::MDN_MODE_SYNC, $message->getMdnMode());
+        self::assertSame(MessageInterface::MDN_STATUS_SENT, $message->getMdnStatus());
+        self::assertSame(PartnerInterface::MDN_MODE_SYNC, $message->getMdnMode());
 
         // test signed
 

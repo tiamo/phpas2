@@ -234,8 +234,6 @@ class Message extends DataObject implements MessageInterface
     }
 
     /**
-     * @param mixed $mdn
-     *
      * @return $this
      */
     public function setMdnPayload($mdn)

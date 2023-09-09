@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Repositories;
 
 use App\Models\Partner;
@@ -19,6 +20,7 @@ class PartnerRepository implements PartnerRepositoryInterface
 
     /**
      * @param  string  $id
+     *
      * @return Partner
      */
     public function findPartnerById($id)

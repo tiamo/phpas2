@@ -1,6 +1,7 @@
 <?php
 
 use Monolog\Handler\StreamHandler;
+
 // use Monolog\Logger;
 
 $storagePath = __DIR__.'/../storage';

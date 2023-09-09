@@ -8,22 +8,26 @@ use AS2\Tests\TestCase;
 
 /**
  * @see CryptoHelper
+ *
+ * @internal
+ *
+ * @coversNothing
  */
-class CryptoHelperTest extends TestCase
+final class CryptoHelperTest extends TestCase
 {
-    public function testMicCalculation()
+    public function testMicCalculation(): void
     {
         $contents = $this->loadFixture('mic-calculation');
-        self::assertEquals(
+        self::assertSame(
             '9IVZAN9QhjQINLzl/tdUvTMhMOSQ+96TjK7brHXQFys=, sha256',
             CryptoHelper::calculateMIC($contents, 'sha256')
         );
     }
 
-    public function testSign()
+    public function testSign(): void
     {
         $payload = $this->initMessage();
-        $certs = $this->getCerts();
+        $certs   = $this->getCerts();
 
         $payload = CryptoHelper::sign($payload, $certs['cert'], $certs['pkey']);
 
@@ -33,16 +37,17 @@ class CryptoHelperTest extends TestCase
         foreach ($payload->getParts() as $part) {
             if ($part->isPkc7Signature()) {
                 $hasSignature = true;
+
                 break;
             }
         }
         self::assertTrue($hasSignature);
     }
 
-    public function testVerifyBase64()
+    public function testVerifyBase64(): void
     {
         $contents = $this->loadFixture('signed-msg.txt');
-        $payload = MimePart::fromString($contents);
+        $payload  = MimePart::fromString($contents);
 
         $certs = $this->getCerts();
 
@@ -50,10 +55,10 @@ class CryptoHelperTest extends TestCase
         self::assertTrue(CryptoHelper::verify($payload, $certs['cert']));
     }
 
-    public function testVerifyBinary()
+    public function testVerifyBinary(): void
     {
         $contents = $this->loadFixture('si_signed.mdn');
-        $payload = MimePart::fromString($contents);
+        $payload  = MimePart::fromString($contents);
 
         $certs = $this->getCerts();
 
@@ -61,50 +66,50 @@ class CryptoHelperTest extends TestCase
         self::assertTrue(CryptoHelper::verify($payload, $certs['cert']));
     }
 
-    public function testEncrypt()
+    public function testEncrypt(): void
     {
         $payload = $this->initMessage();
-        $certs = $this->getCerts();
+        $certs   = $this->getCerts();
 
         $payload = CryptoHelper::encrypt($payload, $certs['cert']);
 
         self::assertTrue($payload->isEncrypted());
     }
 
-    public function testDecrypt()
+    public function testDecrypt(): void
     {
         $payload = $this->initMessage();
-        $certs = $this->getCerts();
+        $certs   = $this->getCerts();
 
         $payload = CryptoHelper::encrypt($payload, $certs['cert']);
         $payload = CryptoHelper::decrypt($payload, $certs['cert'], $certs['pkey']);
 
-        self::assertEquals('application/EDI-Consent', $payload->getHeaderLine('content-type'));
+        self::assertSame('application/EDI-Consent', $payload->getHeaderLine('content-type'));
     }
 
-    public function testCompress()
+    public function testCompress(): void
     {
         $payload = $this->initMessage();
         $payload = CryptoHelper::compress($payload);
 
-        self::assertEquals(
+        self::assertSame(
             'compressed-data',
             $payload->getParsedHeader('content-type', 0, 'smime-type')
         );
-        $body = base64_decode($payload->getBodyString());
-        self::assertEquals(0x30, ord($body[0]));
-        self::assertEquals(0x82, ord($body[1]));
-        self::assertEquals(0x02, ord($body[2]));
+        $body = base64_decode($payload->getBodyString(), true);
+        self::assertSame(0x30, \ord($body[0]));
+        self::assertSame(0x82, \ord($body[1]));
+        self::assertSame(0x02, \ord($body[2]));
     }
 
-    public function testDecompress()
+    public function testDecompress(): void
     {
         $payload = MimePart::fromString($this->loadFixture('si_signed_cmp.msg'));
 
         self::assertTrue($payload->isSigned());
 
         foreach ($payload->getParts() as $part) {
-            if (! $part->isPkc7Signature()) {
+            if (!$part->isPkc7Signature()) {
                 $payload = $part;
             }
         }
@@ -113,7 +118,7 @@ class CryptoHelperTest extends TestCase
 
         $payload = CryptoHelper::decompress($payload);
 
-        self::assertEquals('Application/EDI-X12', $payload->getHeaderLine('content-type'));
-        self::assertEquals(2247, strlen($payload->getBodyString()));
+        self::assertSame('Application/EDI-X12', $payload->getHeaderLine('content-type'));
+        self::assertSame(2247, \strlen($payload->getBodyString()));
     }
 }

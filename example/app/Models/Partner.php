@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Models;
 
 use AS2\PartnerInterface;
@@ -7,7 +8,7 @@ use AS2\PartnerInterface;
 class Partner extends DataObject implements PartnerInterface
 {
     /**
-     * AS2 Partner ID
+     * AS2 Partner ID.
      *
      * @return string
      */
@@ -57,7 +58,7 @@ class Partner extends DataObject implements PartnerInterface
     }
 
     /**
-     * @return string|null
+     * @return null|string
      */
     public function getAuthMethod()
     {
@@ -81,7 +82,7 @@ class Partner extends DataObject implements PartnerInterface
     }
 
     /**
-     * @return string|null
+     * @return null|string
      */
     public function getSignatureAlgorithm()
     {
@@ -89,7 +90,7 @@ class Partner extends DataObject implements PartnerInterface
     }
 
     /**
-     * @return string|null
+     * @return null|string
      */
     public function getEncryptionAlgorithm()
     {

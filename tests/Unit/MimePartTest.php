@@ -7,10 +7,14 @@ use AS2\Tests\TestCase;
 
 /**
  * @see MimePart
+ *
+ * @internal
+ *
+ * @coversNothing
  */
-class MimePartTest extends TestCase
+final class MimePartTest extends TestCase
 {
-    public function testIsEncrypted()
+    public function testIsEncrypted(): void
     {
         $cTypes = [
             'application/pkcs7-mime; name="smime.p7m"; smime-type=enveloped-data',
@@ -28,7 +32,7 @@ class MimePartTest extends TestCase
         }
     }
 
-    public function testIsCompressed()
+    public function testIsCompressed(): void
     {
         $cTypes = [
             'application/pkcs7-mime; name="smime.p7m"; smime-type=compressed-data',
@@ -45,7 +49,7 @@ class MimePartTest extends TestCase
         }
     }
 
-    public function testIsSigned()
+    public function testIsSigned(): void
     {
         $mimePart = new MimePart(
             [
@@ -55,7 +59,7 @@ class MimePartTest extends TestCase
         self::assertTrue($mimePart->isSigned());
     }
 
-    public function testIsPkc7Signature()
+    public function testIsPkc7Signature(): void
     {
         $mimePart = new MimePart(
             [
@@ -65,7 +69,7 @@ class MimePartTest extends TestCase
         self::assertTrue($mimePart->isPkc7Signature());
     }
 
-    public function testIsReport()
+    public function testIsReport(): void
     {
         $mimePart = new MimePart(
             [
@@ -75,49 +79,49 @@ class MimePartTest extends TestCase
         self::assertTrue($mimePart->isReport());
     }
 
-    public function testIsMultipart()
+    public function testIsMultipart(): void
     {
         $boundary = '_=A=_';
 
         $mimePart = new MimePart(
             [
-                'Content-Type' => 'multipart/mixed; boundary="'.$boundary.'"',
+                'Content-Type' => 'multipart/mixed; boundary="' . $boundary . '"',
             ]
         );
         $mimePart->addPart('1');
         $mimePart->addPart('2');
 
         self::assertTrue($mimePart->isMultiPart());
-        self::assertEquals($boundary, $mimePart->getParsedHeader('content-type', 0, 'boundary'));
+        self::assertSame($boundary, $mimePart->getParsedHeader('content-type', 0, 'boundary'));
 
         $mimePart = new MimePart(
             [
-                'Content-Type' => 'multipart/mixed; boundary="'.$boundary.'"',
+                'Content-Type' => 'multipart/mixed; boundary="' . $boundary . '"',
             ]
         );
         $mimePart->addPart('1');
         $mimePart->addPart('2');
 
         self::assertTrue($mimePart->isMultiPart());
-        self::assertEquals($boundary, $mimePart->getParsedHeader('content-type', 0, 'boundary'));
+        self::assertSame($boundary, $mimePart->getParsedHeader('content-type', 0, 'boundary'));
     }
 
     public function testBody(): void
     {
         $mimePart = MimePart::fromString("content-type:text/plain;\n\ntest");
-        self::assertEquals('test', $mimePart->getBodyString());
+        self::assertSame('test', $mimePart->getBodyString());
 
         $mimePart->setBody('test2');
-        self::assertEquals('test2', $mimePart->getBodyString());
+        self::assertSame('test2', $mimePart->getBodyString());
 
         $mimePart = MimePart::fromString("content-type:multipart/mixed;\r\n\r\ntest");
-        self::assertEquals('test', $mimePart->getBodyString());
+        self::assertSame('test', $mimePart->getBodyString());
 
         $mimePart->setBody(new MimePart([], '1'));
-        self::assertEquals(1, $mimePart->getCountParts());
+        self::assertSame(1, $mimePart->getCountParts());
 
         $mimePart->setBody(['2', '3']);
-        self::assertEquals(3, $mimePart->getCountParts());
+        self::assertSame(3, $mimePart->getCountParts());
     }
 
     public function testMultipart(): void
@@ -125,11 +129,11 @@ class MimePartTest extends TestCase
         $mime = MimePart::fromString($this->loadFixture('signed-msg.txt'));
 
         self::assertStringStartsWith('multipart/signed', $mime->getHeaderLine('content-type'));
-        self::assertEquals(2, $mime->getCountParts());
+        self::assertSame(2, $mime->getCountParts());
 
         self::assertStringStartsWith('application/pkcs7-signature', $mime->getPart(1)->getHeaderLine('content-type'));
-        self::assertEquals('application/EDI-Consent', $mime->getPart(0)->getHeaderLine('content-type'));
-        self::assertEquals('binary', $mime->getPart(0)->getHeaderLine('Content-Transfer-Encoding'));
+        self::assertSame('application/EDI-Consent', $mime->getPart(0)->getHeaderLine('content-type'));
+        self::assertSame('binary', $mime->getPart(0)->getHeaderLine('Content-Transfer-Encoding'));
         self::assertStringStartsWith('UNB+UNOA', $mime->getPart(0)->getBodyString());
     }
 
@@ -144,7 +148,7 @@ class MimePartTest extends TestCase
     public function testCreateIfBinaryPartNotBinary(): void
     {
         $contents = $this->loadFixture('signed-msg.txt');
-        $payload = MimePart::fromString($contents);
+        $payload  = MimePart::fromString($contents);
 
         self::assertNull(MimePart::createIfBinaryPart($payload));
     }
@@ -152,7 +156,7 @@ class MimePartTest extends TestCase
     public function testCreateIfBinaryPartBinary(): void
     {
         $contents = $this->loadFixture('si_signed.mdn');
-        $payload = MimePart::fromString($contents);
+        $payload  = MimePart::fromString($contents);
 
         self::assertInstanceOf(MimePart::class, MimePart::createIfBinaryPart($payload));
     }

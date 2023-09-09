@@ -10,6 +10,7 @@ class DataObject
      * @var array
      */
     protected static $_underscoreCache = [];
+
     /**
      * Object attributes.
      *
@@ -26,6 +27,43 @@ class DataObject
     public function __construct(array $data = [])
     {
         $this->_data = $data;
+    }
+
+    /**
+     * Set/Get attribute wrapper.
+     *
+     * @param string $method
+     * @param array  $args
+     *
+     * @throws \Exception
+     */
+    public function __call($method, $args)
+    {
+        switch (substr($method, 0, 3)) {
+            case 'get':
+                $key   = $this->_underscore(substr($method, 3));
+                $index = $args[0] ?? null;
+
+                return $this->getData($key, $index);
+
+            case 'set':
+                $key   = $this->_underscore(substr($method, 3));
+                $value = $args[0] ?? null;
+
+                return $this->setData($key, $value);
+
+            case 'uns':
+                $key = $this->_underscore(substr($method, 3));
+
+                return $this->unsetData($key);
+
+            case 'has':
+                $key = $this->_underscore(substr($method, 3));
+
+                return isset($this->_data[$key]);
+        }
+
+        throw new \Exception(sprintf('Invalid method %s::%s', static::class, $method));
     }
 
     /**
@@ -52,8 +90,7 @@ class DataObject
      *
      * If $key is an array, it will overwrite all the data in the object.
      *
-     * @param string|array $key
-     * @param mixed        $value
+     * @param array|string $key
      *
      * @return $this
      */
@@ -71,16 +108,16 @@ class DataObject
     /**
      * Unset data from the object.
      *
-     * @param string|array|null $key
+     * @param array|string|null $key
      *
      * @return $this
      */
     public function unsetData($key = null)
     {
-        if ($key === null) {
+        if (null === $key) {
             $this->setData([]);
-        } elseif (is_string($key)) {
-            if (isset($this->_data[$key]) || array_key_exists($key, $this->_data)) {
+        } elseif (\is_string($key)) {
+            if (isset($this->_data[$key]) || \array_key_exists($key, $this->_data)) {
                 unset($this->_data[$key]);
             }
         } elseif ($key === (array) $key) {
@@ -104,27 +141,25 @@ class DataObject
      * by new line character and converted to array.
      *
      * @param string     $key
-     * @param string|int $index
-     *
-     * @return mixed
+     * @param int|string $index
      */
     public function getData($key = '', $index = null)
     {
         if ('' === $key) {
             return $this->_data;
         }
-        /* process a/b/c key as ['a']['b']['c'] */
+        // process a/b/c key as ['a']['b']['c']
         if (strpos($key, '/')) {
             $data = $this->getDataByPath($key);
         } else {
             $data = $this->_getData($key);
         }
-        if ($index !== null) {
+        if (null !== $index) {
             if ($data === (array) $data) {
-                $data = isset($data[$index]) ? $data[$index] : null;
-            } elseif (is_string($data)) {
+                $data = $data[$index] ?? null;
+            } elseif (\is_string($data)) {
                 $data = explode(PHP_EOL, $data);
-                $data = isset($data[$index]) ? $data[$index] : null;
+                $data = $data[$index] ?? null;
             } elseif ($data instanceof static) {
                 $data = $data->getData($index);
             } else {
@@ -141,8 +176,6 @@ class DataObject
      * Method consider the path as chain of keys: a/b/c => ['a']['b']['c']
      *
      * @param string $path
-     *
-     * @return mixed
      */
     public function getDataByPath($path)
     {
@@ -165,8 +198,6 @@ class DataObject
      * Get object data by particular key.
      *
      * @param string $key
-     *
-     * @return mixed
      */
     public function getDataByKey($key)
     {
@@ -177,9 +208,6 @@ class DataObject
      * Get object data by key with calling getter method.
      *
      * @param string $key
-     * @param mixed  $args
-     *
-     * @return mixed
      */
     public function getDataUsingMethod($key, $args = null)
     {
@@ -198,59 +226,21 @@ class DataObject
      */
     public function hasData($key = '')
     {
-        if (empty($key) || !is_string($key)) {
+        if (empty($key) || !\is_string($key)) {
             return !empty($this->_data);
         }
 
-        return array_key_exists($key, $this->_data);
-    }
-
-    /**
-     * Set/Get attribute wrapper.
-     *
-     * @param string $method
-     * @param array  $args
-     *
-     * @return mixed
-     *
-     * @throws \Exception
-     */
-    public function __call($method, $args)
-    {
-        switch (substr($method, 0, 3)) {
-            case 'get':
-                $key   = $this->_underscore(substr($method, 3));
-                $index = isset($args[0]) ? $args[0] : null;
-
-                return $this->getData($key, $index);
-            case 'set':
-                $key   = $this->_underscore(substr($method, 3));
-                $value = isset($args[0]) ? $args[0] : null;
-
-                return $this->setData($key, $value);
-            case 'uns':
-                $key = $this->_underscore(substr($method, 3));
-
-                return $this->unsetData($key);
-            case 'has':
-                $key = $this->_underscore(substr($method, 3));
-
-                return isset($this->_data[$key]);
-        }
-        throw new \Exception(sprintf('Invalid method %s::%s', get_class($this), $method));
+        return \array_key_exists($key, $this->_data);
     }
 
     /**
      * Implementation of \ArrayAccess::offsetSet().
      *
      * @param string $offset
-     * @param mixed  $value
-     *
-     * @return void
      *
      * @see http://www.php.net/manual/en/arrayaccess.offsetset.php
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->_data[$offset] = $value;
     }
@@ -266,7 +256,7 @@ class DataObject
      */
     public function offsetExists($offset)
     {
-        return isset($this->_data[$offset]) || array_key_exists($offset, $this->_data);
+        return isset($this->_data[$offset]) || \array_key_exists($offset, $this->_data);
     }
 
     /**
@@ -274,11 +264,9 @@ class DataObject
      *
      * @param string $offset
      *
-     * @return void
-     *
      * @see http://www.php.net/manual/en/arrayaccess.offsetunset.php
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->_data[$offset]);
     }
@@ -287,8 +275,6 @@ class DataObject
      * Implementation of \ArrayAccess::offsetGet().
      *
      * @param string $offset
-     *
-     * @return mixed
      *
      * @see http://www.php.net/manual/en/arrayaccess.offsetget.php
      */
@@ -305,8 +291,6 @@ class DataObject
      * Get value from _data array without parse key.
      *
      * @param string $key
-     *
-     * @return mixed
      */
     protected function _getData($key)
     {

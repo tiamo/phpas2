@@ -1,10 +1,11 @@
 <?php
 
+
 namespace App\Repositories;
 
+use App\Models\Message;
 use AS2\MessageInterface;
 use AS2\MessageRepositoryInterface;
-use App\Models\Message;
 
 class MessageRepository implements MessageRepositoryInterface
 {
@@ -21,6 +22,7 @@ class MessageRepository implements MessageRepositoryInterface
 
     /**
      * @param  string  $id
+     *
      * @return Message
      */
     public function findMessageById($id)
@@ -44,7 +46,8 @@ class MessageRepository implements MessageRepositoryInterface
     }
 
     /**
-     * @param  MessageInterface|Message  $message
+     * @param  Message|MessageInterface  $message
+     *
      * @return bool
      */
     public function saveMessage(MessageInterface $message)

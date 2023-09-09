@@ -1,5 +1,5 @@
 <?php
 
 return [
-    \App\Commands\SendCommand::class
+    \App\Commands\SendCommand::class,
 ];

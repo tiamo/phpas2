@@ -8,13 +8,16 @@ use AS2\Utils;
 use phpseclib3\File\ASN1;
 use phpseclib3\Math\BigInteger;
 
-
 /**
  * @see ASN1Helper
+ *
+ * @internal
+ *
+ * @coversNothing
  */
-class Asn1HelperTest extends TestCase
+final class Asn1HelperTest extends TestCase
 {
-    public function testSignerInfoMap()
+    public function testSignerInfoMap(): void
     {
         $data = 'MYICsjCCAq4CAQEwgZ8wgZYxITAfBgkqhkiG9w0BCQEWEnZrLnRpYW1vQGdtYWlsLmNvbTELMAkGA1UEBhMCdWsxEzARBgNVBAgMClN0YXRlIG5hbWUxEDAOBgNVBAcMB1VrcmFpbmUxDzANBgNVBAoMBnBocGFzMjEPMA0GA1UECwwGcGhwYXMyMRswGQYDVQQDDBJwaHBhczIuZXhhbXBsZS5jb20CBF15iogwDQYJYIZIAWUDBAIBBQCggeQwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjAwNjI2MTQ0NzI2WjAvBgkqhkiG9w0BCQQxIgQgErAZ6kGin4i4PUDRmkdkKtzTd7tA9j77MxJe/yOogxAweQYJKoZIhvcNAQkPMWwwajALBglghkgBZQMEASowCwYJYIZIAWUDBAEWMAsGCWCGSAFlAwQBAjAKBggqhkiG9w0DBzAOBggqhkiG9w0DAgICAIAwDQYIKoZIhvcNAwICAUAwBwYFKw4DAgcwDQYIKoZIhvcNAwICASgwDQYJKoZIhvcNAQEBBQAEggEAKQmPfNi4f1mPAjz/4+4YcD+Apeeq0YaXL+SnjmAu1O/iHG4rTyq25NBigA49c8Oj0/sjqZo149y0bfJwnWnh6+Fd7jQNih7LzvEAq0W5TDB8+4xCp41zQK0ZB44rdHLogm8o73QgY4tC2haxflpWlLckMqc1F332+bUi0ImRdUw64Z/jAfQwSEb6LwMHMowyYCsJd4Qiu/fQfJXbdAqd/LXXBqXUHkEaeOnjMKehnc/UyJUVJYqKyuC46Hb6YA5t92LquGqiGomGWcGGilVQwWK3/mVC6Yu8gpTNbAVZmueOrxXq+IqaLb5PAC07D6qAB/5YhN28woc7NDD9R4zHUA==';
 
@@ -27,11 +30,11 @@ class Asn1HelperTest extends TestCase
             'children' => ASN1Helper::getSignerInfoMap(),
         ]);
 
-        self::assertEquals($payload[0]['version'], 1);
-        self::assertEquals($payload[0]['signatureAlgorithm']['algorithm'], '1.2.840.113549.1.1.1');
+        self::assertSame($payload[0]['version'], '1');
+        self::assertSame($payload[0]['signatureAlgorithm']['algorithm'], '1.2.840.113549.1.1.1');
     }
 
-    public function testSignedData()
+    public function testSignedData(): void
     {
         $data = 'MIIGsAYJKoZIhvcNAQcCoIIGoTCCBp0CAQExDzANBglghkgBZQMEAgEFADALBgkqhkiG9w0BBwGgggPC
 MIIDvjCCAqagAwIBAgIEXXmKiDANBgkqhkiG9w0BAQUFADCBljEhMB8GCSqGSIb3DQEJARYSdmsudGlh
@@ -67,16 +70,19 @@ BVma546vFer4ipotvk8ALTsPqoAH/liE3bzChzs0MP1HjMdQ';
 
         $payload = ASN1Helper::decode($data, ASN1Helper::getSignedDataMap());
 
-        dd($payload['content']);
+        self::assertSame(ASN1Helper::OID_SIGNED_DATA, $payload['contentType']);
+        self::assertSame('1', $payload['content']['version']);
+        self::assertSame(ASN1Helper::OID_SHA256, $payload['content']['digestAlgorithms'][0]['algorithm']);
+        self::assertSame(ASN1Helper::OID_DATA, $payload['content']['contentInfo']['contentType']);
 
-        self::assertEquals(ASN1Helper::OID_SIGNED_DATA, $payload['contentType']);
-        self::assertEquals('1', $payload['content']['version']);
-        self::assertEquals(ASN1Helper::OID_SHA256, $payload['content']['digestAlgorithms'][0]['algorithm']);
-        self::assertEquals(ASN1Helper::OID_DATA, $payload['content']['contentInfo']['contentType']);
-        self::assertEquals(new BigInteger(1568246408),
-            $payload['content']['certificates'][0]['tbsCertificate']['serialNumber']);
-        self::assertEquals(ASN1Helper::OID_SHA256, $payload['content']['signers'][0]['digestAlgorithm']['algorithm']);
-        self::assertEquals(ASN1Helper::OID_RSA_ENCRYPTION,
-            $payload['content']['signers'][0]['signatureAlgorithm']['algorithm']);
+        self::assertSame(
+            (string) new BigInteger(1568246408),
+            (string) $payload['content']['certificates'][0]['tbsCertificate']['serialNumber']
+        );
+        self::assertSame(ASN1Helper::OID_SHA256, $payload['content']['signers'][0]['digestAlgorithm']['algorithm']);
+        self::assertSame(
+            ASN1Helper::OID_RSA_ENCRYPTION,
+            $payload['content']['signers'][0]['signatureAlgorithm']['algorithm']
+        );
     }
 }

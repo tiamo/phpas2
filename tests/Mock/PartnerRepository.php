@@ -21,8 +21,8 @@ class PartnerRepository implements PartnerRepositoryInterface
             [
                 'id' => 'A',
                 // 'target_url' => 'php://memory',
-                'private_key'               => isset($key['pkey']) ? $key['pkey'] : null,
-                'certificate'               => isset($key['cert']) ? $key['cert'] : null,
+                'private_key'               => $key['pkey'] ?? null,
+                'certificate'               => $key['cert'] ?? null,
                 'content_type'              => 'application/EDI-Consent',
                 'compression'               => true,
                 'signature_algorithm'       => 'sha256',
@@ -34,8 +34,8 @@ class PartnerRepository implements PartnerRepositoryInterface
             [
                 'id' => 'B',
                 // 'target_url' => 'php://memory',
-                'private_key'               => isset($key['pkey']) ? $key['pkey'] : null,
-                'certificate'               => isset($key['cert']) ? $key['cert'] : null,
+                'private_key'               => $key['pkey'] ?? null,
+                'certificate'               => $key['cert'] ?? null,
                 'content_type'              => 'application/EDI-Consent',
                 'compression'               => true,
                 'signature_algorithm'       => 'sha256',
