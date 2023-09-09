@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        php: [ '7.3', '7.4', '8.0', '8.1' ]
+        php: [ 7.3, 7.4, 8.0, 8.1 ]
         phpunit: [ 9 ]
         include:
           - php: 7.3
@@ -55,6 +55,6 @@ jobs:
       - name: Run tests
         uses: php-actions/phpunit@v3
         with:
-          version: ${{ matrix.phpunit }}
+          version: 8
           configuration: ./phpunit.xml
           php_version: ${{ matrix.php }}
