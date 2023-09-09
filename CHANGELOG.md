@@ -1,6 +1,14 @@
 # Change Log
 
+## 2.0.1
+
+* Add return types to MimePart, so it works on PHP 8 with the newer version of
+  psr/http-message ([#23](https://github.com/tiamo/phpas2/pull/42))
+* Improved tests
+* Code refactored
+
 ## 2.0.0
+
 * Minimum php version is 7.1
 * Added support php 8.0
 * Fixed bugs with mdn sign
@@ -10,19 +18,24 @@
 * Added github actions
 
 ## 1.4.8
+
 * Fixed 3 bugs ([#28](https://github.com/tiamo/phpas2/pull/28))
 * phpspeclib v3
 * Improved tests
 
 ## 1.4.7
-* Updated base64 decode on processMessage to fix problem on bigger mess… ([#23](https://github.com/tiamo/phpas2/pull/23))
+
+* Updated base64 decode on processMessage to fix problem on bigger
+  mess… ([#23](https://github.com/tiamo/phpas2/pull/23))
 
 ## 1.4.6
+
 * Improved usage of sample ([#19](https://github.com/tiamo/phpas2/pull/19))
 * Fixed bad MIC compare ([#18](https://github.com/tiamo/phpas2/pull/18))
 * Readme improved
 
 ## 1.4.5
+
 * Fixed bug when MDN sent to own host ([#16](https://github.com/tiamo/phpas2/pull/16))
 * Improved tests
 
