@@ -49,6 +49,8 @@ jobs:
       #        run: composer test
 
       - name: Run tests
-        uses: php-actions/phpunit@v2
+        uses: php-actions/phpunit@v3
         with:
+          version: 9
+          configuration: ./phpunit.xml
           php_version: ${{ matrix.php }}
