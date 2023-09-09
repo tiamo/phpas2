@@ -138,7 +138,125 @@ ej7IBY7WKy9OvCErUoH0zXsdfkuJlJXf1jS+qtEbWRGnbxwfXgH0S1uw7QU0q8EECvEb+MNrCEtD
         'mdn_options' => 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha256',
     ],
 
+    [
+        'id' => 'webedi',
+        'target_url' => 'http://as2.webedi.co.uk:8181/as2connector/pub/ReceiveFile.rsb',
+        'certificate' => '-----BEGIN CERTIFICATE-----
+MIICwTCCAamgAwIBAgIBAjANBgkqhkiG9w0BAQUFADAkMRAwDgYDVQQDEwdXZWIgRURJMRAw
+DgYDVQQKEwdXZWIgRURJMB4XDTEzMTAxMDExMzkxN1oXDTIzMTAwODExMzkxN1owJDEQMA4G
+A1UEAxMHV2ViIEVESTEQMA4GA1UEChMHV2ViIEVESTCCASIwDQYJKoZIhvcNAQEBBQADggEP
+ADCCAQoCggEBANejtFteDrfVcsosbgerSLISkGZaomgRbqElAMzIoBt9auvPyiSzI893Ii1L
+GIgPzer/YKnyHJ278fwqJ9xID5BP0ukAOXdrrtbMwWC1cgPsHAljfCgOWMl10Ry6wadp9myG
+FV9z/WWI0eyXfSabQtTsiwZ9IX9EOBvJ1nrylB0WfIxz5aQc0WURyjtsEKFXMPdlF9xJezIj
+tzlom82vD2VSSqukmsjBe5IQSeKm99U96TPHeQHs+JETdcWrGCd5ff3fXZ5QuPj9hNQdIjxA
+JTJxMTKsqI4XSgqaXgq+5jaF5wv1FeA+ksQFGJyuoRslHsTnf94zyhjqY/iq1b8JaAkCAwEA
+ATANBgkqhkiG9w0BAQUFAAOCAQEAIUDhP/IvGLzu0NJqkCtA4YSdmAtWCQFlEV8NrbJQjWRQ
+Fbb88MMCxlXh/fs2PCISnpT9GyAbzCXFiA2v2aLoGqj1mSsaP9iIRiUNA9aJNVTWGEzkrGfk
+P3+zA/1bquqyvPwzY6KZAIp18swV/cmB8HKzQT7Q252agNSVPp/YFwYT84FWVVlFtMmgLJbU
+ROE7OEf7NAxOUOfirjU8JHgTJJNfJUbl2ma8nUqd+UKYG5NxsW6YnC+pBcWp66+h6do5vGLC
+nx0D9QmPKky9nScaBit2VgSoOdRLrGo48ZaYNWs/hgPKPFM+hyXNBD+1A/h8b+vm8pQm2VKv
+RnPyOoGNsA==
+-----END CERTIFICATE-----
+',
+        'content_type' => 'application/EDI-Consent',
+        'compression' => false,
+        'signature_algorithm' => 'sha1',
+        'encryption_algorithm' => '3des',
+        'mdn_mode' => PartnerInterface::MDN_MODE_SYNC,
+        'mdn_options' => 'signed-receipt-protocol=required, pkcs7-signature; signed-receipt-micalg=optional, sha1',
+    ],
+
+    [
+        'id' => 'EDI_AS2_OTTOGROUP',
+        'target_url' => 'http://80.85.204.104:6060/as2connector/pub/ReceiveFile.rsb',
+        'certificate' => '-----BEGIN CERTIFICATE-----
+MIIDYTCCAkmgAwIBAgIDAnOgMA0GCSqGSIb3DQEBCwUAMHMxDTALBgNVBAMTBE9UVE8xDTAL
+BgNVBAoTBE9UVE8xDTALBgNVBAsTBE9UVE8xEDAOBgNVBAcTB0hhbWJ1cmcxEDAOBgNVBAYT
+B0dlcm1hbnkxIDAeBgkqhkiG9w0BCQEWEWVkaUBvdHRvZ3JvdXAuY29tMB4XDTIwMTExMjE0
+MzI1M1oXDTIzMTExMjE0MzI1M1owczENMAsGA1UEAxMET1RUTzENMAsGA1UEChMET1RUTzEN
+MAsGA1UECxMET1RUTzEQMA4GA1UEBxMHSGFtYnVyZzEQMA4GA1UEBhMHR2VybWFueTEgMB4G
+CSqGSIb3DQEJARYRZWRpQG90dG9ncm91cC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
+ggEKAoIBAQDcTF5Qu6OZ9mE4OfdI8ok9WuRxNcCe5kXJd2pdeX7ufZDj8mTDQ1KKgoa9vpmY
+SGMpX9vFFS0cJIFVguhBdo/CH3jPVmbQABItkEHYLJxYKr06QTo4rKWnRpf9H6zgiO8wdZ/B
+F6iT79Hh9ogHI4N6woA7NjjF+q3612k1EPIekvZUJGxHiOhJjgbsPB0f+RlKPnW+lv7SwS4x
+tq66XzrCaXJXjBQBeaEP31x/dVECGynjcynJhTAJYv+9XY6q0TFrqDsDhOmf9jTE5k1h/tML
+y4A13cit2SHo0YN67mZwl+3cWP0h7cu1wF869HzyttPgWCG9/HHi5wLnU61aNxkhAgMBAAEw
+DQYJKoZIhvcNAQELBQADggEBAEoA9sJPxINJilnowUWw0UmRYVSHjXQIuLdt+HmThSH+5K7x
+TpwmD2OGmDAHPZ1wX/XNBuDye+ZoBWrybUhiPSTxN2K80N5Q4pJNcfS2LCw+m5qely0rfmZI
+2AMOLJqB4M+nB5mxGWjMPAtBMtChcfpf5veOSLLw2aTb+/4Ek4c/6g3m8S2Uo+hdrt1EcLGC
+06G7dcmG+ykziqGnQJRaC6pZy+Wxtytpp62kSOgPi72bA2BWOagTO5VxpoxbDtTdSNV3Qnfx
+u+xcDrxvgWE8E3M0RyA4uTx3idhMLK0WZC4fbjQPDpIsB3YgIzWwtdQN566byEqmZ3uP2iuR
+aHvMIGg=
+-----END CERTIFICATE-----
+',
+        'content_type' => 'application/EDIFACT',
+        'compression' => false,
+        'signature_algorithm' => 'sha1',
+        'encryption_algorithm' => '3des',
+        'mdn_mode' => PartnerInterface::MDN_MODE_SYNC,
+        'mdn_options' => 'signed-receipt-protocol=required, pkcs7-signature; signed-receipt-micalg=optional, sha1',
+    ],
     // local station
+
+    [
+        'id' => 'as2polini',
+        'email' => 'phpas2@example.com',
+        'target_url' => 'http://127.0.0.1:8000',
+        'certificate' => '-----BEGIN CERTIFICATE-----
+MIIC8TCCAdmgAwIBAgIJAI+A9000plXZMA0GCSqGSIb3DQEBCwUAMB0xGzAZBgNV
+BAMMEmFzMi5ldGVjby1ncm91cC5kZTAeFw0xOTAxMTQwOTA1NThaFw0yOTAxMTEw
+OTA1NThaMB0xGzAZBgNVBAMMEmFzMi5ldGVjby1ncm91cC5kZTCCASIwDQYJKoZI
+hvcNAQEBBQADggEPADCCAQoCggEBAJZ/xA4MJPPA66Ils84DwklSBxim788LzFOs
+i99RgO1ktfbbKFrdXIrEUYWvDmSMbiY7ALz9UsMKPA7T0/t0l1XkGuCh+/TqAQgb
+MkjzNkCpjedufC9ghMSUhndSGIMdsQf70styWiZVSSNnZ4cG26H+mVJXKVcr5BRZ
+ufv3fR+wMuADuGSE5xR5R+jhOLxgJEfvpZeuGKhGix6sdagE3MfjOH8vbtOmrblt
+u8H9mbXPkiz9aSvEV3ocbesVIOxjhiWzUYvbYRhABebtNDKlvb7j3aBjoSHzaEhZ
+OP4O+uSsoHOh0if0ukP3ksmHixEOVFzV8bPc92q3ONTH4ZNXFOkCAwEAAaM0MDIw
+MAYDVR0RBCkwJ4ISYXMyLmV0ZWNvLWdyb3VwLmRlggtleGFtcGxlLm5ldIcECgAA
+ATANBgkqhkiG9w0BAQsFAAOCAQEAOFHlT5n6IdH2xv6bi50OCwSPajVPz8hCAo6X
+TdRwE5InaLVgziuRfQD1s/GUjLeM89u42CgA2FNkeKc4/iGvhCueFGMRjBlhHOEo
+DwdcFpkLNJgtfaEmFDOHHjXgIP+MHbEQ7uu9Yspf+hdTDMT1CbCwRIWMfdt1VhGO
+ZXoAg2Jgzwyqszf+H6EXilqZtzYdSDV4r2XoX+n2Oe6V3ootNdtsbh2QrtiTMS32
+8brydAbXFsOzr2B/ygQkLPmEITgjyDqn2oXI8YR6Mfw0MImkGByapr7g+/eLHnuP
+4ULqoQh54EkiTfodzbdRkhvT1cA9U+hH8BdPDB+jDsP5BWCcwg==
+-----END CERTIFICATE-----
+',
+        'private_key' => '-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCWf8QODCTzwOui
+JbPOA8JJUgcYpu/PC8xTrIvfUYDtZLX22yha3VyKxFGFrw5kjG4mOwC8/VLDCjwO
+09P7dJdV5Brgofv06gEIGzJI8zZAqY3nbnwvYITElIZ3UhiDHbEH+9LLclomVUkj
+Z2eHBtuh/plSVylXK+QUWbn7930fsDLgA7hkhOcUeUfo4Ti8YCRH76WXrhioRose
+rHWoBNzH4zh/L27Tpq25bbvB/Zm1z5Is/WkrxFd6HG3rFSDsY4Yls1GL22EYQAXm
+7TQypb2+492gY6Eh82hIWTj+DvrkrKBzodIn9LpD95LJh4sRDlRc1fGz3PdqtzjU
+x+GTVxTpAgMBAAECggEARd/0SwFgdrvvq00N+mzMW/Z1zQBU/zBfIcpO9tSEo7PK
+uF5wkh+Mw/D6WLM6X3zD94QVh6mmL2AlGk1HcsxjJ0HNKNaMgN3UtMrLwgsJ+WO/
+uuAVUHnjqtG6zNOVBetXMnm9GTByorGeT43HB24rsz7eONi3HP4H21r9evshYQBb
+jqtlon/VGQcSWELVUNQg7i04ym0FvvmAZCYU085sZ2+3gaBtqwEHIH5DcX89Wf9I
+3E3u2CrYWISPrzk4elBpjposnieM5ngxSi+WwUqkKxAsCO7VyEtG6IRgeip7mvIJ
+NYn4LH6QYV2pAcHh2dGxv30bscxC4tvDDibVMJ8aAQKBgQDIqWO3FAMYpd/0d9Mt
+f+0KFe2aiMz8Zxky1q01hhJuSA8d1OwyFUUklnJJWFs7BOLQ6JxMhBa9Ll5wAnPk
+Yb504ee2k4titXMTjZYSJnh/TxNvLQq1+dz7bTR6cD/VY+sHcNp1ThJDyfaUxZZG
+aNACc4E1U/Nf+y+5sZe4VTE/EQKBgQDAAOxcmYWuDOb4HMb9GsjEw5t6FUIY9ORB
+YhdWh56iJDCXkxN9QvxSkm4R/4lorPtnWWOcA8XUJq6ti/D2pdRAFbFUKSzvXA+M
+ZLUvkZmYT2c9NOV/tY6KTegxoGT9Rn0csw+rRqmU3bOAqX3xIedUfie29ze6gnzH
+X/Mv4IWoWQKBgHc6DoGNZnmStYrwV43FYPaJKPCVMBcYuyQ14hzXWMQmFLVI+j6X
+3MlsiuOBmFNtB8fRLm1YXppxnrM3Ad1FJoEUaTVWXY98+K85hV2rdhVOyuFYBfEy
+UVci//dwEr2b7N4y89qXVMrqiZTEAhI73LxYHQGurADvot/W4aspE2XBAoGAfzsd
+ZW9GKkPaeed35RjumZSVXpzfo/IDn2AE3w4XjJI2sPqBG6xbz8vArKSMxZR7M80E
+OMo3OZI4hkAJeSgCMkUtsPtoD2UN2JaTieYNxeQ4IVMAEVSaFAP0LY5/3WXsWiw9
+4d19WmxfGo82Kaexx0ehwZiokSsOzH9EgyFg8GECgYBBYtizJ2swvsyR+sMPoUEh
+0hqCxCwEOJg3LetZ0/lWcdWQjuDyX+h0K/uyYo+TGL2hxPe3/Mi/POn70+5iNb9Q
+2imhWJnyyQpU9rqGeIIWzcpqc7Du6S/sB84VwibT/YbWsMZW7KHCcLpWNwWfe0nJ
+okbKQXNdhalu6KK2joUYMg==
+-----END PRIVATE KEY-----
+',
+        'content_type' => 'application/EDI-Consent',
+        'compression' => true,
+        'signature_algorithm' => 'sha256',
+        'encryption_algorithm' => '3des',
+        'mdn_mode' => PartnerInterface::MDN_MODE_SYNC,
+        'mdn_options' => 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha256',
+    ],
 
     [
         'id' => 'phpas2',

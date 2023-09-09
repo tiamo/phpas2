@@ -55,7 +55,7 @@ class MimePart implements PsrMessageInterface
      */
     public function __construct($headers = [], $body = null, $rawMessage = null)
     {
-        if (null !== $rawMessage) {
+        if ($rawMessage !== null) {
             $this->rawMessage = $rawMessage;
         }
 

@@ -6,66 +6,90 @@ use phpseclib3\File\ASN1;
 
 class ASN1Helper
 {
-    const PKCS_OID = '1.2.840.113549';
-    const PKCS7_OID = '1.2.840.113549.1.7';
-    const PKCS9_OID = '1.2.840.113549.1.9';
-    const PKCS9_CT_OID = '1.2.840.113549.1.9.16.1';
+    const OID_PKCS = '1.2.840.113549';
+    const OID_PKCS7 = '1.2.840.113549.1.7';
+    const OID_PKCS9 = '1.2.840.113549.1.9';
 
-    const DATA_OID = '1.2.840.113549.1.7.1';
-    const SIGNED_DATA_OID = '1.2.840.113549.1.7.2';
-    const ENVELOPED_DATA_OID = '1.2.840.113549.1.7.3';
-    const SIGNED_AND_ENVELOPED_DATA_OID = '1.2.840.113549.1.7.4';
-    const DIGEST_DATA_OID = '1.2.840.113549.1.7.5';
-    const ENCRYPTED_DATA_OID = '1.2.840.113549.1.7.6';
+    const OID_PKCS9_CONTENT_TYPE = '1.2.840.113549.1.9.3';
+    const OID_PKCS9_MESSAGE_DIGEST = '1.2.840.113549.1.9.4';
+    const OID_PKCS9_SIGNING_TIME = '1.2.840.113549.1.9.5';
+    const OID_PKCS9_SMIME_CAPABILITIES = '1.2.840.113549.1.9.15';
 
-    const AUTHENTICATED_DATA_OID = '1.2.840.113549.1.9.16.1.2';
-    const COMPRESSED_DATA_OID = '1.2.840.113549.1.9.16.1.9';
-    const AUTH_ENVELOPED_DATA_OID = '1.2.840.113549.1.9.16.1.23';
+    const OID_PKCS9_CT = '1.2.840.113549.1.9.16.1';
 
-    const ALG_3DES_OID = '1.2.840.113549.1.9.16.3.6';
-    const ALG_RC2_OID = '1.2.840.113549.1.9.16.3.7';
-    const ALG_ZLIB_OID = '1.2.840.113549.1.9.16.3.8';
-    const ALG_PWRI_KEK_OID = '1.2.840.113549.1.9.16.3.9';
+    const OID_DATA = '1.2.840.113549.1.7.1';
+    const OID_SIGNED_DATA = '1.2.840.113549.1.7.2';
+    const OID_ENVELOPED_DATA = '1.2.840.113549.1.7.3';
+    const OID_SIGNED_AND_ENVELOPED_DATA = '1.2.840.113549.1.7.4';
+    const OID_DIGEST_DATA = '1.2.840.113549.1.7.5';
+    const OID_ENCRYPTED_DATA = '1.2.840.113549.1.7.6';
 
-    const DIGEST_ALGORITHM_OID = '1.2.840.113549.2';
-    const MD2_OID = '1.2.840.113549.2.2';
-    const MD4_OID = '1.2.840.113549.2.4';
-    const MD5_OID = '1.2.840.113549.2.5';
-    const HMAC_WITH_SHA1_OID = '1.2.840.113549.2.7';
+    const OID_AUTHENTICATED_DATA = '1.2.840.113549.1.9.16.1.2';
+    const OID_COMPRESSED_DATA = '1.2.840.113549.1.9.16.1.9';
+    const OID_AUTH_ENVELOPED_DATA = '1.2.840.113549.1.9.16.1.23';
 
-    const ENCRYPTION_ALGORITHM_OID = '1.2.840.113549.3';
-    const RC2_CBC = '1.2.840.113549.3.2';
-    const DES_EDE3_CBC = '1.2.840.113549.3.7';
+    const OID_ALG_3DES = '1.2.840.113549.1.9.16.3.6';
+    const OID_ALG_RC2 = '1.2.840.113549.1.9.16.3.7';
+    const OID_ALG_ZLIB = '1.2.840.113549.1.9.16.3.8';
+    const OID_ALG_PWRI_KEK = '1.2.840.113549.1.9.16.3.9';
 
-    /**
-     * @return array
-     */
-    public static function getAlgorithmIdentifierMap()
-    {
-        return [
-            'type' => ASN1::TYPE_SEQUENCE,
-            'children' => [
-                'algorithm' => ['type' => ASN1::TYPE_OBJECT_IDENTIFIER],
-                'parameters' => [
-                    'type' => ASN1::TYPE_ANY,
-                    'optional' => true,
-                ],
-            ],
-        ];
-    }
+    const OID_DIGEST_ALGORITHM = '1.2.840.113549.2';
+    const OID_ENCRYPTION_ALGORITHM = '1.2.840.113549.3';
 
-    /**
-     * @param  int  $type
-     *
-     * @return array
-     */
-    public static function getContentInfoMap($type = ASN1::TYPE_ANY)
+    // RSA encryption
+    const OID_RSA_ENCRYPTION = '1.2.840.113549.1.1.1';
+
+    // RSA signature algorithms
+    const OID_MD2_WITH_RSA_ENCRYPTION = '1.2.840.113549.1.1.2';
+    const OID_MD4_WITH_RSA_ENCRYPTION = '1.2.840.113549.1.1.3';
+    const OID_MD5_WITH_RSA_ENCRYPTION = '1.2.840.113549.1.1.4';
+    const OID_SHA1_WITH_RSA_ENCRYPTION = '1.2.840.113549.1.1.5';
+    const OID_SHA256_WITH_RSA_ENCRYPTION = '1.2.840.113549.1.1.11';
+    const OID_SHA384_WITH_RSA_ENCRYPTION = '1.2.840.113549.1.1.12';
+    const OID_SHA512_WITH_RSA_ENCRYPTION = '1.2.840.113549.1.1.13';
+    const OID_SHA224_WITH_RSA_ENCRYPTION = '1.2.840.113549.1.1.14';
+
+    // Elliptic Curve signature algorithms
+    const OID_ECDSA_WITH_SHA1 = '1.2.840.10045.4.1';
+    const OID_ECDSA_WITH_SHA224 = '1.2.840.10045.4.3.1';
+    const OID_ECDSA_WITH_SHA256 = '1.2.840.10045.4.3.2';
+    const OID_ECDSA_WITH_SHA384 = '1.2.840.10045.4.3.3';
+    const OID_ECDSA_WITH_SHA512 = '1.2.840.10045.4.3.4';
+
+    // Elliptic Curve public key
+    const OID_EC_PUBLIC_KEY = '1.2.840.10045.2.1';
+
+    // Cipher algorithms
+    const OID_DES_CBC = '1.3.14.3.2.7';
+    const OID_RC2_CBC = '1.2.840.113549.3.2';
+    const OID_DES_EDE3_CBC = '1.2.840.113549.3.7';
+    const OID_AES_128_CBC = '2.16.840.1.101.3.4.1.2';
+    const OID_AES_192_CBC = '2.16.840.1.101.3.4.1.22';
+    const OID_AES_256_CBC = '2.16.840.1.101.3.4.1.42';
+
+    // HMAC-SHA-1 from RFC 8018
+    const OID_HMAC_WITH_SHA1 = '1.2.840.113549.2.7';
+
+    // HMAC algorithms from RFC 4231
+    const OID_HMAC_WITH_SHA224 = '1.2.840.113549.2.8';
+    const OID_HMAC_WITH_SHA256 = '1.2.840.113549.2.9';
+    const OID_HMAC_WITH_SHA384 = '1.2.840.113549.2.10';
+    const OID_HMAC_WITH_SHA512 = '1.2.840.113549.2.11';
+
+    // Message digest algorithms
+    const OID_MD5 = '1.2.840.113549.2.5';
+    const OID_SHA1 = '1.3.14.3.2.26';
+    const OID_SHA224 = '2.16.840.1.101.3.4.2.4';
+    const OID_SHA256 = '2.16.840.1.101.3.4.2.1';
+    const OID_SHA384 = '2.16.840.1.101.3.4.2.2';
+    const OID_SHA512 = '2.16.840.1.101.3.4.2.3';
+
+    public static function getContentInfoMap($type = ASN1::TYPE_ANY): array
     {
         return [
             'type' => ASN1::TYPE_SEQUENCE,
             'children' => [
                 'contentType' => ['type' => ASN1::TYPE_OBJECT_IDENTIFIER],
-                // 'content' => self::getCompressedDataMap(),
                 'content' => [
                     'type' => $type,
                     'constant' => 0,
@@ -76,10 +100,7 @@ class ASN1Helper
         ];
     }
 
-    /**
-     * @return array
-     */
-    public static function getCompressedDataMap()
+    public static function getCompressedDataMap(): array
     {
         return [
             'type' => ASN1::TYPE_SEQUENCE,
@@ -88,16 +109,138 @@ class ASN1Helper
                     'type' => ASN1::TYPE_INTEGER,
                     'mapping' => ['0', '1', '2', '4', '5'],
                 ],
-                'compression' => self::getAlgorithmIdentifierMap(),
-                'payload' => [
+                'compression' => ASN1\Maps\AlgorithmIdentifier::MAP,
+                'payload' => self::getContentInfoMap(ASN1::TYPE_OCTET_STRING),
+            ],
+        ];
+    }
+
+    public static function certificateChoiceMap(): array
+    {
+        return [
+            'type' => ASN1::TYPE_CHOICE,
+            'children' => [
+                'certificate' => ASN1\Maps\Certificate::MAP,
+                // 'extendedCertificate' => [], // Obsolete
+                // 'v1AttrCert' => [], // Obsolete
+                'v2AttrCert' => [
+                    'type' => ASN1::TYPE_SEQUENCE,
+                    'implicit' => true,
+                    'children' => [
+                        'acinfo' => ASN1::TYPE_ANY,
+                        'signatureAlgorithm' => ASN1\Maps\AlgorithmIdentifier::MAP,
+                        'signatureValue' => ASN1::TYPE_BIT_STRING,
+                    ],
+                ],
+                'other' => [
+                    'type' => ASN1::TYPE_SEQUENCE,
+                    'implicit' => true,
+                    'children' => [
+                        'otherCertFormat' => ASN1::TYPE_OBJECT_IDENTIFIER,
+                        'otherCert' => ASN1::TYPE_ANY,
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    public static function getSignerIdentifierMap(): array
+    {
+        return [
+            'type' => ASN1::TYPE_CHOICE,
+            'children' => [
+                'issuerAndSerialNumber' => [
                     'type' => ASN1::TYPE_SEQUENCE,
                     'children' => [
-                        'contentType' => ['type' => ASN1::TYPE_OBJECT_IDENTIFIER],
-                        'content' => [
-                            'type' => ASN1::TYPE_OCTET_STRING,
+                        'issuer' => ASN1\Maps\Name::MAP,
+                        'serialNumber' => ASN1\Maps\CertificateSerialNumber::MAP,
+                    ],
+                ],
+                'subjectKeyIdentifier' => [
+                    'type' => ASN1::TYPE_OCTET_STRING,
+                    'constant' => 0,
+                    'implicit' => true,
+                ],
+            ],
+        ];
+    }
+
+    public static function getSignerInfoMap(): array
+    {
+        return [
+            'type' => ASN1::TYPE_SEQUENCE,
+            'children' => [
+                'version' => [
+                    'type' => ASN1::TYPE_INTEGER,
+                    'mapping' => ['0', '1', '2', '4', '5'],
+                ],
+                'sid' => self::getSignerIdentifierMap(),
+                'digestAlgorithm' => ASN1\Maps\AlgorithmIdentifier::MAP,
+                'signedAttrs' => ASN1\Maps\Attributes::MAP + [
+                        'constant' => 0,
+                        'optional' => true,
+                        'implicit' => true,
+                    ],
+                'signatureAlgorithm' => ASN1\Maps\AlgorithmIdentifier::MAP,
+                'signature' => ['type' => ASN1::TYPE_OCTET_STRING],
+                // 'unsignedAttrs' => ASN1\Maps\Attributes::MAP + [
+                //         'constant' => 1,
+                //         'optional' => true,
+                //         'implicit' => true,
+                //     ],
+            ],
+        ];
+    }
+
+    public static function getSignedDataMap(): array
+    {
+        return [
+            'type' => ASN1::TYPE_SEQUENCE,
+            'children' => [
+                'contentType' => ['type' => ASN1::TYPE_OBJECT_IDENTIFIER],
+                'content' => [
+                    'type' => ASN1::TYPE_SEQUENCE,
+                    'constant' => 0,
+                    'optional' => true,
+                    'explicit' => true,
+                    'children' => [
+                        // CMSVersion
+                        'version' => [
+                            'type' => ASN1::TYPE_INTEGER,
+                            'mapping' => ['0', '1', '2', '4', '5'],
+                        ],
+                        'digestAlgorithms' => [
+                            'type' => ASN1::TYPE_SET,
+                            'min' => 1,
+                            'max' => -1,
+                            'children' => ASN1\Maps\AlgorithmIdentifier::MAP,
+                        ],
+                        'contentInfo' => self::getContentInfoMap(ASN1::TYPE_OCTET_STRING),
+                        'certificates' => [
+                            'type' => ASN1::TYPE_SET,
                             'constant' => 0,
-                            'explicit' => true,
+                            'implicit' => true,
                             'optional' => true,
+                            'min' => 1,
+                            'max' => -1,
+                            // 'children' => self::certificateChoiceMap(),
+                            'children' => ASN1\Maps\Certificate::MAP,
+                        ],
+                        'crls' => [
+                            'type' => ASN1::TYPE_SET,
+                            'constant' => 1,
+                            'implicit' => true,
+                            'optional' => true,
+                            'min' => 1,
+                            'max' => -1,
+                            'children' => ASN1\Maps\CertificateList::MAP,
+                        ],
+                        // 'a' => ['type' => ASN1::TYPE_ANY, 'optional' => true],
+                        'signers' => [
+                            'type' => ASN1::TYPE_SET,
+                            'min' => 1,
+                            'max' => -1,
+                            'children' => self::getSignerInfoMap(),
                         ],
                     ],
                 ],
