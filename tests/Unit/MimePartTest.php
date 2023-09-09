@@ -92,8 +92,7 @@ class MimePartTest extends TestCase
 
         $mimePart = new MimePart(
             [
-                'Content-Type' => 'multipart/mixed;
-boundary="'.$boundary.'"',
+                'Content-Type' => 'multipart/mixed; boundary="'.$boundary.'"',
             ]
         );
         $mimePart->addPart('1');
@@ -106,13 +105,13 @@ boundary="'.$boundary.'"',
     public function testBody(): void
     {
         $mimePart = MimePart::fromString("content-type:text/plain;\n\ntest");
-        self::assertEquals('test', $mimePart->getBody());
+        self::assertEquals('test', $mimePart->getBodyString());
 
         $mimePart->setBody('test2');
-        self::assertEquals('test2', $mimePart->getBody());
+        self::assertEquals('test2', $mimePart->getBodyString());
 
         $mimePart = MimePart::fromString("content-type:multipart/mixed;\r\n\r\ntest");
-        self::assertEquals('test', $mimePart->getBody());
+        self::assertEquals('test', $mimePart->getBodyString());
 
         $mimePart->setBody(new MimePart([], '1'));
         self::assertEquals(1, $mimePart->getCountParts());
@@ -131,7 +130,7 @@ boundary="'.$boundary.'"',
         self::assertStringStartsWith('application/pkcs7-signature', $mime->getPart(1)->getHeaderLine('content-type'));
         self::assertEquals('application/EDI-Consent', $mime->getPart(0)->getHeaderLine('content-type'));
         self::assertEquals('binary', $mime->getPart(0)->getHeaderLine('Content-Transfer-Encoding'));
-        self::assertStringStartsWith('UNB+UNOA', $mime->getPart(0)->getBody());
+        self::assertStringStartsWith('UNB+UNOA', $mime->getPart(0)->getBodyString());
     }
 
     public function testBodyWithoutHeaders(): void
@@ -139,7 +138,7 @@ boundary="'.$boundary.'"',
         $res = MimePart::fromString($this->loadFixture('test.edi'));
 
         self::assertEmpty($res->getHeaders());
-        self::assertStringStartsWith('UNB+UNOA', $res->getBody());
+        self::assertStringStartsWith('UNB+UNOA', $res->getBodyString());
     }
 
     public function testCreateIfBinaryPartNotBinary(): void

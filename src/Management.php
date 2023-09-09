@@ -212,7 +212,7 @@ class Management implements LoggerAwareInterface
             $as2headers[$name] = implode(', ', $values);
         }
 
-        $as2Message = new MimePart($as2headers, $payload->getBody());
+        $as2Message = new MimePart($as2headers, $payload->getBodyString());
 
         $message->setHeaders($as2Message->getHeaderLines());
 
@@ -236,7 +236,7 @@ class Management implements LoggerAwareInterface
             ]
         );
 
-        $body = Utils::normalizeBase64($payload->getBody());
+        $body = Utils::normalizeBase64($payload->getBodyString());
 
         // Force encode binary data to base64, `openssl_pkcs7_` doesn't work with binary data
         if (! Utils::decodeBase64($body)) {
@@ -372,7 +372,7 @@ class Management implements LoggerAwareInterface
         try {
             $options = [
                 'headers' => $payload->getHeaders(),
-                'body' => $payload->getBody(),
+                'body' => $payload->getBodyString(),
                 //  'cert' => '' // TODO: partner https cert ?
             ];
 
@@ -458,7 +458,7 @@ class Management implements LoggerAwareInterface
             if ($part->getParsedHeader('content-type', 0, 0) === 'message/disposition-notification') {
                 $this->getLogger()->debug('Found MDN report for message', [$messageId]);
                 try {
-                    $bodyPayload = MimePart::fromString($part->getBody());
+                    $bodyPayload = MimePart::fromString($part->getBodyString());
                     if ($bodyPayload->hasHeader('disposition')) {
                         $mdnStatus = $bodyPayload->getParsedHeader('Disposition', 0, 1);
                         if ($mdnStatus === 'processed') {
@@ -657,7 +657,7 @@ class Management implements LoggerAwareInterface
             $mdn = MimePart::fromString($message->getMdnPayload());
 
             $options = [
-                'body' => $mdn->getBody(),
+                'body' => $mdn->getBodyString(),
                 'headers' => $mdn->getHeaders(),
             ];
 
