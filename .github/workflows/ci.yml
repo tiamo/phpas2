@@ -18,10 +18,10 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         php: [ 7.3, 7.4, 8.0, 8.1 ]
-        phpunit: [ 9 ]
-        include:
-          - php: 7.3
-            phpunit: 8
+    #        phpunit: [ 9 ]
+    #        include:
+    #          - php: 7.3
+    #            phpunit: 8
 
     steps:
       - uses: actions/checkout@v3
